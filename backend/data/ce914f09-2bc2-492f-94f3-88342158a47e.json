@@ -1,0 +1,2307 @@
+{
+  "meta": {
+    "generated_at": "2026-02-03T16:27:11.540599",
+    "engine_version": "1.0.0"
+  },
+  "user_info": {
+    "birth_time_local": "2013-06-06T07:12:00",
+    "birth_time_utc": "2013-06-05T23:12:00",
+    "lat": 34.9946854,
+    "lon": 135.7544143,
+    "timezone": "GMT+8.0",
+    "is_day_chart": true
+  },
+  "kline_data": {
+    "periods": [
+      {
+        "index": 0,
+        "timing": {
+          "start_age": 0.0,
+          "end_age": 1.43,
+          "start_date": "2013-06-06T07:12:00",
+          "end_date": "2014-11-10T01:47:22.848000",
+          "duration_years": 1.43
+        },
+        "lords": {
+          "major": "SUN",
+          "sub": "SUN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.05,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 1,
+        "timing": {
+          "start_age": 1.43,
+          "end_age": 2.86,
+          "start_date": "2014-11-10T01:47:22.848000",
+          "end_date": "2016-04-14T20:22:45.696000",
+          "duration_years": 1.43
+        },
+        "lords": {
+          "major": "SUN",
+          "sub": "VENUS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.05,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 2,
+        "timing": {
+          "start_age": 2.86,
+          "end_age": 4.29,
+          "start_date": "2016-04-14T20:22:45.696000",
+          "end_date": "2017-09-18T14:58:08.544000",
+          "duration_years": 1.43
+        },
+        "lords": {
+          "major": "SUN",
+          "sub": "MERCURY"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.05,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 3,
+        "timing": {
+          "start_age": 4.29,
+          "end_age": 5.71,
+          "start_date": "2017-09-18T14:58:08.544000",
+          "end_date": "2019-02-22T09:33:31.392000",
+          "duration_years": 1.43
+        },
+        "lords": {
+          "major": "SUN",
+          "sub": "MOON"
+        },
+        "trend": {
+          "bonus_coefficient": 0.06,
+          "type": "bull"
+        },
+        "domains": {
+          "wealth": 0.11,
+          "career": 0.06,
+          "relationship": 0.06,
+          "health": 0.06,
+          "family": 0.06
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 4,
+        "timing": {
+          "start_age": 5.71,
+          "end_age": 7.14,
+          "start_date": "2019-02-22T09:33:31.392000",
+          "end_date": "2020-07-28T04:08:54.240000",
+          "duration_years": 1.43
+        },
+        "lords": {
+          "major": "SUN",
+          "sub": "SATURN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.05,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 5,
+        "timing": {
+          "start_age": 7.14,
+          "end_age": 8.57,
+          "start_date": "2020-07-28T04:08:54.240000",
+          "end_date": "2021-12-31T22:44:17.088000",
+          "duration_years": 1.43
+        },
+        "lords": {
+          "major": "SUN",
+          "sub": "JUPITER"
+        },
+        "trend": {
+          "bonus_coefficient": -0.06,
+          "type": "bear"
+        },
+        "domains": {
+          "wealth": -0.01,
+          "career": -0.06,
+          "relationship": -0.06,
+          "health": -0.06,
+          "family": -0.06
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 6,
+        "timing": {
+          "start_age": 8.57,
+          "end_age": 10.0,
+          "start_date": "2021-12-31T22:44:17.088000",
+          "end_date": "2023-06-06T17:19:39.936000",
+          "duration_years": 1.43
+        },
+        "lords": {
+          "major": "SUN",
+          "sub": "MARS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.05,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 7,
+        "timing": {
+          "start_age": 10.0,
+          "end_age": 11.14,
+          "start_date": "2023-06-06T17:19:39.936000",
+          "end_date": "2024-07-28T03:23:58.214400",
+          "duration_years": 1.14
+        },
+        "lords": {
+          "major": "VENUS",
+          "sub": "VENUS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 8,
+        "timing": {
+          "start_age": 11.14,
+          "end_age": 12.29,
+          "start_date": "2024-07-28T03:23:58.214400",
+          "end_date": "2025-09-18T13:28:16.492800",
+          "duration_years": 1.14
+        },
+        "lords": {
+          "major": "VENUS",
+          "sub": "MERCURY"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 9,
+        "timing": {
+          "start_age": 12.29,
+          "end_age": 13.43,
+          "start_date": "2025-09-18T13:28:16.492800",
+          "end_date": "2026-11-09T23:32:34.771200",
+          "duration_years": 1.14
+        },
+        "lords": {
+          "major": "VENUS",
+          "sub": "MOON"
+        },
+        "trend": {
+          "bonus_coefficient": 0.06,
+          "type": "bull"
+        },
+        "domains": {
+          "wealth": 0.06,
+          "career": 0.06,
+          "relationship": 0.06,
+          "health": 0.11,
+          "family": 0.06
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 10,
+        "timing": {
+          "start_age": 13.43,
+          "end_age": 14.57,
+          "start_date": "2026-11-09T23:32:34.771200",
+          "end_date": "2028-01-01T09:36:53.049600",
+          "duration_years": 1.14
+        },
+        "lords": {
+          "major": "VENUS",
+          "sub": "SATURN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 11,
+        "timing": {
+          "start_age": 14.57,
+          "end_age": 15.71,
+          "start_date": "2028-01-01T09:36:53.049600",
+          "end_date": "2029-02-21T19:41:11.328000",
+          "duration_years": 1.14
+        },
+        "lords": {
+          "major": "VENUS",
+          "sub": "JUPITER"
+        },
+        "trend": {
+          "bonus_coefficient": -0.06,
+          "type": "bear"
+        },
+        "domains": {
+          "wealth": -0.06,
+          "career": -0.06,
+          "relationship": -0.06,
+          "health": -0.01,
+          "family": -0.06
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 12,
+        "timing": {
+          "start_age": 15.71,
+          "end_age": 16.86,
+          "start_date": "2029-02-21T19:41:11.328000",
+          "end_date": "2030-04-15T05:45:29.606400",
+          "duration_years": 1.14
+        },
+        "lords": {
+          "major": "VENUS",
+          "sub": "MARS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 13,
+        "timing": {
+          "start_age": 16.86,
+          "end_age": 18.0,
+          "start_date": "2030-04-15T05:45:29.606400",
+          "end_date": "2031-06-06T15:49:47.884800",
+          "duration_years": 1.14
+        },
+        "lords": {
+          "major": "VENUS",
+          "sub": "SUN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 14,
+        "timing": {
+          "start_age": 18.0,
+          "end_age": 19.86,
+          "start_date": "2031-06-06T15:49:47.884800",
+          "end_date": "2033-04-14T23:11:47.587200",
+          "duration_years": 1.86
+        },
+        "lords": {
+          "major": "MERCURY",
+          "sub": "MERCURY"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 15,
+        "timing": {
+          "start_age": 19.86,
+          "end_age": 21.71,
+          "start_date": "2033-04-14T23:11:47.587200",
+          "end_date": "2035-02-22T06:33:47.289600",
+          "duration_years": 1.86
+        },
+        "lords": {
+          "major": "MERCURY",
+          "sub": "MOON"
+        },
+        "trend": {
+          "bonus_coefficient": 0.06,
+          "type": "bull"
+        },
+        "domains": {
+          "wealth": 0.06,
+          "career": 0.06,
+          "relationship": 0.06,
+          "health": 0.11,
+          "family": 0.06
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 16,
+        "timing": {
+          "start_age": 21.71,
+          "end_age": 23.57,
+          "start_date": "2035-02-22T06:33:47.289600",
+          "end_date": "2036-12-31T13:55:46.992000",
+          "duration_years": 1.86
+        },
+        "lords": {
+          "major": "MERCURY",
+          "sub": "SATURN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 17,
+        "timing": {
+          "start_age": 23.57,
+          "end_age": 25.43,
+          "start_date": "2036-12-31T13:55:46.992000",
+          "end_date": "2038-11-09T21:17:46.694400",
+          "duration_years": 1.86
+        },
+        "lords": {
+          "major": "MERCURY",
+          "sub": "JUPITER"
+        },
+        "trend": {
+          "bonus_coefficient": -0.06,
+          "type": "bear"
+        },
+        "domains": {
+          "wealth": -0.06,
+          "career": -0.06,
+          "relationship": -0.06,
+          "health": -0.01,
+          "family": -0.06
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 18,
+        "timing": {
+          "start_age": 25.43,
+          "end_age": 27.29,
+          "start_date": "2038-11-09T21:17:46.694400",
+          "end_date": "2040-09-18T04:39:46.396800",
+          "duration_years": 1.86
+        },
+        "lords": {
+          "major": "MERCURY",
+          "sub": "MARS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 19,
+        "timing": {
+          "start_age": 27.29,
+          "end_age": 29.14,
+          "start_date": "2040-09-18T04:39:46.396800",
+          "end_date": "2042-07-28T12:01:46.099200",
+          "duration_years": 1.86
+        },
+        "lords": {
+          "major": "MERCURY",
+          "sub": "SUN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 20,
+        "timing": {
+          "start_age": 29.14,
+          "end_age": 31.0,
+          "start_date": "2042-07-28T12:01:46.099200",
+          "end_date": "2044-06-05T19:23:45.801600",
+          "duration_years": 1.86
+        },
+        "lords": {
+          "major": "MERCURY",
+          "sub": "VENUS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 21,
+        "timing": {
+          "start_age": 31.0,
+          "end_age": 32.29,
+          "start_date": "2044-06-05T19:23:45.801600",
+          "end_date": "2045-09-18T09:43:36.364800",
+          "duration_years": 1.29
+        },
+        "lords": {
+          "major": "MOON",
+          "sub": "MOON"
+        },
+        "trend": {
+          "bonus_coefficient": 0.2,
+          "type": "bull"
+        },
+        "domains": {
+          "wealth": 0.2,
+          "career": 0.25,
+          "relationship": 0.2,
+          "health": 0.2,
+          "family": 0.2
+        },
+        "astrology": {
+          "sign": "TAURUS",
+          "house": 10,
+          "dignity": "exaltation"
+        },
+        "type": "major"
+      },
+      {
+        "index": 22,
+        "timing": {
+          "start_age": 32.29,
+          "end_age": 33.57,
+          "start_date": "2045-09-18T09:43:36.364800",
+          "end_date": "2047-01-01T00:03:26.928000",
+          "duration_years": 1.29
+        },
+        "lords": {
+          "major": "MOON",
+          "sub": "SATURN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.14,
+          "type": "bull"
+        },
+        "domains": {
+          "wealth": 0.14,
+          "career": 0.19,
+          "relationship": 0.14,
+          "health": 0.14,
+          "family": 0.14
+        },
+        "astrology": {
+          "sign": "TAURUS",
+          "house": 10,
+          "dignity": "exaltation"
+        },
+        "type": "major"
+      },
+      {
+        "index": 23,
+        "timing": {
+          "start_age": 33.57,
+          "end_age": 34.86,
+          "start_date": "2047-01-01T00:03:26.928000",
+          "end_date": "2048-04-14T14:23:17.491200",
+          "duration_years": 1.29
+        },
+        "lords": {
+          "major": "MOON",
+          "sub": "JUPITER"
+        },
+        "trend": {
+          "bonus_coefficient": 0.08,
+          "type": "bull"
+        },
+        "domains": {
+          "wealth": 0.08,
+          "career": 0.13,
+          "relationship": 0.08,
+          "health": 0.08,
+          "family": 0.08
+        },
+        "astrology": {
+          "sign": "TAURUS",
+          "house": 10,
+          "dignity": "exaltation"
+        },
+        "type": "major"
+      },
+      {
+        "index": 24,
+        "timing": {
+          "start_age": 34.86,
+          "end_age": 36.14,
+          "start_date": "2048-04-14T14:23:17.491200",
+          "end_date": "2049-07-28T04:43:08.054400",
+          "duration_years": 1.29
+        },
+        "lords": {
+          "major": "MOON",
+          "sub": "MARS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.14,
+          "type": "bull"
+        },
+        "domains": {
+          "wealth": 0.14,
+          "career": 0.19,
+          "relationship": 0.14,
+          "health": 0.14,
+          "family": 0.14
+        },
+        "astrology": {
+          "sign": "TAURUS",
+          "house": 10,
+          "dignity": "exaltation"
+        },
+        "type": "major"
+      },
+      {
+        "index": 25,
+        "timing": {
+          "start_age": 36.14,
+          "end_age": 37.43,
+          "start_date": "2049-07-28T04:43:08.054400",
+          "end_date": "2050-11-09T19:02:58.617600",
+          "duration_years": 1.29
+        },
+        "lords": {
+          "major": "MOON",
+          "sub": "SUN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.14,
+          "type": "bull"
+        },
+        "domains": {
+          "wealth": 0.14,
+          "career": 0.19,
+          "relationship": 0.14,
+          "health": 0.14,
+          "family": 0.14
+        },
+        "astrology": {
+          "sign": "TAURUS",
+          "house": 10,
+          "dignity": "exaltation"
+        },
+        "type": "major"
+      },
+      {
+        "index": 26,
+        "timing": {
+          "start_age": 37.43,
+          "end_age": 38.71,
+          "start_date": "2050-11-09T19:02:58.617600",
+          "end_date": "2052-02-22T09:22:49.180800",
+          "duration_years": 1.29
+        },
+        "lords": {
+          "major": "MOON",
+          "sub": "VENUS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.14,
+          "type": "bull"
+        },
+        "domains": {
+          "wealth": 0.14,
+          "career": 0.19,
+          "relationship": 0.14,
+          "health": 0.14,
+          "family": 0.14
+        },
+        "astrology": {
+          "sign": "TAURUS",
+          "house": 10,
+          "dignity": "exaltation"
+        },
+        "type": "major"
+      },
+      {
+        "index": 27,
+        "timing": {
+          "start_age": 38.71,
+          "end_age": 40.0,
+          "start_date": "2052-02-22T09:22:49.180800",
+          "end_date": "2053-06-05T23:42:39.744000",
+          "duration_years": 1.29
+        },
+        "lords": {
+          "major": "MOON",
+          "sub": "MERCURY"
+        },
+        "trend": {
+          "bonus_coefficient": 0.14,
+          "type": "bull"
+        },
+        "domains": {
+          "wealth": 0.14,
+          "career": 0.19,
+          "relationship": 0.14,
+          "health": 0.14,
+          "family": 0.14
+        },
+        "astrology": {
+          "sign": "TAURUS",
+          "house": 10,
+          "dignity": "exaltation"
+        },
+        "type": "major"
+      },
+      {
+        "index": 28,
+        "timing": {
+          "start_age": 40.0,
+          "end_age": 41.57,
+          "start_date": "2053-06-05T23:42:39.744000",
+          "end_date": "2054-12-31T22:33:34.876800",
+          "duration_years": 1.57
+        },
+        "lords": {
+          "major": "SATURN",
+          "sub": "SATURN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.05
+        },
+        "astrology": {
+          "sign": "SCORPIO",
+          "house": 4,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 29,
+        "timing": {
+          "start_age": 41.57,
+          "end_age": 43.14,
+          "start_date": "2054-12-31T22:33:34.876800",
+          "end_date": "2056-07-27T21:24:30.009600",
+          "duration_years": 1.57
+        },
+        "lords": {
+          "major": "SATURN",
+          "sub": "JUPITER"
+        },
+        "trend": {
+          "bonus_coefficient": -0.06,
+          "type": "bear"
+        },
+        "domains": {
+          "wealth": -0.06,
+          "career": -0.06,
+          "relationship": -0.06,
+          "health": -0.06,
+          "family": -0.01
+        },
+        "astrology": {
+          "sign": "SCORPIO",
+          "house": 4,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 30,
+        "timing": {
+          "start_age": 43.14,
+          "end_age": 44.71,
+          "start_date": "2056-07-27T21:24:30.009600",
+          "end_date": "2058-02-21T20:15:25.142400",
+          "duration_years": 1.57
+        },
+        "lords": {
+          "major": "SATURN",
+          "sub": "MARS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.05
+        },
+        "astrology": {
+          "sign": "SCORPIO",
+          "house": 4,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 31,
+        "timing": {
+          "start_age": 44.71,
+          "end_age": 46.29,
+          "start_date": "2058-02-21T20:15:25.142400",
+          "end_date": "2059-09-18T19:06:20.275200",
+          "duration_years": 1.57
+        },
+        "lords": {
+          "major": "SATURN",
+          "sub": "SUN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.05
+        },
+        "astrology": {
+          "sign": "SCORPIO",
+          "house": 4,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 32,
+        "timing": {
+          "start_age": 46.29,
+          "end_age": 47.86,
+          "start_date": "2059-09-18T19:06:20.275200",
+          "end_date": "2061-04-14T17:57:15.408000",
+          "duration_years": 1.57
+        },
+        "lords": {
+          "major": "SATURN",
+          "sub": "VENUS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.05
+        },
+        "astrology": {
+          "sign": "SCORPIO",
+          "house": 4,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 33,
+        "timing": {
+          "start_age": 47.86,
+          "end_age": 49.43,
+          "start_date": "2061-04-14T17:57:15.408000",
+          "end_date": "2062-11-09T16:48:10.540800",
+          "duration_years": 1.57
+        },
+        "lords": {
+          "major": "SATURN",
+          "sub": "MERCURY"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.05
+        },
+        "astrology": {
+          "sign": "SCORPIO",
+          "house": 4,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 34,
+        "timing": {
+          "start_age": 49.43,
+          "end_age": 51.0,
+          "start_date": "2062-11-09T16:48:10.540800",
+          "end_date": "2064-06-05T15:39:05.673600",
+          "duration_years": 1.57
+        },
+        "lords": {
+          "major": "SATURN",
+          "sub": "MOON"
+        },
+        "trend": {
+          "bonus_coefficient": 0.06,
+          "type": "bull"
+        },
+        "domains": {
+          "wealth": 0.06,
+          "career": 0.06,
+          "relationship": 0.06,
+          "health": 0.06,
+          "family": 0.11
+        },
+        "astrology": {
+          "sign": "SCORPIO",
+          "house": 4,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 35,
+        "timing": {
+          "start_age": 51.0,
+          "end_age": 52.71,
+          "start_date": "2064-06-05T15:39:05.673600",
+          "end_date": "2066-02-21T18:45:33.091200",
+          "duration_years": 1.71
+        },
+        "lords": {
+          "major": "JUPITER",
+          "sub": "JUPITER"
+        },
+        "trend": {
+          "bonus_coefficient": -0.2,
+          "type": "bear"
+        },
+        "domains": {
+          "wealth": -0.15,
+          "career": -0.2,
+          "relationship": -0.2,
+          "health": -0.2,
+          "family": -0.2
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "detriment"
+        },
+        "type": "major"
+      },
+      {
+        "index": 36,
+        "timing": {
+          "start_age": 52.71,
+          "end_age": 54.43,
+          "start_date": "2066-02-21T18:45:33.091200",
+          "end_date": "2067-11-09T21:52:00.508799",
+          "duration_years": 1.71
+        },
+        "lords": {
+          "major": "JUPITER",
+          "sub": "MARS"
+        },
+        "trend": {
+          "bonus_coefficient": -0.14,
+          "type": "bear"
+        },
+        "domains": {
+          "wealth": -0.09,
+          "career": -0.14,
+          "relationship": -0.14,
+          "health": -0.14,
+          "family": -0.14
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "detriment"
+        },
+        "type": "major"
+      },
+      {
+        "index": 37,
+        "timing": {
+          "start_age": 54.43,
+          "end_age": 56.14,
+          "start_date": "2067-11-09T21:52:00.508799",
+          "end_date": "2069-07-28T00:58:27.926399",
+          "duration_years": 1.71
+        },
+        "lords": {
+          "major": "JUPITER",
+          "sub": "SUN"
+        },
+        "trend": {
+          "bonus_coefficient": -0.14,
+          "type": "bear"
+        },
+        "domains": {
+          "wealth": -0.09,
+          "career": -0.14,
+          "relationship": -0.14,
+          "health": -0.14,
+          "family": -0.14
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "detriment"
+        },
+        "type": "major"
+      },
+      {
+        "index": 38,
+        "timing": {
+          "start_age": 56.14,
+          "end_age": 57.86,
+          "start_date": "2069-07-28T00:58:27.926399",
+          "end_date": "2071-04-15T04:04:55.344000",
+          "duration_years": 1.71
+        },
+        "lords": {
+          "major": "JUPITER",
+          "sub": "VENUS"
+        },
+        "trend": {
+          "bonus_coefficient": -0.14,
+          "type": "bear"
+        },
+        "domains": {
+          "wealth": -0.09,
+          "career": -0.14,
+          "relationship": -0.14,
+          "health": -0.14,
+          "family": -0.14
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "detriment"
+        },
+        "type": "major"
+      },
+      {
+        "index": 39,
+        "timing": {
+          "start_age": 57.86,
+          "end_age": 59.57,
+          "start_date": "2071-04-15T04:04:55.344000",
+          "end_date": "2072-12-31T07:11:22.761600",
+          "duration_years": 1.71
+        },
+        "lords": {
+          "major": "JUPITER",
+          "sub": "MERCURY"
+        },
+        "trend": {
+          "bonus_coefficient": -0.14,
+          "type": "bear"
+        },
+        "domains": {
+          "wealth": -0.09,
+          "career": -0.14,
+          "relationship": -0.14,
+          "health": -0.14,
+          "family": -0.14
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "detriment"
+        },
+        "type": "major"
+      },
+      {
+        "index": 40,
+        "timing": {
+          "start_age": 59.57,
+          "end_age": 61.29,
+          "start_date": "2072-12-31T07:11:22.761600",
+          "end_date": "2074-09-18T10:17:50.179200",
+          "duration_years": 1.71
+        },
+        "lords": {
+          "major": "JUPITER",
+          "sub": "MOON"
+        },
+        "trend": {
+          "bonus_coefficient": -0.08,
+          "type": "bear"
+        },
+        "domains": {
+          "wealth": -0.03,
+          "career": -0.08,
+          "relationship": -0.08,
+          "health": -0.08,
+          "family": -0.08
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "detriment"
+        },
+        "type": "major"
+      },
+      {
+        "index": 41,
+        "timing": {
+          "start_age": 61.29,
+          "end_age": 63.0,
+          "start_date": "2074-09-18T10:17:50.179200",
+          "end_date": "2076-06-05T13:24:17.596800",
+          "duration_years": 1.71
+        },
+        "lords": {
+          "major": "JUPITER",
+          "sub": "SATURN"
+        },
+        "trend": {
+          "bonus_coefficient": -0.14,
+          "type": "bear"
+        },
+        "domains": {
+          "wealth": -0.09,
+          "career": -0.14,
+          "relationship": -0.14,
+          "health": -0.14,
+          "family": -0.14
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "detriment"
+        },
+        "type": "major"
+      },
+      {
+        "index": 42,
+        "timing": {
+          "start_age": 63.0,
+          "end_age": 64.0,
+          "start_date": "2076-06-05T13:24:17.596800",
+          "end_date": "2077-06-05T19:13:03.590400",
+          "duration_years": 1.0
+        },
+        "lords": {
+          "major": "MARS",
+          "sub": "MARS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.05,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 43,
+        "timing": {
+          "start_age": 64.0,
+          "end_age": 65.0,
+          "start_date": "2077-06-05T19:13:03.590400",
+          "end_date": "2078-06-06T01:01:49.584000",
+          "duration_years": 1.0
+        },
+        "lords": {
+          "major": "MARS",
+          "sub": "SUN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.05,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 44,
+        "timing": {
+          "start_age": 65.0,
+          "end_age": 66.0,
+          "start_date": "2078-06-06T01:01:49.584000",
+          "end_date": "2079-06-06T06:50:35.577600",
+          "duration_years": 1.0
+        },
+        "lords": {
+          "major": "MARS",
+          "sub": "VENUS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.05,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 45,
+        "timing": {
+          "start_age": 66.0,
+          "end_age": 67.0,
+          "start_date": "2079-06-06T06:50:35.577600",
+          "end_date": "2080-06-05T12:39:21.571200",
+          "duration_years": 1.0
+        },
+        "lords": {
+          "major": "MARS",
+          "sub": "MERCURY"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.05,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 46,
+        "timing": {
+          "start_age": 67.0,
+          "end_age": 68.0,
+          "start_date": "2080-06-05T12:39:21.571200",
+          "end_date": "2081-06-05T18:28:07.564800",
+          "duration_years": 1.0
+        },
+        "lords": {
+          "major": "MARS",
+          "sub": "MOON"
+        },
+        "trend": {
+          "bonus_coefficient": 0.06,
+          "type": "bull"
+        },
+        "domains": {
+          "wealth": 0.11,
+          "career": 0.06,
+          "relationship": 0.06,
+          "health": 0.06,
+          "family": 0.06
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 47,
+        "timing": {
+          "start_age": 68.0,
+          "end_age": 69.0,
+          "start_date": "2081-06-05T18:28:07.564800",
+          "end_date": "2082-06-06T00:16:53.558400",
+          "duration_years": 1.0
+        },
+        "lords": {
+          "major": "MARS",
+          "sub": "SATURN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.05,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 48,
+        "timing": {
+          "start_age": 69.0,
+          "end_age": 70.0,
+          "start_date": "2082-06-06T00:16:53.558400",
+          "end_date": "2083-06-06T06:05:39.552000",
+          "duration_years": 1.0
+        },
+        "lords": {
+          "major": "MARS",
+          "sub": "JUPITER"
+        },
+        "trend": {
+          "bonus_coefficient": -0.06,
+          "type": "bear"
+        },
+        "domains": {
+          "wealth": -0.01,
+          "career": -0.06,
+          "relationship": -0.06,
+          "health": -0.06,
+          "family": -0.06
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 49,
+        "timing": {
+          "start_age": 70.0,
+          "end_age": 73.0,
+          "start_date": "2083-06-06T06:05:39.552000",
+          "end_date": "2086-06-05T23:31:57.532800",
+          "duration_years": 3
+        },
+        "lords": {
+          "major": "NORTH_NODE",
+          "sub": null
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "Unknown",
+          "house": 0,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 50,
+        "timing": {
+          "start_age": 73.0,
+          "end_age": 75.0,
+          "start_date": "2086-06-05T23:31:57.532800",
+          "end_date": "2088-06-05T11:09:29.520000",
+          "duration_years": 2
+        },
+        "lords": {
+          "major": "SOUTH_NODE",
+          "sub": null
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "Unknown",
+          "house": 0,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 51,
+        "timing": {
+          "start_age": 75.0,
+          "end_age": 76.43,
+          "start_date": "2088-06-05T11:09:29.520000",
+          "end_date": "2089-11-09T05:44:52.368000",
+          "duration_years": 1.43
+        },
+        "lords": {
+          "major": "SUN",
+          "sub": "SUN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.05,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 52,
+        "timing": {
+          "start_age": 76.43,
+          "end_age": 77.86,
+          "start_date": "2089-11-09T05:44:52.368000",
+          "end_date": "2091-04-15T00:20:15.216000",
+          "duration_years": 1.43
+        },
+        "lords": {
+          "major": "SUN",
+          "sub": "VENUS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.05,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 53,
+        "timing": {
+          "start_age": 77.86,
+          "end_age": 79.29,
+          "start_date": "2091-04-15T00:20:15.216000",
+          "end_date": "2092-09-17T18:55:38.064000",
+          "duration_years": 1.43
+        },
+        "lords": {
+          "major": "SUN",
+          "sub": "MERCURY"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.05,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 54,
+        "timing": {
+          "start_age": 79.29,
+          "end_age": 80.71,
+          "start_date": "2092-09-17T18:55:38.064000",
+          "end_date": "2094-02-21T13:31:00.912000",
+          "duration_years": 1.43
+        },
+        "lords": {
+          "major": "SUN",
+          "sub": "MOON"
+        },
+        "trend": {
+          "bonus_coefficient": 0.06,
+          "type": "bull"
+        },
+        "domains": {
+          "wealth": 0.11,
+          "career": 0.06,
+          "relationship": 0.06,
+          "health": 0.06,
+          "family": 0.06
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 55,
+        "timing": {
+          "start_age": 80.71,
+          "end_age": 82.14,
+          "start_date": "2094-02-21T13:31:00.912000",
+          "end_date": "2095-07-28T08:06:23.760000",
+          "duration_years": 1.43
+        },
+        "lords": {
+          "major": "SUN",
+          "sub": "SATURN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.05,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 56,
+        "timing": {
+          "start_age": 82.14,
+          "end_age": 83.57,
+          "start_date": "2095-07-28T08:06:23.760000",
+          "end_date": "2096-12-31T02:41:46.608000",
+          "duration_years": 1.43
+        },
+        "lords": {
+          "major": "SUN",
+          "sub": "JUPITER"
+        },
+        "trend": {
+          "bonus_coefficient": -0.06,
+          "type": "bear"
+        },
+        "domains": {
+          "wealth": -0.01,
+          "career": -0.06,
+          "relationship": -0.06,
+          "health": -0.06,
+          "family": -0.06
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 57,
+        "timing": {
+          "start_age": 83.57,
+          "end_age": 85.0,
+          "start_date": "2096-12-31T02:41:46.608000",
+          "end_date": "2098-06-05T21:17:09.456000",
+          "duration_years": 1.43
+        },
+        "lords": {
+          "major": "SUN",
+          "sub": "MARS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.05,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.0,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "GEMINI",
+          "house": 11,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 58,
+        "timing": {
+          "start_age": 85.0,
+          "end_age": 86.14,
+          "start_date": "2098-06-05T21:17:09.456000",
+          "end_date": "2099-07-28T07:21:27.734400",
+          "duration_years": 1.14
+        },
+        "lords": {
+          "major": "VENUS",
+          "sub": "VENUS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 59,
+        "timing": {
+          "start_age": 86.14,
+          "end_age": 87.29,
+          "start_date": "2099-07-28T07:21:27.734400",
+          "end_date": "2100-09-18T17:25:46.012800",
+          "duration_years": 1.14
+        },
+        "lords": {
+          "major": "VENUS",
+          "sub": "MERCURY"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 60,
+        "timing": {
+          "start_age": 87.29,
+          "end_age": 88.43,
+          "start_date": "2100-09-18T17:25:46.012800",
+          "end_date": "2101-11-10T03:30:04.291200",
+          "duration_years": 1.14
+        },
+        "lords": {
+          "major": "VENUS",
+          "sub": "MOON"
+        },
+        "trend": {
+          "bonus_coefficient": 0.06,
+          "type": "bull"
+        },
+        "domains": {
+          "wealth": 0.06,
+          "career": 0.06,
+          "relationship": 0.06,
+          "health": 0.11,
+          "family": 0.06
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 61,
+        "timing": {
+          "start_age": 88.43,
+          "end_age": 89.57,
+          "start_date": "2101-11-10T03:30:04.291200",
+          "end_date": "2103-01-01T13:34:22.569600",
+          "duration_years": 1.14
+        },
+        "lords": {
+          "major": "VENUS",
+          "sub": "SATURN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 62,
+        "timing": {
+          "start_age": 89.57,
+          "end_age": 90.71,
+          "start_date": "2103-01-01T13:34:22.569600",
+          "end_date": "2104-02-22T23:38:40.848000",
+          "duration_years": 1.14
+        },
+        "lords": {
+          "major": "VENUS",
+          "sub": "JUPITER"
+        },
+        "trend": {
+          "bonus_coefficient": -0.06,
+          "type": "bear"
+        },
+        "domains": {
+          "wealth": -0.06,
+          "career": -0.06,
+          "relationship": -0.06,
+          "health": -0.01,
+          "family": -0.06
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 63,
+        "timing": {
+          "start_age": 90.71,
+          "end_age": 91.86,
+          "start_date": "2104-02-22T23:38:40.848000",
+          "end_date": "2105-04-15T09:42:59.126400",
+          "duration_years": 1.14
+        },
+        "lords": {
+          "major": "VENUS",
+          "sub": "MARS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 64,
+        "timing": {
+          "start_age": 91.86,
+          "end_age": 93.0,
+          "start_date": "2105-04-15T09:42:59.126400",
+          "end_date": "2106-06-06T19:47:17.404800",
+          "duration_years": 1.14
+        },
+        "lords": {
+          "major": "VENUS",
+          "sub": "SUN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 65,
+        "timing": {
+          "start_age": 93.0,
+          "end_age": 94.86,
+          "start_date": "2106-06-06T19:47:17.404800",
+          "end_date": "2108-04-15T03:09:17.107200",
+          "duration_years": 1.86
+        },
+        "lords": {
+          "major": "MERCURY",
+          "sub": "MERCURY"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 66,
+        "timing": {
+          "start_age": 94.86,
+          "end_age": 96.71,
+          "start_date": "2108-04-15T03:09:17.107200",
+          "end_date": "2110-02-22T10:31:16.809599",
+          "duration_years": 1.86
+        },
+        "lords": {
+          "major": "MERCURY",
+          "sub": "MOON"
+        },
+        "trend": {
+          "bonus_coefficient": 0.06,
+          "type": "bull"
+        },
+        "domains": {
+          "wealth": 0.06,
+          "career": 0.06,
+          "relationship": 0.06,
+          "health": 0.11,
+          "family": 0.06
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 67,
+        "timing": {
+          "start_age": 96.71,
+          "end_age": 98.57,
+          "start_date": "2110-02-22T10:31:16.809599",
+          "end_date": "2112-01-01T17:53:16.512000",
+          "duration_years": 1.86
+        },
+        "lords": {
+          "major": "MERCURY",
+          "sub": "SATURN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 68,
+        "timing": {
+          "start_age": 98.57,
+          "end_age": 100.43,
+          "start_date": "2112-01-01T17:53:16.512000",
+          "end_date": "2113-11-10T01:15:16.214400",
+          "duration_years": 1.86
+        },
+        "lords": {
+          "major": "MERCURY",
+          "sub": "JUPITER"
+        },
+        "trend": {
+          "bonus_coefficient": -0.06,
+          "type": "bear"
+        },
+        "domains": {
+          "wealth": -0.06,
+          "career": -0.06,
+          "relationship": -0.06,
+          "health": -0.01,
+          "family": -0.06
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 69,
+        "timing": {
+          "start_age": 100.43,
+          "end_age": 102.29,
+          "start_date": "2113-11-10T01:15:16.214400",
+          "end_date": "2115-09-19T08:37:15.916800",
+          "duration_years": 1.86
+        },
+        "lords": {
+          "major": "MERCURY",
+          "sub": "MARS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 70,
+        "timing": {
+          "start_age": 102.29,
+          "end_age": 104.14,
+          "start_date": "2115-09-19T08:37:15.916800",
+          "end_date": "2117-07-28T15:59:15.619200",
+          "duration_years": 1.86
+        },
+        "lords": {
+          "major": "MERCURY",
+          "sub": "SUN"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      },
+      {
+        "index": 71,
+        "timing": {
+          "start_age": 104.14,
+          "end_age": 106.0,
+          "start_date": "2117-07-28T15:59:15.619200",
+          "end_date": "2119-06-06T23:21:15.321600",
+          "duration_years": 1.86
+        },
+        "lords": {
+          "major": "MERCURY",
+          "sub": "VENUS"
+        },
+        "trend": {
+          "bonus_coefficient": 0.0,
+          "type": "stable"
+        },
+        "domains": {
+          "wealth": 0.0,
+          "career": 0.0,
+          "relationship": 0.0,
+          "health": 0.05,
+          "family": 0.0
+        },
+        "astrology": {
+          "sign": "CANCER",
+          "house": 12,
+          "dignity": "peregrine"
+        },
+        "type": "major"
+      }
+    ]
+  },
+  "natal_chart": {
+    "ascendant": {
+      "sign": "LEO",
+      "degree": 0.8
+    },
+    "planets": {
+      "SUN": {
+        "sign": "GEMINI",
+        "house": 11,
+        "dignity": "peregrine"
+      },
+      "MOON": {
+        "sign": "TAURUS",
+        "house": 10,
+        "dignity": "exaltation"
+      },
+      "MERCURY": {
+        "sign": "CANCER",
+        "house": 12,
+        "dignity": "peregrine"
+      },
+      "VENUS": {
+        "sign": "CANCER",
+        "house": 12,
+        "dignity": "peregrine"
+      },
+      "MARS": {
+        "sign": "GEMINI",
+        "house": 11,
+        "dignity": "peregrine"
+      },
+      "JUPITER": {
+        "sign": "GEMINI",
+        "house": 11,
+        "dignity": "detriment"
+      },
+      "SATURN": {
+        "sign": "SCORPIO",
+        "house": 4,
+        "dignity": "peregrine"
+      }
+    }
+  },
+  "current_phase": {
+    "age_range": "12 - 13 岁",
+    "major_lord": "VENUS",
+    "sub_lord": "MOON",
+    "trend_type": "bull",
+    "score": 52.4,
+    "keywords": [
+      "扩张",
+      "行动",
+      "机遇"
+    ],
+    "feeling": "你可能感到事情推进变得容易，这是乘风破浪的好时机。",
+    "description": "牛市 (基准分 +6%)"
+  }
+}

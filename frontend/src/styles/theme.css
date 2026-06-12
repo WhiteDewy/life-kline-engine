@@ -1,0 +1,209 @@
+:root {
+  /* Deep Space Order Palette */
+
+  /* Brand Colors */
+  --color-gold: #D4AF37; /* Orderly Gold */
+  --color-gold-rgb: 212, 175, 55;
+  --color-indigo: #6366F1; /* Logic Indigo */
+  --color-indigo-rgb: 99, 102, 241;
+  --color-red: #F43F5E; /* Entropy Red */
+  --color-red-rgb: 244, 63, 94;
+
+  /* Data Viz Colors */
+  --color-data-pos: #10B981; /* Positive/Expansion */
+  --color-data-neg: #F59E0B; /* Negative/Contraction - Amber */
+  --color-data-neu: rgba(148, 163, 184, 0.2); /* Neutral/Grid */
+
+  /* Backgrounds & Layers */
+  --bg-main: #020617; /* Void Black */
+  --bg-card: rgba(15, 23, 42, 0.6); /* Nebula Grey */
+  --card-hover: rgba(255, 255, 255, 0.08);
+  --border-light: rgba(255, 255, 255, 0.1); /* Orderly Border */
+  --glass-mask: rgba(15, 23, 42, 0.8); /* Glass Mask */
+
+  /* Text */
+  --text-primary: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-disabled: #475569;
+
+  /* Gradients */
+  --grad-hero: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
+  --grad-gold: linear-gradient(135deg, #d4af37 0%, #f59e0b 100%);
+  --grad-highlight: linear-gradient(to left, #ffffff, #d4af37);
+
+  /* Legacy Mappings (for compatibility) */
+  --bg: var(--bg-main);
+  --card-bg: var(--bg-card);
+  --text: var(--text-primary);
+  --text-secondary: var(--text-muted);
+  --muted: var(--text-disabled);
+  --border: var(--border-light);
+  
+  --primary: var(--color-gold);
+  --accent: var(--color-indigo);
+  --success: var(--color-data-pos);
+  --warning: var(--color-data-neg);
+  --danger: var(--color-red);
+
+  --gold: var(--color-gold);
+  --gold-rgb: var(--color-gold-rgb);
+  --indigo: var(--color-indigo);
+  --indigo-rgb: var(--color-indigo-rgb);
+  --red: var(--color-red);
+  --red-rgb: var(--color-red-rgb);
+
+  /* Layout */
+  --h-header: 64px;
+  --h-footer: 80px;
+  --content-min: 320px;
+  --content-max: 1200px;
+  --radius: 16px;
+  --font-sans: "Inter", "PingFang SC", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Roboto Mono", "SF Pro Display", "Menlo", monospace;
+
+  /* Shadows */
+  --shadow-card: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+}
+
+/* Element Plus Overrides - Using :root to match specificity */
+:root {
+  --el-color-primary: var(--color-gold);
+  --el-color-primary-light-3: #E1C773;
+  --el-color-primary-light-5: #E9D79B;
+  --el-color-primary-light-7: #F2E7C3;
+  --el-color-primary-light-8: #F6EFD7;
+  --el-color-primary-light-9: #FBF7EB;
+  --el-color-primary-dark-2: #AA8C2C;
+  
+  --el-color-success: var(--color-data-pos);
+  --el-color-warning: var(--color-data-neg);
+  --el-color-danger: var(--color-red);
+  --el-color-info: var(--color-indigo);
+  
+  --el-bg-color: var(--bg-main);
+  --el-bg-color-page: var(--bg-main);
+  --el-bg-color-overlay: var(--bg-card);
+  
+  --el-text-color-primary: var(--text-primary);
+  --el-text-color-regular: var(--text-muted);
+  --el-text-color-secondary: var(--text-disabled);
+  --el-text-color-placeholder: var(--text-disabled);
+  
+  --el-border-color: var(--border-light);
+  --el-border-color-light: var(--border-light);
+  --el-border-color-lighter: rgba(255, 255, 255, 0.05);
+  --el-border-color-extra-light: rgba(255, 255, 255, 0.02);
+  
+  --el-fill-color: rgba(255, 255, 255, 0.05);
+  --el-fill-color-light: rgba(255, 255, 255, 0.03);
+  --el-fill-color-lighter: rgba(255, 255, 255, 0.02);
+  --el-fill-color-blank: transparent;
+  
+  --el-mask-color: rgba(0, 0, 0, 0.8);
+  
+  /* Input specific overrides */
+  --el-input-bg-color: rgba(255, 255, 255, 0.03);
+  --el-input-border-color: var(--border-light);
+  --el-input-hover-border-color: var(--color-gold);
+  --el-input-focus-border-color: var(--color-gold);
+  --el-input-text-color: var(--text-primary);
+  
+  /* DatePicker specific */
+  --el-datepicker-icon-color: var(--text-muted);
+  --el-datepicker-active-color: var(--color-gold);
+  --el-datepicker-hover-text-color: var(--color-gold);
+  
+  /* Select specific */
+  --el-select-input-color: var(--text-primary);
+  --el-select-input-focus-border-color: var(--color-gold);
+  
+  /* Button specific */
+  --el-button-bg-color: rgba(255, 255, 255, 0.05);
+  --el-button-border-color: var(--border-light);
+  --el-button-text-color: var(--text-primary);
+  --el-button-hover-text-color: var(--color-gold);
+  --el-button-hover-bg-color: rgba(255, 255, 255, 0.1);
+  --el-button-hover-border-color: var(--color-gold);
+}
+
+/* Global Utilities */
+html, body {
+  background: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.6;
+}
+
+/* Date Picker & Popper Overrides */
+.el-picker-panel,
+.el-date-range-picker,
+.el-time-panel,
+.el-cascader-panel,
+.el-select-dropdown,
+.el-dropdown-menu {
+  background: var(--glass-mask) !important;
+  backdrop-filter: blur(24px) !important;
+  border: 1px solid var(--border-light) !important;
+  box-shadow: var(--shadow-card) !important;
+  color: var(--text-primary) !important;
+}
+
+.el-picker-panel__footer {
+  background: transparent !important;
+  border-top: 1px solid var(--border-light) !important;
+}
+
+.el-date-table td.today span {
+  color: var(--color-gold) !important;
+  font-weight: bold;
+}
+
+.el-date-table td.current:not(.disabled) span {
+  background-color: var(--color-gold) !important;
+  color: #000 !important;
+}
+
+.el-date-table td:hover {
+  color: var(--color-gold) !important;
+}
+
+.el-picker-panel__icon-btn {
+  color: var(--text-muted) !important;
+}
+
+.el-picker-panel__icon-btn:hover {
+  color: var(--color-gold) !important;
+}
+
+.el-input__wrapper {
+  background-color: var(--el-input-bg-color) !important;
+}
+
+/* Dialog Overrides */
+.el-dialog {
+  background: var(--bg-card) !important; /* Nebula Grey */
+  border: 1px solid var(--border-light) !important;
+  box-shadow: var(--shadow-card) !important;
+  backdrop-filter: blur(20px);
+  --el-dialog-bg-color: transparent !important; /* Let custom background show */
+}
+
+.el-dialog__title {
+  color: var(--text-primary) !important;
+  font-family: var(--font-sans);
+  font-weight: 600;
+}
+
+.el-dialog__body {
+  color: var(--text-muted) !important;
+}
+
+.el-dialog__headerbtn .el-dialog__close {
+  color: var(--text-muted) !important;
+}
+
+.el-dialog__headerbtn:hover .el-dialog__close {
+  color: var(--color-gold) !important;
+}
