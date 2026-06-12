@@ -167,6 +167,99 @@ export interface LifeReport {
     }>;
     [key: string]: any;
   } | null;
+  advanced_patterns?: {
+    summary?: string;
+    house_rulers?: Array<{
+      house: number;
+      title: string;
+      sign: string;
+      sign_label?: string;
+      ruler: string;
+      ruler_label: string;
+      ruler_house: number;
+      ruler_house_title: string;
+      ruler_sign: string;
+      ruler_sign_label?: string;
+      dignity: string;
+      dignity_label?: string;
+      adult_meaning?: string;
+      notation: string;
+      line: string;
+    }>;
+    ruler_groups?: Array<{
+      ruler: string;
+      ruler_label: string;
+      houses: number[];
+      house_titles: string[];
+      notation: string;
+      line: string;
+      ruler_house: number;
+      ruler_house_title: string;
+      ruler_sign: string;
+      ruler_sign_label?: string;
+      dignity: string;
+      dignity_label?: string;
+    }>;
+    reception_groups?: Array<{
+      receiver: string;
+      receiver_label: string;
+      receiver_house: number;
+      receiver_house_title: string;
+      receiver_sign: string;
+      receiver_sign_label?: string;
+      guests: Array<{
+        planet: string;
+        label: string;
+        house: number;
+        house_title: string;
+        sign: string;
+        sign_label?: string;
+      }>;
+      line: string;
+      summary: string;
+    }>;
+    mutual_receptions?: Array<{
+      pair: string[];
+      labels: string[];
+      line: string;
+      summary: string;
+    }>;
+    derived_houses?: Array<{
+      base_house: number;
+      base_label: string;
+      summary: string;
+      links: Array<{
+        label: string;
+        derived_house: number;
+        radical_house: number;
+        title: string;
+        adult_meaning?: string;
+        line: string;
+        ruler_line: string;
+      }>;
+    }>;
+    core_threads?: Array<{
+      house: number;
+      title: string;
+      summary: string;
+      points: string[];
+    }>;
+    pattern_readings?: Array<{
+      key: string;
+      title: string;
+      summary: string;
+      evidence: string[];
+      points: string[];
+    }>;
+    case_themes?: Array<{
+      key: string;
+      title: string;
+      summary: string;
+      evidence: string[];
+      points: string[];
+    }>;
+    [key: string]: any;
+  } | null;
   timeline_validation?: {
     mode?: string;
     title?: string;

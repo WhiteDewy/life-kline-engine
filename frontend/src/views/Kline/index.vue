@@ -85,8 +85,8 @@
           <article class="metricCard">
             <div class="metricLabel">当前主运</div>
             <div class="metricValue">
-              {{ mapPlanet(currentPhase?.major_lord) }}
-              <span class="metricSub">/ {{ mapPlanet(currentPhase?.sub_lord) || "无子运" }}</span>
+              {{ phaseLeadText }}
+              <span class="metricSub" v-if="phaseSubText">/ {{ phaseSubText }}</span>
             </div>
             <div class="metricHint">
               {{ currentPhase ? "这段时间最明显的人生主题" : "历史样例以人生节点校验替代实时阶段" }}
@@ -108,6 +108,8 @@
 
         <NatalChartPanel :natal-chart="natalChart" />
         <NatalBlueprintPanel :blueprint="natalBlueprint" />
+        <AdvancedPatternsPanel :advanced-patterns="advancedPatterns" />
+        <CaseThemesPanel :advanced-patterns="advancedPatterns" />
         <TimelineValidationPanel :timeline="timelineValidation" />
 
         <section class="insightGrid">
@@ -311,9 +313,11 @@ import { apiClient } from "@/config/api";
 import { FEATURED_NATAL_EXAMPLE } from "@/config/examples";
 import { getAnalysisByKey } from "@/utils/analysis";
 import type { AnalysisDefinition, AnalysisResponse, DomainPoint, LifeReport } from "@/utils/types";
+import AdvancedPatternsPanel from "./components/AdvancedPatternsPanel.vue";
 import FirdariaTable from "./components/FirdariaTable.vue";
 import LifeDomainsChart from "./components/LifeDomainsChart.vue";
 import LifeStructureChart from "./components/LifeStructureChart.vue";
+import CaseThemesPanel from "./components/CaseThemesPanel.vue";
 import NatalChartPanel from "./components/NatalChartPanel.vue";
 import NatalBlueprintPanel from "./components/NatalBlueprintPanel.vue";
 import TimelineValidationPanel from "./components/TimelineValidationPanel.vue";
@@ -330,7 +334,17 @@ const natalChart = computed(() => report.value?.natal_chart ?? null);
 const currentPhase = computed(() => report.value?.current_phase ?? null);
 const lifeModel = computed(() => report.value?.life_model ?? null);
 const natalBlueprint = computed(() => report.value?.natal_blueprint ?? null);
+const advancedPatterns = computed(() => report.value?.advanced_patterns ?? null);
 const timelineValidation = computed(() => report.value?.timeline_validation ?? null);
+const phaseLeadText = computed(() => {
+  if (currentPhase.value) return mapPlanet(currentPhase.value.major_lord) || "-";
+  if (timelineValidation.value?.events?.length) return "历史样例";
+  return "-";
+});
+const phaseSubText = computed(() => {
+  if (!currentPhase.value) return "";
+  return mapPlanet(currentPhase.value.sub_lord) || "无子运";
+});
 
 const PLANET_LABELS: Record<string, string> = {
   SUN: "太阳",

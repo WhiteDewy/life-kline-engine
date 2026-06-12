@@ -329,7 +329,7 @@ class LifeKlineService:
         output_data: Dict[str, Any] = {
             "meta": {
                 "generated_at": datetime.now().isoformat(),
-                "engine_version": "2.1.0",
+                "engine_version": "2.3.0",
             },
             "user_info": {
                 "birth_time_local": birth_time_local.isoformat(),
@@ -366,6 +366,13 @@ class LifeKlineService:
             natal_chart=natal_chart,
             planet_profiles=planet_profiles,
         )
+        advanced_patterns = self._build_advanced_patterns(
+            birth_time_iso=birth_time_iso,
+            lat=lat,
+            lon=lon,
+            natal_chart=natal_chart,
+            planet_profiles=planet_profiles,
+        )
         timeline_validation = self._build_timeline_validation(
             birth_time_iso=birth_time_iso,
             birth_time_local=birth_time_local,
@@ -378,6 +385,7 @@ class LifeKlineService:
         output_data["current_phase"] = current_phase
         output_data["life_model"] = life_model
         output_data["natal_blueprint"] = natal_blueprint
+        output_data["advanced_patterns"] = advanced_patterns
         output_data["timeline_validation"] = timeline_validation
         return output_data
 
@@ -1255,6 +1263,787 @@ class LifeKlineService:
             "summary": "这个案例不看“你现在在哪一段”，而是用已知人生事件反推命盘结构和阶段逻辑是否成立。",
             "events": events,
         }
+
+    def _build_advanced_patterns(
+        self,
+        birth_time_iso: str,
+        lat: float,
+        lon: float,
+        natal_chart: Dict[str, Any],
+        planet_profiles: Dict[Planet, Dict[str, Any]],
+    ) -> Dict[str, Any]:
+        house_rulers = self._build_house_ruler_map(natal_chart, planet_profiles)
+        ruler_groups = self._build_ruler_groups(house_rulers, planet_profiles)
+        core_threads = self._build_core_threads(house_rulers)
+        reception_groups = self._build_reception_groups(planet_profiles)
+        mutual_receptions = self._build_mutual_receptions(planet_profiles)
+        derived_houses = self._build_derived_house_profiles(house_rulers)
+        pattern_readings = self._build_pattern_readings(
+            house_rulers=house_rulers,
+            ruler_groups=ruler_groups,
+            reception_groups=reception_groups,
+            mutual_receptions=mutual_receptions,
+            derived_houses=derived_houses,
+            planet_profiles=planet_profiles,
+        )
+        case_themes: list[Dict[str, Any]] = []
+
+        if self._is_huang_jinrong_sample(birth_time_iso, lat, lon):
+            case_themes = self._build_huang_jinrong_case_themes(
+                natal_chart=natal_chart,
+                planet_profiles=planet_profiles,
+                house_rulers=house_rulers,
+                ruler_groups=ruler_groups,
+                reception_groups=reception_groups,
+                derived_houses=derived_houses,
+            )
+
+        return {
+            "summary": "把几宫主飞几宫、同一行星统领哪些宫位，先拆成规则层，再进入现实语言解释。",
+            "house_rulers": house_rulers,
+            "ruler_groups": ruler_groups,
+            "reception_groups": reception_groups,
+            "mutual_receptions": mutual_receptions,
+            "derived_houses": derived_houses,
+            "core_threads": core_threads,
+            "pattern_readings": pattern_readings,
+            "case_themes": case_themes,
+        }
+
+    def _build_house_ruler_map(
+        self,
+        natal_chart: Dict[str, Any],
+        planet_profiles: Dict[Planet, Dict[str, Any]],
+    ) -> list[Dict[str, Any]]:
+        houses = natal_chart.get("houses", [])
+        results: list[Dict[str, Any]] = []
+
+        for item in houses:
+            try:
+                sign = Sign(item["sign"])
+                ruler = SIGN_RULERS[sign]
+            except Exception:
+                continue
+
+            profile = planet_profiles.get(ruler)
+            if not profile:
+                continue
+
+            results.append(
+                {
+                    "house": item["house"],
+                    "title": item["title"],
+                    "sign": item["sign"],
+                    "sign_label": item.get("sign_label") or sign_label(sign),
+                    "ruler": ruler.value,
+                    "ruler_label": planet_label(ruler),
+                    "ruler_house": profile["house"],
+                    "ruler_house_title": profile["house_title"],
+                    "ruler_sign": profile["sign"],
+                    "ruler_sign_label": profile["sign_label"],
+                    "dignity": profile["dignity"],
+                    "dignity_label": profile["dignity_label"],
+                    "adult_meaning": HOUSE_ADULT_MEANINGS.get(item["house"], {}).get("adult", item["title"]),
+                    "notation": f"{item['house']}R",
+                    "line": f"{item['house']}R {planet_label(ruler)}飞{profile['house']}宫",
+                }
+            )
+        return results
+
+    def _build_ruler_groups(
+        self,
+        house_rulers: list[Dict[str, Any]],
+        planet_profiles: Dict[Planet, Dict[str, Any]],
+    ) -> list[Dict[str, Any]]:
+        grouped: Dict[str, list[Dict[str, Any]]] = {}
+        for item in house_rulers:
+            grouped.setdefault(item["ruler"], []).append(item)
+
+        results: list[Dict[str, Any]] = []
+        for ruler_value, items in grouped.items():
+            items.sort(key=lambda value: value["house"])
+            try:
+                profile = planet_profiles.get(Planet(ruler_value))
+            except Exception:
+                profile = None
+            if not profile:
+                continue
+
+            house_numbers = [item["house"] for item in items]
+            notation = "/".join(f"{house}R" for house in house_numbers)
+            results.append(
+                {
+                    "ruler": ruler_value,
+                    "ruler_label": items[0]["ruler_label"],
+                    "houses": house_numbers,
+                    "house_titles": [item["title"] for item in items],
+                    "notation": notation,
+                    "line": f"{notation} {items[0]['ruler_label']}飞{profile['house']}宫",
+                    "ruler_house": profile["house"],
+                    "ruler_house_title": profile["house_title"],
+                    "ruler_sign": profile["sign"],
+                    "ruler_sign_label": profile["sign_label"],
+                    "dignity": profile["dignity"],
+                    "dignity_label": profile["dignity_label"],
+                }
+            )
+
+        results.sort(key=lambda value: min(value["houses"]) if value["houses"] else 99)
+        return results
+
+    def _build_core_threads(self, house_rulers: list[Dict[str, Any]]) -> list[Dict[str, Any]]:
+        selected_houses = [1, 2, 3, 7, 10, 12]
+        selected_map = {item["house"]: item for item in house_rulers}
+        threads: list[Dict[str, Any]] = []
+
+        for house in selected_houses:
+            item = selected_map.get(house)
+            if not item:
+                continue
+
+            threads.append(
+                {
+                    "house": house,
+                    "title": f"{item['notation']} {item['ruler_label']}飞{item['ruler_house']}宫",
+                    "summary": (
+                        f"{item['title']}不会停留在抽象层，而会通过{item['ruler_house_title']}显形。"
+                    ),
+                    "points": [
+                        f"{item['title']}的成人社会义是：{item['adult_meaning']}。",
+                        f"宫主{item['ruler_label']}落在第{item['ruler_house']}宫 {item['ruler_house_title']}，所以这条线会通过具体场景运作。",
+                        f"先天状态为{item['dignity_label']}，这会影响这条线是顺手放大，还是带着代价运作。",
+                    ],
+                }
+            )
+        return threads
+
+    def _build_reception_groups(
+        self,
+        planet_profiles: Dict[Planet, Dict[str, Any]],
+    ) -> list[Dict[str, Any]]:
+        grouped: Dict[Planet, list[Dict[str, Any]]] = {}
+
+        for planet, profile in planet_profiles.items():
+            try:
+                guest_sign = Sign(profile["sign"])
+                receiver = SIGN_RULERS[guest_sign]
+            except Exception:
+                continue
+
+            if receiver == planet:
+                continue
+
+            grouped.setdefault(receiver, []).append(
+                {
+                    "planet": planet.value,
+                    "label": profile["label"],
+                    "house": profile["house"],
+                    "house_title": profile["house_title"],
+                    "sign": profile["sign"],
+                    "sign_label": profile["sign_label"],
+                }
+            )
+
+        results: list[Dict[str, Any]] = []
+        for receiver, guests in grouped.items():
+            receiver_profile = planet_profiles.get(receiver)
+            if not receiver_profile:
+                continue
+
+            guest_labels = [item["label"] for item in guests]
+            results.append(
+                {
+                    "receiver": receiver.value,
+                    "receiver_label": planet_label(receiver),
+                    "receiver_house": receiver_profile["house"],
+                    "receiver_house_title": receiver_profile["house_title"],
+                    "receiver_sign": receiver_profile["sign"],
+                    "receiver_sign_label": receiver_profile["sign_label"],
+                    "guests": guests,
+                    "line": f"{planet_label(receiver)}接纳{'/'.join(guest_labels)}",
+                    "summary": (
+                        f"{planet_label(receiver)}会接住落在其守护星座内的议题，"
+                        f"并把它们带到第{receiver_profile['house']}宫 {receiver_profile['house_title']}去运作。"
+                    ),
+                }
+            )
+
+        results.sort(key=lambda item: (-len(item["guests"]), item["receiver_label"]))
+        return results
+
+    def _build_mutual_receptions(
+        self,
+        planet_profiles: Dict[Planet, Dict[str, Any]],
+    ) -> list[Dict[str, Any]]:
+        results: list[Dict[str, Any]] = []
+        seen: set[tuple[str, str]] = set()
+        planets = list(planet_profiles.keys())
+
+        for planet_a in planets:
+            profile_a = planet_profiles.get(planet_a)
+            if not profile_a:
+                continue
+            try:
+                ruler_of_a = SIGN_RULERS[Sign(profile_a["sign"])]
+            except Exception:
+                continue
+
+            for planet_b in planets:
+                if planet_a == planet_b:
+                    continue
+                profile_b = planet_profiles.get(planet_b)
+                if not profile_b:
+                    continue
+                try:
+                    ruler_of_b = SIGN_RULERS[Sign(profile_b["sign"])]
+                except Exception:
+                    continue
+
+                if ruler_of_a != planet_b or ruler_of_b != planet_a:
+                    continue
+
+                key = tuple(sorted([planet_a.value, planet_b.value]))
+                if key in seen:
+                    continue
+                seen.add(key)
+
+                results.append(
+                    {
+                        "pair": [planet_a.value, planet_b.value],
+                        "labels": [planet_label(planet_a), planet_label(planet_b)],
+                        "line": f"{planet_label(planet_a)} 与 {planet_label(planet_b)} 互溶",
+                        "summary": (
+                            f"{planet_label(planet_a)}与{planet_label(planet_b)}互相进入对方守护的星座，"
+                            "意味着这两条线会互相借力。"
+                        ),
+                    }
+                )
+
+        return results
+
+    def _build_derived_house_profiles(
+        self,
+        house_rulers: list[Dict[str, Any]],
+    ) -> list[Dict[str, Any]]:
+        house_map = {item["house"]: item for item in house_rulers}
+        configs = [
+            {
+                "base_house": 7,
+                "base_label": "伴侣",
+                "checks": [
+                    (1, "伴侣本人"),
+                    (2, "伴侣的钱财"),
+                    (9, "伴侣的信念"),
+                    (10, "伴侣的事业"),
+                    (12, "伴侣的隐藏代价"),
+                ],
+            },
+            {
+                "base_house": 10,
+                "base_label": "事业",
+                "checks": [
+                    (1, "事业本身"),
+                    (2, "事业的钱"),
+                    (7, "事业的合作/对手"),
+                    (12, "事业的隐性代价"),
+                ],
+            },
+            {
+                "base_house": 2,
+                "base_label": "财富",
+                "checks": [
+                    (1, "财富本身"),
+                    (5, "财富的投机与扩张"),
+                    (7, "财富的合作绑定"),
+                    (12, "财富的隐形代价"),
+                ],
+            },
+        ]
+
+        results: list[Dict[str, Any]] = []
+        for config in configs:
+            links: list[Dict[str, Any]] = []
+            for derived_house, label in config["checks"]:
+                radical_house = self._turned_house(config["base_house"], derived_house)
+                target = house_map.get(radical_house)
+                if not target:
+                    continue
+
+                links.append(
+                    {
+                        "label": label,
+                        "derived_house": derived_house,
+                        "radical_house": radical_house,
+                        "title": target["title"],
+                        "adult_meaning": target["adult_meaning"],
+                        "line": f"{label}看本盘第{radical_house}宫",
+                        "ruler_line": target["line"],
+                    }
+                )
+
+            results.append(
+                {
+                    "base_house": config["base_house"],
+                    "base_label": config["base_label"],
+                    "summary": (
+                        f"转宫不是单看{config['base_label']}宫位本身，"
+                        f"还要看围绕{config['base_label']}展开的信念、事业、资源与隐藏代价。"
+                    ),
+                    "links": links,
+                }
+            )
+
+        return results
+
+    def _turned_house(self, base_house: int, derived_house: int) -> int:
+        return ((base_house + derived_house - 2) % 12) + 1
+
+    def _build_pattern_readings(
+        self,
+        house_rulers: list[Dict[str, Any]],
+        ruler_groups: list[Dict[str, Any]],
+        reception_groups: list[Dict[str, Any]],
+        mutual_receptions: list[Dict[str, Any]],
+        derived_houses: list[Dict[str, Any]],
+        planet_profiles: Dict[Planet, Dict[str, Any]],
+    ) -> list[Dict[str, Any]]:
+        house_map = {item["house"]: item for item in house_rulers}
+        group_map = {item["ruler"]: item for item in ruler_groups}
+        reception_map = {item["receiver"]: item for item in reception_groups}
+        derived_map = {item["base_house"]: item for item in derived_houses}
+        cards: list[Dict[str, Any]] = []
+
+        identity = house_map.get(1)
+        career = house_map.get(10)
+        if identity and career:
+            identity_profile = self._planet_profile_by_value(planet_profiles, identity["ruler"])
+            same_ruler = identity["ruler"] == career["ruler"]
+            identity_reception = reception_map.get(identity["ruler"])
+
+            evidence = [identity["line"], career["line"]]
+            if same_ruler:
+                group = group_map.get(identity["ruler"])
+                if group:
+                    evidence.append(group["line"])
+            if identity_reception:
+                evidence.append(identity_reception["line"])
+            if identity_profile:
+                evidence.append(f"{identity['ruler_label']}{identity_profile['dignity_label']}")
+
+            points = [
+                f"1宫主 {identity['ruler_label']} 落在第{identity['ruler_house']}宫 {identity['ruler_house_title']}，说明你本人会通过这类现实场景被定义。",
+                f"10宫主 {career['ruler_label']} 落在第{career['ruler_house']}宫 {career['ruler_house_title']}，事业和公开位置会顺着这条线被社会看见。",
+                (
+                    "1宫和10宫由同一颗星统领，个人风格、职业路径与社会身份天然绑在一起。"
+                    if same_ruler
+                    else "1宫和10宫分属不同主星，说明“你是谁”和“你如何成事”需要两套方法协同。"
+                ),
+            ]
+            if identity_profile:
+                points.append(
+                    f"{identity['ruler_label']}先天状态为{identity_profile['dignity_label']}，"
+                    f"{self._dignity_flow_text(identity_profile['dignity'])}"
+                )
+            if identity_reception:
+                guest_topics = self._format_reception_topics(identity_reception, group_map)
+                points.append(
+                    f"{identity['ruler_label']}还接住了{guest_topics}这些课题，命主线不会只处理自我，还会把更多宫位议题一起卷进现实。"
+                )
+
+            cards.append(
+                {
+                    "key": "core_axis",
+                    "title": "命主线与事业线",
+                    "summary": (
+                        "这张盘先看 1宫主 怎么落地，再看 10宫主 怎么显化。"
+                        "它决定了命主是把自己活成事业，还是需要先分清人设与职业。"
+                    ),
+                    "evidence": self._unique_strings(evidence),
+                    "points": points,
+                }
+            )
+
+        alliance = house_map.get(7)
+        spouse_profile = derived_map.get(7)
+        if alliance:
+            alliance_profile = self._planet_profile_by_value(planet_profiles, alliance["ruler"])
+            alliance_reception = reception_map.get(alliance["ruler"])
+            spouse_links = {item["derived_house"]: item for item in spouse_profile.get("links", [])} if spouse_profile else {}
+
+            evidence = [alliance["line"]]
+            if alliance_reception:
+                evidence.append(alliance_reception["line"])
+            for derived_house in (1, 9, 10):
+                link = spouse_links.get(derived_house)
+                if link:
+                    evidence.append(link["line"])
+
+            points = [
+                f"7宫主 {alliance['ruler_label']} 落在第{alliance['ruler_house']}宫 {alliance['ruler_house_title']}，伴侣、合作、贵人和公开对手会通过这类场景进入命运。",
+                "7宫不只讲婚姻，也讲你会通过哪类人进入更大的系统、平台和资源网络。",
+            ]
+            if alliance_profile:
+                points.append(
+                    f"7宫主先天状态为{alliance_profile['dignity_label']}，"
+                    f"{self._dignity_flow_text(alliance_profile['dignity'])}"
+                )
+            if alliance_reception:
+                guest_topics = self._format_reception_topics(alliance_reception, group_map)
+                points.append(
+                    f"{alliance['ruler_label']}接纳了{guest_topics}，说明联盟关系不会只带来感情或合约，也会连带更多资源和任务一起进场。"
+                )
+            if spouse_links:
+                partner_self = spouse_links.get(1)
+                partner_belief = spouse_links.get(9)
+                partner_career = spouse_links.get(10)
+                details: list[str] = []
+                if partner_self:
+                    details.append(f"伴侣本人看本盘第{partner_self['radical_house']}宫")
+                if partner_belief:
+                    details.append(f"伴侣的信念看本盘第{partner_belief['radical_house']}宫")
+                if partner_career:
+                    details.append(f"伴侣的事业看本盘第{partner_career['radical_house']}宫")
+                if details:
+                    points.append(f"转宫继续展开时，{'；'.join(details)}，所以这类关系会深度卷入你的现实结构。")
+
+            cards.append(
+                {
+                    "key": "alliance_axis",
+                    "title": "7宫助力与联盟入口",
+                    "summary": "7宫决定你如何借别人上桌。对很多盘来说，真正的抬升并不来自单打独斗，而来自伴侣、合作、贵人和对手。",
+                    "evidence": self._unique_strings(evidence),
+                    "points": points,
+                }
+            )
+
+        wealth = house_map.get(2)
+        speculative = house_map.get(5)
+        shared = house_map.get(8)
+        wealth_profile = derived_map.get(2)
+        if wealth and speculative and shared:
+            wealth_planet = self._planet_profile_by_value(planet_profiles, wealth["ruler"])
+            evidence = [wealth["line"], speculative["line"], shared["line"]]
+            if wealth_planet:
+                evidence.append(f"{wealth['ruler_label']}{wealth_planet['dignity_label']}")
+            if wealth_profile:
+                wealth_links = {item["derived_house"]: item for item in wealth_profile.get("links", [])}
+                for derived_house in (5, 7, 12):
+                    link = wealth_links.get(derived_house)
+                    if link:
+                        evidence.append(link["line"])
+
+            points = [
+                f"2宫主 {wealth['ruler_label']} 落在第{wealth['ruler_house']}宫 {wealth['ruler_house_title']}，说明你的钱会通过这类场景进入和流动。",
+                f"5宫主 {speculative['ruler_label']} 落在第{speculative['ruler_house']}宫 {speculative['ruler_house_title']}，投机、创作、名气或让人上头的东西怎么参与财富，会看这条线。",
+                f"8宫主 {shared['ruler_label']} 落在第{shared['ruler_house']}宫 {shared['ruler_house_title']}，共享资源、债务、利益绑定与灰度成本也会从这里进入。",
+            ]
+            if wealth_planet:
+                points.append(
+                    f"2宫主先天状态为{wealth_planet['dignity_label']}，"
+                    f"{self._dignity_flow_text(wealth_planet['dignity'])}"
+                )
+            if alliance and wealth["ruler"] == alliance["ruler"]:
+                points.append("2宫与7宫同主，钱和伴侣、合作、客户、契约的绑定度通常比较高。")
+            if career and wealth["ruler"] == career["ruler"]:
+                points.append("2宫与10宫同主，财富和事业往往是同一条路，能不能赚到钱取决于能不能把职业位置做成资源入口。")
+
+            cards.append(
+                {
+                    "key": "wealth_axis",
+                    "title": "财富结构",
+                    "summary": "财路不只看 2宫。真正的财富结构要同时看 2宫的变现能力、5宫的扩张方式、8宫的绑定与代价。",
+                    "evidence": self._unique_strings(evidence),
+                    "points": points,
+                }
+            )
+
+        if spouse_profile and alliance:
+            spouse_links = {item["derived_house"]: item for item in spouse_profile.get("links", [])}
+            evidence = [alliance["line"]]
+            for derived_house in (1, 2, 9, 10, 12):
+                link = spouse_links.get(derived_house)
+                if link:
+                    evidence.append(link["line"])
+
+            points = []
+            for derived_house in (1, 2, 9, 10, 12):
+                link = spouse_links.get(derived_house)
+                if not link:
+                    continue
+                points.append(
+                    f"{link['label']}看本盘第{link['radical_house']}宫 {link['title']}，说明这段关系会把“{link['adult_meaning']}”这类现实议题带进来。"
+                )
+            points.append("所以 7宫不是单看对象性格，而是看你最容易通过哪类人形成稳定的借力、绑定与代价。")
+
+            cards.append(
+                {
+                    "key": "partner_profile",
+                    "title": "伴侣/合作方画像",
+                    "summary": "转宫的价值，在于把“对象本人、对象的钱、对象的信念、对象的事业、对象的隐性代价”拆开看，而不是把7宫压扁成单一情感标签。",
+                    "evidence": self._unique_strings(evidence),
+                    "points": points,
+                }
+            )
+
+        hidden = house_map.get(12)
+        if hidden:
+            hidden_profile = self._planet_profile_by_value(planet_profiles, hidden["ruler"])
+            hidden_reception = reception_map.get(hidden["ruler"])
+            related_mutuals = [
+                item["line"]
+                for item in mutual_receptions
+                if hidden["ruler"] in item.get("pair", [])
+            ]
+            evidence = [hidden["line"]]
+            if shared:
+                evidence.append(shared["line"])
+            if hidden_reception:
+                evidence.append(hidden_reception["line"])
+            evidence.extend(related_mutuals[:2])
+
+            shared_axes: list[str] = []
+            for house in (1, 7, 10):
+                item = house_map.get(house)
+                if item and item["ruler"] == hidden["ruler"] and house != 12:
+                    shared_axes.append(f"{house}宫")
+
+            points = [
+                f"12宫主 {hidden['ruler_label']} 落在第{hidden['ruler_house']}宫 {hidden['ruler_house_title']}，幕后运作、隐线压力、清算与收束会通过这里出现。",
+            ]
+            if hidden_profile:
+                points.append(
+                    f"12宫主先天状态为{hidden_profile['dignity_label']}，"
+                    f"{self._dignity_flow_text(hidden_profile['dignity'])}"
+                )
+            if shared_axes:
+                points.append(f"12宫主同时还统领{self._format_house_number_list(shared_axes)}，说明明线课题和幕后代价是绑在一起的。")
+            if hidden_reception:
+                guest_topics = self._format_reception_topics(hidden_reception, group_map)
+                points.append(f"{hidden['ruler_label']}还接纳了{guest_topics}，所以台面下的问题不会孤立存在，而会和更多生活领域连成系统。")
+            if related_mutuals:
+                points.append("一旦12宫主参与互溶，往往代表明线与暗线会互相借力，也意味着后期更难完全切割代价。")
+
+            cards.append(
+                {
+                    "key": "hidden_cost",
+                    "title": "幕后结构与后期代价",
+                    "summary": "12宫不是一句“潜意识”就能带过。它更像台面下的系统、收尾机制、隐形敌人，以及后期要被回收的代价。",
+                    "evidence": self._unique_strings(evidence),
+                    "points": points,
+                }
+            )
+
+        return cards
+
+    def _planet_profile_by_value(
+        self,
+        planet_profiles: Dict[Planet, Dict[str, Any]],
+        planet_value: str,
+    ) -> Optional[Dict[str, Any]]:
+        try:
+            return planet_profiles.get(Planet(planet_value))
+        except Exception:
+            return None
+
+    def _format_reception_topics(
+        self,
+        reception_group: Dict[str, Any],
+        group_map: Dict[str, Dict[str, Any]],
+    ) -> str:
+        topics: list[str] = []
+        for guest in reception_group.get("guests", []):
+            group = group_map.get(guest["planet"])
+            topics.append(group["notation"] if group else guest["label"])
+        unique_topics = self._unique_strings(topics)
+        return "、".join(unique_topics[:4]) if unique_topics else "其他宫位课题"
+
+    def _dignity_flow_text(self, dignity_code: str) -> str:
+        mapping = {
+            "domicile": "这条线比较稳，做起来更像顺手放大。",
+            "exaltation": "这条线容易被放大和看见，但也更容易被寄予高期待。",
+            "peregrine": "这条线更依赖后天环境、方法和所处平台来定胜负。",
+            "detriment": "这条线能成事，但常常要靠失衡、代价或绕路来推进。",
+            "fall": "这条线先天吃力，往往需要托举、补位或付出明显代价。",
+        }
+        return mapping.get(dignity_code, "这条线需要放回具体环境里判断。")
+
+    def _unique_strings(self, values: Iterable[str]) -> list[str]:
+        results: list[str] = []
+        seen: set[str] = set()
+        for item in values:
+            if not item or item in seen:
+                continue
+            seen.add(item)
+            results.append(item)
+        return results
+
+    def _format_house_number_list(self, values: Iterable[str]) -> str:
+        items = [item for item in values if item]
+        if not items:
+            return ""
+        if len(items) == 1:
+            return items[0]
+        return "、".join(items[:-1]) + "和" + items[-1]
+
+    def _build_huang_jinrong_case_themes(
+        self,
+        natal_chart: Dict[str, Any],
+        planet_profiles: Dict[Planet, Dict[str, Any]],
+        house_rulers: list[Dict[str, Any]],
+        ruler_groups: list[Dict[str, Any]],
+        reception_groups: list[Dict[str, Any]],
+        derived_houses: list[Dict[str, Any]],
+    ) -> list[Dict[str, Any]]:
+        group_map = {item["ruler"]: item for item in ruler_groups}
+        reception_map = {item["receiver"]: item for item in reception_groups}
+        spouse_profile = derived_houses[0] if derived_houses else None
+
+        mercury_group = group_map.get(Planet.MERCURY.value)
+        jupiter_group = group_map.get(Planet.JUPITER.value)
+        venus_group = group_map.get(Planet.VENUS.value)
+        saturn_group = group_map.get(Planet.SATURN.value)
+        mars_group = group_map.get(Planet.MARS.value)
+        moon_group = group_map.get(Planet.MOON.value)
+        sun_group = group_map.get(Planet.SUN.value)
+
+        mercury_profile = planet_profiles.get(Planet.MERCURY, {})
+        venus_profile = planet_profiles.get(Planet.VENUS, {})
+        mars_profile = planet_profiles.get(Planet.MARS, {})
+
+        return [
+            {
+                "key": "nobility",
+                "title": "得贵格局",
+                "summary": "先天不是轻松命，后天靠7宫木星与联盟结构托举上位，属于典型的后天得贵。",
+                "evidence": [
+                    mercury_group["line"] if mercury_group else "1R/10R 水星飞3宫",
+                    jupiter_group["line"] if jupiter_group else "4R/7R 木星飞7宫",
+                    sun_group["line"] if sun_group else "12R 太阳飞3宫",
+                    reception_map.get(Planet.JUPITER.value, {}).get("line", "木星接纳太阳/水星/土星"),
+                    f"水星{mercury_profile.get('dignity_label', '失势')}" if mercury_profile else "水星失势",
+                ],
+                "points": [
+                    "命主水星既主1宫也主10宫，却落在3宫且先天失势，说明不是门第型、清望型的轻松贵命。",
+                    "真正的抬升点来自7宫木星：贵气不是自己天然带来的，而是通过贵人、伴侣、联盟和更大的制度平台后天形成。",
+                    "木星把落在自己星座里的太阳、水星、土星接住，再把这些议题带去7宫运作，所以得贵不是空话，而是有人托、有人带、有人接。",
+                    "这类贵不是清贵，而是势贵：先借人、借系统、借关系，后把借来的势做成自己的位置。",
+                ],
+            },
+            {
+                "key": "seventh_house_support",
+                "title": "7宫助力",
+                "summary": "7宫不是单纯婚姻，而是最强的托举口。伴侣、贵人、兄弟网络都会从这里进来。",
+                "evidence": [
+                    jupiter_group["line"] if jupiter_group else "4R/7R 木星飞7宫",
+                    saturn_group["line"] if saturn_group else "5R/6R 土星飞3宫",
+                    moon_group["line"] if moon_group else "11R 月亮飞3宫",
+                    mercury_group["line"] if mercury_group else "10R 水星飞3宫",
+                    spouse_profile["links"][2]["line"] if spouse_profile and len(spouse_profile["links"]) > 2 else "伴侣的信念看本盘第3宫",
+                ],
+                "points": [
+                    "7R 木星飞7，本身就说明伴侣、盟友、保护关系、门生网络是成事入口，不只是情感配置。",
+                    "7宫木星不只接住命主，也间接带动事业宫，所以伴侣和联盟对事业抬升有实质帮助。",
+                    "11宫月亮飞3宫，朋友、团队、兄弟感和信息网络连在一起，容易形成讲义气、重关系的帮会式结构。",
+                ],
+            },
+            {
+                "key": "wealth",
+                "title": "财富格局",
+                "summary": "有挣钱格局，也有大进大出的格局。能把资源做成钱，但守财和留财不强。",
+                "evidence": [
+                    venus_group["line"] if venus_group else "2R/9R 金星飞2宫",
+                    saturn_group["line"] if saturn_group else "5R/6R 土星飞3宫",
+                    mars_group["line"] if mars_group else "3R/8R 火星飞12宫",
+                    f"金星{venus_profile.get('dignity_label', '失势')}" if venus_profile else "金星失势",
+                ],
+                "points": [
+                    "2R/9R 金星飞2宫，说明他有财富嗅觉，也懂得把关系、欲望、资源和现实收益绑成钱。",
+                    "但金星先天失势，财富不是干净稳态的累积，更像大进大出、能挣但不容易真正留下。",
+                    "5R/6R 土星和 3R/8R 火星把投机财、辛苦财、暗财、灰度财连在一起，所以财路往往和技能、跑动、娱乐、地下资源有关。",
+                ],
+            },
+            {
+                "key": "dual_system",
+                "title": "黑白通吃",
+                "summary": "这张盘最大的本事，不是单一权威，而是在台面上和台面下都能运作。",
+                "evidence": [
+                    mercury_group["line"] if mercury_group else "1R/10R 水星飞3宫",
+                    mars_group["line"] if mars_group else "3R/8R 火星飞12宫",
+                    sun_group["line"] if sun_group else "12R 太阳飞3宫",
+                    "水星合土星",
+                ],
+                "points": [
+                    "1R/10R 水星飞3宫，身份与事业都靠消息、口才、名单、交通、传递、组织网络运作。",
+                    "3R/8R 火星飞12宫，说明沟通、风险、暗财、暴力和幕后操作天然有链路，不是完全分开的系统。",
+                    "12R 太阳飞3宫又让幕后资源、隐性保护和台面上的说法绑在一起，所以能同时打通黑白两面。",
+                ],
+            },
+            {
+                "key": "career",
+                "title": "事业暗线",
+                "summary": "事业不是常规体制型上升，而是信息、差事、规则边缘和联盟关系推动出来的。",
+                "evidence": [
+                    mercury_group["line"] if mercury_group else "10R 水星飞3宫",
+                    jupiter_group["line"] if jupiter_group else "7R 木星飞7宫",
+                    saturn_group["line"] if saturn_group else "6R 土星飞3宫",
+                    "木星拱土星",
+                ],
+                "points": [
+                    "10R 水星飞3宫，事业抬升不是靠纯名望，而是靠能跑、能说、能接线、能调度人和规则。",
+                    "6R 土星飞3宫说明技能、学徒、劳苦、执行力都和事业底盘绑在一起，先苦后抬升。",
+                    "7宫木星再把事业接进联盟和贵人系统，所以职业线经常不是单兵突破，而是被带着往上走。",
+                ],
+            },
+            {
+                "key": "marriage",
+                "title": "婚姻与外缘",
+                "summary": "正宫关系是托举型的，但外缘不会少，婚姻里容易出现隐藏人物与台面下关系。",
+                "evidence": [
+                    jupiter_group["line"] if jupiter_group else "7R 木星飞7宫",
+                    sun_group["line"] if sun_group else "12R 太阳飞3宫",
+                    saturn_group["line"] if saturn_group else "5R 土星飞3宫",
+                    mars_group["line"] if mars_group else "8R 火星飞12宫",
+                    spouse_profile["links"][3]["line"] if spouse_profile and len(spouse_profile["links"]) > 3 else "伴侣的事业看本盘第4宫",
+                ],
+                "points": [
+                    "7R 木星飞7先说明正宫本身有托举、包容和带平台的力量，婚姻不是完全失序的。",
+                    "但12宫不断被带进婚姻与社交链路，说明关系里会有隐藏人、暗线、看不见的外部因素。",
+                    "5宫和8宫又都牵到12宫，所以短桃花、露水关系、外面有人这类题目更像盘主自己带出来的结构性问题。",
+                ],
+            },
+            {
+                "key": "spouse_profile",
+                "title": "伴侣画像",
+                "summary": "伴侣不是弱角色，更像托举型、包容型、有理想感的人。",
+                "evidence": [
+                    jupiter_group["line"] if jupiter_group else "7R 木星飞7宫",
+                    spouse_profile["links"][0]["line"] if spouse_profile and spouse_profile["links"] else "伴侣本人看本盘第7宫",
+                    spouse_profile["links"][2]["line"] if spouse_profile and len(spouse_profile["links"]) > 2 else "伴侣的信念看本盘第3宫",
+                    spouse_profile["links"][3]["line"] if spouse_profile and len(spouse_profile["links"]) > 3 else "伴侣的事业看本盘第4宫",
+                ],
+                "points": [
+                    "7宫自己就很强，说明伴侣不是边缘人物，而是能独立成事、能提供平台的人。",
+                    "伴侣的信念看本盘第3宫，那里群星集中，说明她身上带着强烈的理念感、讲法、信念与价值判断。",
+                    "伴侣的事业与外部位置再看转宫，也能看到她并不是单纯依附型，而是具备实际托举和资源调动能力的人。",
+                ],
+            },
+            {
+                "key": "reckoning",
+                "title": "晚年清算",
+                "summary": "前半生靠幕后、暗线和制度缝隙成事，后半生也容易被这些东西反向回收。",
+                "evidence": [
+                    mars_group["line"] if mars_group else "8R 火星飞12宫",
+                    sun_group["line"] if sun_group else "12R 太阳飞3宫",
+                    mercury_group["line"] if mercury_group else "1R/10R 水星飞3宫",
+                    f"火星落{mars_profile.get('house_title', '12宫')}" if mars_profile else "火星落12宫",
+                ],
+                "points": [
+                    "12宫在这张盘里不是纯隐退，而是幕后运作、清算、监禁、隐形敌人与回收机制。",
+                    "前面那些台面下的助力，在得势时叫保护伞和资源；失势时就会变成公众评价、名单、羞辱和清算。",
+                    "所以这是典型的前半生借势，后半生回收的结构盘，晚年很难完全脱离前面留下的因果。",
+                ],
+            },
+        ]
 
     def _find_period_for_age(
         self,

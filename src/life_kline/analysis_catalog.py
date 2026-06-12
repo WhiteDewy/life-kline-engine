@@ -42,6 +42,8 @@ ANALYSIS_TYPES: List[Dict[str, Any]] = [
             "hero_overview",
             "natal_chart",
             "natal_blueprint",
+            "advanced_patterns",
+            "case_themes",
             "current_phase",
             "life_model",
             "timeline_validation",
