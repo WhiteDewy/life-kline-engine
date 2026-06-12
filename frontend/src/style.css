@@ -1,0 +1,131 @@
+:root {
+  /* Inherit from theme.css */
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: flex-start; /* Changed from center to allow scrolling */
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+#app {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left; /* Reset text align */
+}
+
+a {
+  font-weight: 500;
+  color: var(--primary);
+  text-decoration: inherit;
+}
+a:hover {
+  filter: brightness(1.2);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-sans);
+  line-height: 1.2;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: var(--card-bg);
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.25s;
+}
+button:hover {
+  border-color: var(--primary);
+  background-color: var(--card-hover);
+  color: var(--primary);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg); 
+}
+::-webkit-scrollbar-thumb {
+  background: #333; 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555; 
+}
+
+/* Global Dialog Styles - Glassmorphism */
+.el-dialog {
+  background: rgba(11, 15, 25, 0.85) !important; /* Midnight Void Glass */
+  backdrop-filter: blur(24px) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.5) !important;
+}
+
+.el-dialog__header {
+  border-bottom: 1px solid var(--border);
+  margin-right: 0 !important;
+  padding: 20px 24px !important;
+}
+
+.el-dialog__title {
+  color: var(--text) !important;
+  font-family: var(--font-sans) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em;
+}
+
+.el-dialog__body {
+  color: var(--text-secondary) !important;
+  padding: 24px !important;
+}
+
+.el-dialog__footer {
+  border-top: 1px solid var(--border);
+  padding: 16px 24px !important;
+}
+
+/* Global Element Plus Overrides for Dark Theme */
+.el-button--primary {
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #000 !important; /* Contrast text on gold */
+  font-weight: 600 !important;
+}
+.el-button--primary:hover, .el-button--primary:focus {
+  filter: brightness(1.1);
+  background-color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+.el-input__wrapper, .el-select__wrapper, .el-textarea__inner {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  box-shadow: none !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+}
+
+.el-input__wrapper.is-focus, .el-select__wrapper.is-focus {
+  box-shadow: 0 0 0 1px var(--primary) !important;
+}
+
+.el-popper.is-dark {
+  background: var(--bg) !important;
+  border: 1px solid var(--border) !important;
+}

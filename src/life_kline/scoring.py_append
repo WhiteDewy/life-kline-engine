@@ -1,0 +1,45 @@
+
+def calculate_trend_bonus(
+    firdaria_lord: Planet,
+    chart_data: ChartData
+) -> float:
+    """
+    计算长期趋势（Trend）加成
+
+    根据法达大运主星的尊贵状态决定：
+    - 庙/旺：牛市（+20%）
+    - 失势/落陷：熊市（-20%）
+    - 其他：平稳（0%）
+
+    参数:
+        firdaria_lord: 法达大运主星
+        chart_data: 星盘数据（包含行星落座信息）
+
+    返回:
+        float: 加成系数（如 0.2, -0.2, 0.0）
+    """
+    # 获取大运主星在星盘中的信息
+    planet_info = chart_data.get_planet_info(firdaria_lord)
+    if not planet_info:
+        return 0.0
+    
+    sign = planet_info.sign
+    
+    # 检查庙旺（牛市）
+    is_domicile = sign in DOMICILE_SIGNS.get(firdaria_lord, [])
+    is_exaltation = sign in EXALTATION_SIGNS.get(firdaria_lord, [])
+    
+    if is_domicile or is_exaltation:
+        print(f"趋势: {firdaria_lord.value}在{sign.value}庙旺，牛市 (+20%)")
+        return 0.2  # +20%
+        
+    # 检查失势落陷（熊市）
+    is_detriment = sign in DETRIMENT_SIGNS.get(firdaria_lord, [])
+    is_fall = sign in FALL_SIGNS.get(firdaria_lord, [])
+    
+    if is_detriment or is_fall:
+        print(f"趋势: {firdaria_lord.value}在{sign.value}失势/落陷，熊市 (-20%)")
+        return -0.2  # -20%
+        
+    print(f"趋势: {firdaria_lord.value}在{sign.value}平稳 (0%)")
+    return 0.0
