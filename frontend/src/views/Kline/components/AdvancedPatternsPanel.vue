@@ -1,116 +1,127 @@
 <template>
   <section v-if="hasContent" class="patternsSection">
     <article class="panel patternsPanel">
-      <div class="panelHeader">
-        <div>
-          <div class="panelEyebrow">Advanced Patterns</div>
-          <h2 class="panelTitle">高级规则层</h2>
-          <p class="panelSummary">
-            {{ advancedPatterns?.summary || "把宫主落宫、接纳、互溶和转宫拆开看，才能知道一张盘是怎么运作的。" }}
-          </p>
-        </div>
-      </div>
-
-      <div v-if="advancedPatterns?.ruler_groups?.length" class="ruleBlock">
-        <div class="blockTitle">宫主链路</div>
-        <div class="ruleChips">
-          <span
-            v-for="item in advancedPatterns.ruler_groups"
-            :key="item.line"
-            class="ruleChip"
-          >
-            {{ item.line }}
-          </span>
-        </div>
-      </div>
-
-      <div v-if="advancedPatterns?.reception_groups?.length" class="ruleBlock">
-        <div class="blockTitle">接纳链</div>
-        <div class="ruleChips">
-          <span
-            v-for="item in advancedPatterns.reception_groups"
-            :key="item.line"
-            class="ruleChip"
-          >
-            {{ item.line }}
-          </span>
-        </div>
-      </div>
-
-      <div v-if="advancedPatterns?.mutual_receptions?.length" class="ruleBlock">
-        <div class="blockTitle">互溶对</div>
-        <div class="ruleChips">
-          <span
-            v-for="item in advancedPatterns.mutual_receptions"
-            :key="item.line"
-            class="ruleChip"
-          >
-            {{ item.line }}
-          </span>
-        </div>
-      </div>
-
-      <div v-if="advancedPatterns?.core_threads?.length" class="threadGrid">
-        <article
-          v-for="item in advancedPatterns.core_threads"
-          :key="`${item.house}-${item.title}`"
-          class="threadCard"
-        >
-          <div class="threadTitle">{{ item.title }}</div>
-          <p class="threadSummary">{{ item.summary }}</p>
-          <ul v-if="item.points?.length" class="threadList">
-            <li v-for="point in item.points" :key="point">{{ point }}</li>
-          </ul>
-        </article>
-      </div>
-
-      <div v-if="advancedPatterns?.pattern_readings?.length" class="readingGrid">
-        <article
-          v-for="item in advancedPatterns.pattern_readings"
-          :key="item.key"
-          class="readingCard"
-        >
-          <div class="readingHead">
-            <h3 class="readingTitle">{{ item.title }}</h3>
-          </div>
-          <p class="readingSummary">{{ item.summary }}</p>
-
-          <div v-if="item.evidence?.length" class="evidenceRow">
-            <span v-for="evidence in item.evidence" :key="evidence" class="evidenceChip">
-              {{ evidence }}
-            </span>
-          </div>
-
-          <ul class="readingList">
-            <li v-for="point in item.points || []" :key="point">{{ point }}</li>
-          </ul>
-        </article>
-      </div>
-
-      <div v-if="advancedPatterns?.derived_houses?.length" class="derivedBlock">
-        <div class="blockTitle">转宫关系</div>
-        <div class="derivedGrid">
-          <article
-            v-for="item in advancedPatterns.derived_houses"
-            :key="`${item.base_house}-${item.base_label}`"
-            class="derivedCard"
-          >
-            <div class="threadTitle">{{ item.base_label }}</div>
-            <p class="threadSummary">{{ item.summary }}</p>
-            <div class="derivedList">
-              <div
-                v-for="link in item.links"
-                :key="`${link.label}-${link.radical_house}`"
-                class="derivedItem"
-              >
-                <strong>{{ link.line }}</strong>
-                <p>{{ link.ruler_line }}</p>
-                <p class="derivedHint">{{ link.title }} · {{ link.adult_meaning }}</p>
-              </div>
+      <details class="patternsFold">
+        <summary class="foldSummary">
+          <div class="panelHeader">
+            <div>
+              <div class="panelEyebrow">Professional Reading</div>
+              <h2 class="panelTitle">专业解读</h2>
+              <p class="panelSummary">
+                {{
+                  advancedPatterns?.summary ||
+                  "把宫主落宫、接纳、互溶和转宫拆开看，才能知道一张盘是怎么运作的。"
+                }}
+              </p>
             </div>
-          </article>
+            <span class="foldBadge">默认折叠 · 点击展开</span>
+          </div>
+        </summary>
+
+        <div class="foldBody">
+          <div v-if="advancedPatterns?.ruler_groups?.length" class="ruleBlock">
+            <div class="blockTitle">宫主链路</div>
+            <div class="ruleChips">
+              <span
+                v-for="item in advancedPatterns.ruler_groups"
+                :key="item.line"
+                class="ruleChip"
+              >
+                {{ item.line }}
+              </span>
+            </div>
+          </div>
+
+          <div v-if="advancedPatterns?.reception_groups?.length" class="ruleBlock">
+            <div class="blockTitle">接纳链</div>
+            <div class="ruleChips">
+              <span
+                v-for="item in advancedPatterns.reception_groups"
+                :key="item.line"
+                class="ruleChip"
+              >
+                {{ item.line }}
+              </span>
+            </div>
+          </div>
+
+          <div v-if="advancedPatterns?.mutual_receptions?.length" class="ruleBlock">
+            <div class="blockTitle">互溶对</div>
+            <div class="ruleChips">
+              <span
+                v-for="item in advancedPatterns.mutual_receptions"
+                :key="item.line"
+                class="ruleChip"
+              >
+                {{ item.line }}
+              </span>
+            </div>
+          </div>
+
+          <div v-if="advancedPatterns?.core_threads?.length" class="threadGrid">
+            <article
+              v-for="item in advancedPatterns.core_threads"
+              :key="`${item.house}-${item.title}`"
+              class="threadCard"
+            >
+              <div class="threadTitle">{{ item.title }}</div>
+              <p class="threadSummary">{{ item.summary }}</p>
+              <ul v-if="item.points?.length" class="threadList">
+                <li v-for="point in item.points" :key="point">{{ point }}</li>
+              </ul>
+            </article>
+          </div>
+
+          <div v-if="advancedPatterns?.pattern_readings?.length" class="readingGrid">
+            <article
+              v-for="item in advancedPatterns.pattern_readings"
+              :key="item.key"
+              class="readingCard"
+            >
+              <div class="readingHead">
+                <h3 class="readingTitle">{{ item.title }}</h3>
+              </div>
+              <p class="readingSummary">{{ item.summary }}</p>
+              <p v-if="item.risk_summary" class="readingRisk">{{ item.risk_summary }}</p>
+
+              <div v-if="item.evidence?.length" class="evidenceRow">
+                <span v-for="evidence in item.evidence" :key="evidence" class="evidenceChip">
+                  {{ evidence }}
+                </span>
+              </div>
+
+              <ul class="readingList">
+                <li v-for="point in item.points || []" :key="point">{{ point }}</li>
+              </ul>
+            </article>
+          </div>
+
+          <div v-if="advancedPatterns?.derived_houses?.length" class="derivedBlock">
+            <div class="blockTitle">转宫关系</div>
+            <div class="derivedGrid">
+              <article
+                v-for="item in advancedPatterns.derived_houses"
+                :key="`${item.base_house}-${item.base_label}`"
+                class="derivedCard"
+              >
+                <div class="threadTitle">{{ item.base_label }}</div>
+                <p class="threadSummary">{{ item.summary }}</p>
+                <div class="derivedList">
+                  <div
+                    v-for="link in item.links"
+                    :key="`${link.label}-${link.radical_house}`"
+                    class="derivedItem"
+                  >
+                    <strong>{{ link.line }}</strong>
+                    <p>{{ link.ruler_line }}</p>
+                    <p class="derivedHint">{{ link.title }} · {{ link.adult_meaning }}</p>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
         </div>
-      </div>
+      </details>
     </article>
   </section>
 </template>
@@ -144,6 +155,23 @@ const hasContent = computed(() => {
   padding: 24px;
 }
 
+.patternsFold {
+  display: block;
+}
+
+.foldSummary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.foldSummary::-webkit-details-marker {
+  display: none;
+}
+
+.foldBody {
+  margin-top: 18px;
+}
+
 .panelHeader {
   display: flex;
   justify-content: space-between;
@@ -169,6 +197,25 @@ const hasContent = computed(() => {
   margin: 12px 0 0;
   color: var(--text-secondary);
   line-height: 1.8;
+}
+
+.foldBadge {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.patternsFold[open] .foldBadge {
+  color: var(--text);
+  border-color: rgba(212, 175, 55, 0.24);
+  background: rgba(212, 175, 55, 0.08);
 }
 
 .ruleBlock,
@@ -233,6 +280,16 @@ const hasContent = computed(() => {
 .readingSummary {
   margin: 10px 0 0;
   color: var(--text-secondary);
+  line-height: 1.75;
+}
+
+.readingRisk {
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(248, 113, 113, 0.18);
+  background: rgba(127, 29, 29, 0.18);
+  color: #fecaca;
   line-height: 1.75;
 }
 
@@ -323,6 +380,10 @@ const hasContent = computed(() => {
   .readingGrid,
   .derivedGrid {
     grid-template-columns: 1fr;
+  }
+
+  .panelHeader {
+    flex-direction: column;
   }
 }
 </style>

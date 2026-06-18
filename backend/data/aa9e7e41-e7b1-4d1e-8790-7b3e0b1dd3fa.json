@@ -1,0 +1,5648 @@
+{
+  "analysis": {
+    "key": "natal_blueprint",
+    "title": "本命蓝图",
+    "tagline": "识别人格结构、驱动力和长期反复出现的人生命题。",
+    "description": "围绕上升、命主星、重点宫位和关键相位，建立一份长期稳定、可直接阅读的本命结构画像。",
+    "category": "structure",
+    "status": "active",
+    "subjects_count": 1,
+    "required_inputs": [
+      "birth_time",
+      "lat",
+      "lon",
+      "timezone"
+    ],
+    "engines": [
+      "natal_core"
+    ],
+    "modules": [
+      "本命总览",
+      "本命星盘",
+      "本命蓝图",
+      "高级规则",
+      "人生主轴",
+      "样例校验"
+    ],
+    "primary_cta": "进入体验",
+    "output_route": "/reports/:id"
+  },
+  "request": {
+    "analysis_type": "natal_blueprint",
+    "subjects": [
+      {
+        "name": "文镜",
+        "gender": "女",
+        "birth_time": "1987-01-28T15:20:00",
+        "lat": 31.2333333333,
+        "lon": 121.4333333333,
+        "timezone": 8.0
+      }
+    ]
+  },
+  "report": {
+    "meta": {
+      "generated_at": "2026-06-17T15:39:12.079881",
+      "engine_version": "2.3.0"
+    },
+    "user_info": {
+      "gender": "女",
+      "birth_time_local": "1987-01-28T15:20:00",
+      "birth_time_utc": "1987-01-28T07:20:00",
+      "lat": 31.2333333333,
+      "lon": 121.4333333333,
+      "timezone": "GMT +8.00",
+      "is_day_chart": true
+    },
+    "kline_data": {
+      "periods": [
+        {
+          "index": 0,
+          "timing": {
+            "start_age": 0.0,
+            "end_age": 1.43,
+            "start_date": "1987-01-28T15:20:00",
+            "end_date": "1988-07-03T09:55:22.848000",
+            "duration_years": 1.43
+          },
+          "lords": {
+            "major": "SUN",
+            "sub": "SUN"
+          },
+          "trend": {
+            "bonus_coefficient": -0.144,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 59.4,
+            "wealth": 60.6,
+            "relationship": 51.6,
+            "health": 54.9,
+            "family": 50.3
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": -0.65,
+            "sub_score": -0.65,
+            "aspect_signature": []
+          },
+          "title": "太阳 - 太阳 阶段",
+          "summary": "太阳主运、太阳辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "太阳主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住太阳在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住太阳在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。",
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把注意力放在长期目标、名望与作品沉淀上。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 1,
+          "timing": {
+            "start_age": 1.43,
+            "end_age": 2.86,
+            "start_date": "1988-07-03T09:55:22.848000",
+            "end_date": "1989-12-07T04:30:45.696000",
+            "duration_years": 1.43
+          },
+          "lords": {
+            "major": "SUN",
+            "sub": "VENUS"
+          },
+          "trend": {
+            "bonus_coefficient": -0.1,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 58.0,
+            "wealth": 61.6,
+            "relationship": 55.0,
+            "health": 55.5,
+            "family": 52.1
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": -0.65,
+            "sub_score": 0.06,
+            "aspect_signature": []
+          },
+          "title": "太阳 - 金星 阶段",
+          "summary": "太阳主运、金星辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "太阳主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住太阳在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住金星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。",
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把注意力放在长期目标、名望与作品沉淀上。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 2,
+          "timing": {
+            "start_age": 2.86,
+            "end_age": 4.29,
+            "start_date": "1989-12-07T04:30:45.696000",
+            "end_date": "1991-05-12T23:06:08.544000",
+            "duration_years": 1.43
+          },
+          "lords": {
+            "major": "SUN",
+            "sub": "MERCURY"
+          },
+          "trend": {
+            "bonus_coefficient": -0.039,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 61.0,
+            "wealth": 63.4,
+            "relationship": 54.0,
+            "health": 56.9,
+            "family": 52.7
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": -0.65,
+            "sub_score": 1.05,
+            "aspect_signature": []
+          },
+          "title": "太阳 - 水星 阶段",
+          "summary": "太阳主运、水星辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "太阳主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住太阳在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住水星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。",
+            "即使局面平稳，也要注意犹疑、分心、过度比较，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把注意力放在长期目标、名望与作品沉淀上。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 3,
+          "timing": {
+            "start_age": 4.29,
+            "end_age": 5.71,
+            "start_date": "1991-05-12T23:06:08.544000",
+            "end_date": "1992-10-15T17:41:31.392000",
+            "duration_years": 1.43
+          },
+          "lords": {
+            "major": "SUN",
+            "sub": "MOON"
+          },
+          "trend": {
+            "bonus_coefficient": -0.104,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 57.5,
+            "wealth": 61.1,
+            "relationship": 53.7,
+            "health": 57.0,
+            "family": 53.2
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": -0.65,
+            "sub_score": 0.01,
+            "aspect_signature": []
+          },
+          "title": "太阳 - 月亮 阶段",
+          "summary": "太阳主运、月亮辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "太阳主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住太阳在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住月亮在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。",
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把注意力放在长期目标、名望与作品沉淀上。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 4,
+          "timing": {
+            "start_age": 5.71,
+            "end_age": 7.14,
+            "start_date": "1992-10-15T17:41:31.392000",
+            "end_date": "1994-03-21T12:16:54.240000",
+            "duration_years": 1.43
+          },
+          "lords": {
+            "major": "SUN",
+            "sub": "SATURN"
+          },
+          "trend": {
+            "bonus_coefficient": -0.048,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 61.1,
+            "wealth": 62.7,
+            "relationship": 53.3,
+            "health": 57.4,
+            "family": 52.8
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": -0.65,
+            "sub_score": 0.89,
+            "aspect_signature": []
+          },
+          "title": "太阳 - 土星 阶段",
+          "summary": "太阳主运、土星辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "太阳主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住太阳在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住土星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。",
+            "即使局面平稳，也要注意压抑、迟滞、过度保守，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把注意力放在长期目标、名望与作品沉淀上。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 5,
+          "timing": {
+            "start_age": 7.14,
+            "end_age": 8.57,
+            "start_date": "1994-03-21T12:16:54.240000",
+            "end_date": "1995-08-25T06:52:17.088000",
+            "duration_years": 1.43
+          },
+          "lords": {
+            "major": "SUN",
+            "sub": "JUPITER"
+          },
+          "trend": {
+            "bonus_coefficient": 0.005,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 61.1,
+            "wealth": 65.5,
+            "relationship": 55.3,
+            "health": 57.8,
+            "family": 54.0
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": -0.65,
+            "sub_score": 1.75,
+            "aspect_signature": []
+          },
+          "title": "太阳 - 木星 阶段",
+          "summary": "太阳主运、木星辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "太阳主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住太阳在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住木星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。",
+            "即使局面平稳，也要注意过度乐观、承诺过量、理想化，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把注意力放在长期目标、名望与作品沉淀上。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 6,
+          "timing": {
+            "start_age": 8.57,
+            "end_age": 10.0,
+            "start_date": "1995-08-25T06:52:17.088000",
+            "end_date": "1997-01-28T01:27:39.936000",
+            "duration_years": 1.43
+          },
+          "lords": {
+            "major": "SUN",
+            "sub": "MARS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.067,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 63.7,
+            "wealth": 65.3,
+            "relationship": 55.9,
+            "health": 60.4,
+            "family": 55.0
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": -0.65,
+            "sub_score": 2.74,
+            "aspect_signature": []
+          },
+          "title": "太阳 - 火星 阶段",
+          "summary": "太阳主运、火星辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "太阳主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住太阳在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住火星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。",
+            "即使局面平稳，也要注意急躁、对抗、提前消耗，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把注意力放在长期目标、名望与作品沉淀上。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 7,
+          "timing": {
+            "start_age": 10.0,
+            "end_age": 11.14,
+            "start_date": "1997-01-28T01:27:39.936000",
+            "end_date": "1998-03-21T11:31:58.214400",
+            "duration_years": 1.14
+          },
+          "lords": {
+            "major": "VENUS",
+            "sub": "VENUS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.013,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 60.1,
+            "wealth": 55.9,
+            "relationship": 61.3,
+            "health": 59.9,
+            "family": 55.9
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.06,
+            "sub_score": 0.06,
+            "aspect_signature": [
+              "刑相 木星，容许度 1.11°",
+              "合相 土星，容许度 3.24°"
+            ]
+          },
+          "title": "金星 - 金星 阶段",
+          "summary": "金星主运、金星辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕关系与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "金星主题被放大",
+            "重点落在工作与健康",
+            "关系是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住金星在关系上的能力，优先做可复用、可沉淀的成果。",
+            "稳住金星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。",
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给关系和事业。",
+            "通过关系与价值交换打开局面，但不要牺牲底线。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 8,
+          "timing": {
+            "start_age": 11.14,
+            "end_age": 12.29,
+            "start_date": "1998-03-21T11:31:58.214400",
+            "end_date": "1999-05-12T21:36:16.492800",
+            "duration_years": 1.14
+          },
+          "lords": {
+            "major": "VENUS",
+            "sub": "MERCURY"
+          },
+          "trend": {
+            "bonus_coefficient": 0.075,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 63.1,
+            "wealth": 57.7,
+            "relationship": 60.3,
+            "health": 61.3,
+            "family": 56.5
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.06,
+            "sub_score": 1.05,
+            "aspect_signature": [
+              "刑相 木星，容许度 1.11°",
+              "合相 土星，容许度 3.24°"
+            ]
+          },
+          "title": "金星 - 水星 阶段",
+          "summary": "金星主运、水星辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "金星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住金星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "稳住水星在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。",
+            "即使局面平稳，也要注意犹疑、分心、过度比较，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "通过关系与价值交换打开局面，但不要牺牲底线。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 9,
+          "timing": {
+            "start_age": 12.29,
+            "end_age": 13.43,
+            "start_date": "1999-05-12T21:36:16.492800",
+            "end_date": "2000-07-03T07:40:34.771200",
+            "duration_years": 1.14
+          },
+          "lords": {
+            "major": "VENUS",
+            "sub": "MOON"
+          },
+          "trend": {
+            "bonus_coefficient": 0.01,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 59.6,
+            "wealth": 55.4,
+            "relationship": 60.0,
+            "health": 61.4,
+            "family": 57.0
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.06,
+            "sub_score": 0.01,
+            "aspect_signature": [
+              "刑相 木星，容许度 1.11°",
+              "合相 土星，容许度 3.24°"
+            ]
+          },
+          "title": "金星 - 月亮 阶段",
+          "summary": "金星主运、月亮辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕健康与关系展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "金星主题被放大",
+            "重点落在工作与健康",
+            "健康是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住金星在健康上的能力，优先做可复用、可沉淀的成果。",
+            "稳住月亮在关系上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。",
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给健康和关系。",
+            "通过关系与价值交换打开局面，但不要牺牲底线。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 10,
+          "timing": {
+            "start_age": 13.43,
+            "end_age": 14.57,
+            "start_date": "2000-07-03T07:40:34.771200",
+            "end_date": "2001-08-24T17:44:53.049600",
+            "duration_years": 1.14
+          },
+          "lords": {
+            "major": "VENUS",
+            "sub": "SATURN"
+          },
+          "trend": {
+            "bonus_coefficient": 0.065,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 63.2,
+            "wealth": 57.0,
+            "relationship": 59.6,
+            "health": 61.8,
+            "family": 56.6
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.06,
+            "sub_score": 0.89,
+            "aspect_signature": [
+              "刑相 木星，容许度 1.11°",
+              "合相 土星，容许度 3.24°"
+            ]
+          },
+          "title": "金星 - 土星 阶段",
+          "summary": "金星主运、土星辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "金星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住金星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "稳住土星在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。",
+            "即使局面平稳，也要注意压抑、迟滞、过度保守，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "通过关系与价值交换打开局面，但不要牺牲底线。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 11,
+          "timing": {
+            "start_age": 14.57,
+            "end_age": 15.71,
+            "start_date": "2001-08-24T17:44:53.049600",
+            "end_date": "2002-10-16T03:49:11.328000",
+            "duration_years": 1.14
+          },
+          "lords": {
+            "major": "VENUS",
+            "sub": "JUPITER"
+          },
+          "trend": {
+            "bonus_coefficient": 0.118,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 63.2,
+            "wealth": 59.8,
+            "relationship": 61.6,
+            "health": 62.2,
+            "family": 57.8
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.06,
+            "sub_score": 1.75,
+            "aspect_signature": [
+              "刑相 木星，容许度 1.11°",
+              "合相 土星，容许度 3.24°"
+            ]
+          },
+          "title": "金星 - 木星 阶段",
+          "summary": "金星主运、木星辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "金星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住金星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "稳住木星在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。",
+            "即使局面平稳，也要注意过度乐观、承诺过量、理想化，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "通过关系与价值交换打开局面，但不要牺牲底线。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 12,
+          "timing": {
+            "start_age": 15.71,
+            "end_age": 16.86,
+            "start_date": "2002-10-16T03:49:11.328000",
+            "end_date": "2003-12-07T13:53:29.606400",
+            "duration_years": 1.14
+          },
+          "lords": {
+            "major": "VENUS",
+            "sub": "MARS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.18,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 65.8,
+            "wealth": 59.6,
+            "relationship": 62.2,
+            "health": 64.8,
+            "family": 58.8
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.06,
+            "sub_score": 2.74,
+            "aspect_signature": [
+              "刑相 木星，容许度 1.11°",
+              "合相 土星，容许度 3.24°"
+            ]
+          },
+          "title": "金星 - 火星 阶段",
+          "summary": "金星主运、火星辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "金星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大金星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大火星在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让金星的顺风感演变成过度承诺，讨好、依赖外部认可、享乐分散是这段的代价点。",
+            "即使局面平稳，也要注意急躁、对抗、提前消耗，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "通过关系与价值交换打开局面，但不要牺牲底线。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 13,
+          "timing": {
+            "start_age": 16.86,
+            "end_age": 18.0,
+            "start_date": "2003-12-07T13:53:29.606400",
+            "end_date": "2005-01-27T23:57:47.884800",
+            "duration_years": 1.14
+          },
+          "lords": {
+            "major": "VENUS",
+            "sub": "SUN"
+          },
+          "trend": {
+            "bonus_coefficient": -0.031,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 61.5,
+            "wealth": 54.9,
+            "relationship": 57.9,
+            "health": 59.3,
+            "family": 54.1
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.06,
+            "sub_score": -0.65,
+            "aspect_signature": [
+              "刑相 木星，容许度 1.11°",
+              "合相 土星，容许度 3.24°"
+            ]
+          },
+          "title": "金星 - 太阳 阶段",
+          "summary": "金星主运、太阳辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "金星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住金星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "稳住太阳在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。",
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "通过关系与价值交换打开局面，但不要牺牲底线。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 14,
+          "timing": {
+            "start_age": 18.0,
+            "end_age": 19.86,
+            "start_date": "2005-01-27T23:57:47.884800",
+            "end_date": "2006-12-07T07:19:47.587200",
+            "duration_years": 1.86
+          },
+          "lords": {
+            "major": "MERCURY",
+            "sub": "MERCURY"
+          },
+          "trend": {
+            "bonus_coefficient": 0.234,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 68.8,
+            "wealth": 73.9,
+            "relationship": 63.6,
+            "health": 65.6,
+            "family": 62.3
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 1.05,
+            "sub_score": 1.05,
+            "aspect_signature": [
+              "六合 土星，容许度 0.31°",
+              "六合 金星，容许度 2.93°"
+            ]
+          },
+          "title": "水星 - 水星 阶段",
+          "summary": "水星主运、水星辅运。主星落在风险与转化，先天状态为平常，因此这段时间的人生重心会围绕财富与事业展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "水星主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "放大水星在财富上的能力，优先做可复用、可沉淀的成果。",
+            "放大水星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让水星的顺风感演变成过度承诺，犹疑、分心、过度比较是这段的代价点。",
+            "即使局面平稳，也要注意犹疑、分心、过度比较，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把复杂问题拆成流程，建立可复用的认知框架。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 15,
+          "timing": {
+            "start_age": 19.86,
+            "end_age": 21.71,
+            "start_date": "2006-12-07T07:19:47.587200",
+            "end_date": "2008-10-15T14:41:47.289600",
+            "duration_years": 1.86
+          },
+          "lords": {
+            "major": "MERCURY",
+            "sub": "MOON"
+          },
+          "trend": {
+            "bonus_coefficient": 0.169,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 65.4,
+            "wealth": 71.7,
+            "relationship": 63.4,
+            "health": 65.8,
+            "family": 62.9
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 1.05,
+            "sub_score": 0.01,
+            "aspect_signature": [
+              "六合 土星，容许度 0.31°",
+              "六合 金星，容许度 2.93°"
+            ]
+          },
+          "title": "水星 - 月亮 阶段",
+          "summary": "水星主运、月亮辅运。主星落在风险与转化，先天状态为平常，因此这段时间的人生重心会围绕财富与健康展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "水星主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "放大水星在财富上的能力，优先做可复用、可沉淀的成果。",
+            "放大月亮在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让水星的顺风感演变成过度承诺，犹疑、分心、过度比较是这段的代价点。",
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和健康。",
+            "把复杂问题拆成流程，建立可复用的认知框架。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 16,
+          "timing": {
+            "start_age": 21.71,
+            "end_age": 23.57,
+            "start_date": "2008-10-15T14:41:47.289600",
+            "end_date": "2010-08-24T22:03:46.992000",
+            "duration_years": 1.86
+          },
+          "lords": {
+            "major": "MERCURY",
+            "sub": "SATURN"
+          },
+          "trend": {
+            "bonus_coefficient": 0.224,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 69.0,
+            "wealth": 73.3,
+            "relationship": 63.0,
+            "health": 66.2,
+            "family": 62.5
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 1.05,
+            "sub_score": 0.89,
+            "aspect_signature": [
+              "六合 土星，容许度 0.31°",
+              "六合 金星，容许度 2.93°"
+            ]
+          },
+          "title": "水星 - 土星 阶段",
+          "summary": "水星主运、土星辅运。主星落在风险与转化，先天状态为平常，因此这段时间的人生重心会围绕财富与事业展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "水星主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "放大水星在财富上的能力，优先做可复用、可沉淀的成果。",
+            "放大土星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让水星的顺风感演变成过度承诺，犹疑、分心、过度比较是这段的代价点。",
+            "即使局面平稳，也要注意压抑、迟滞、过度保守，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把复杂问题拆成流程，建立可复用的认知框架。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 17,
+          "timing": {
+            "start_age": 23.57,
+            "end_age": 25.43,
+            "start_date": "2010-08-24T22:03:46.992000",
+            "end_date": "2012-07-03T05:25:46.694400",
+            "duration_years": 1.86
+          },
+          "lords": {
+            "major": "MERCURY",
+            "sub": "JUPITER"
+          },
+          "trend": {
+            "bonus_coefficient": 0.277,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 68.9,
+            "wealth": 76.0,
+            "relationship": 64.9,
+            "health": 66.5,
+            "family": 63.6
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 1.05,
+            "sub_score": 1.75,
+            "aspect_signature": [
+              "六合 土星，容许度 0.31°",
+              "六合 金星，容许度 2.93°"
+            ]
+          },
+          "title": "水星 - 木星 阶段",
+          "summary": "水星主运、木星辅运。主星落在风险与转化，先天状态为平常，因此这段时间的人生重心会围绕财富与事业展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "水星主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "放大水星在财富上的能力，优先做可复用、可沉淀的成果。",
+            "放大木星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让水星的顺风感演变成过度承诺，犹疑、分心、过度比较是这段的代价点。",
+            "即使局面平稳，也要注意过度乐观、承诺过量、理想化，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把复杂问题拆成流程，建立可复用的认知框架。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 18,
+          "timing": {
+            "start_age": 25.43,
+            "end_age": 27.29,
+            "start_date": "2012-07-03T05:25:46.694400",
+            "end_date": "2014-05-12T12:47:46.396800",
+            "duration_years": 1.86
+          },
+          "lords": {
+            "major": "MERCURY",
+            "sub": "MARS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.339,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 71.5,
+            "wealth": 75.8,
+            "relationship": 65.5,
+            "health": 69.1,
+            "family": 64.6
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 1.05,
+            "sub_score": 2.74,
+            "aspect_signature": [
+              "六合 土星，容许度 0.31°",
+              "六合 金星，容许度 2.93°"
+            ]
+          },
+          "title": "水星 - 火星 阶段",
+          "summary": "水星主运、火星辅运。主星落在风险与转化，先天状态为平常，因此这段时间的人生重心会围绕财富与事业展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "水星主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "放大水星在财富上的能力，优先做可复用、可沉淀的成果。",
+            "放大火星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让水星的顺风感演变成过度承诺，犹疑、分心、过度比较是这段的代价点。",
+            "即使局面平稳，也要注意急躁、对抗、提前消耗，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把复杂问题拆成流程，建立可复用的认知框架。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 19,
+          "timing": {
+            "start_age": 27.29,
+            "end_age": 29.14,
+            "start_date": "2014-05-12T12:47:46.396800",
+            "end_date": "2016-03-20T20:09:46.099200",
+            "duration_years": 1.86
+          },
+          "lords": {
+            "major": "MERCURY",
+            "sub": "SUN"
+          },
+          "trend": {
+            "bonus_coefficient": 0.128,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 67.3,
+            "wealth": 71.2,
+            "relationship": 61.3,
+            "health": 63.7,
+            "family": 60.0
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 1.05,
+            "sub_score": -0.65,
+            "aspect_signature": [
+              "六合 土星，容许度 0.31°",
+              "六合 金星，容许度 2.93°"
+            ]
+          },
+          "title": "水星 - 太阳 阶段",
+          "summary": "水星主运、太阳辅运。主星落在风险与转化，先天状态为平常，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "水星主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住水星在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住太阳在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意犹疑、分心、过度比较，别被惯性牵着走。",
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把复杂问题拆成流程，建立可复用的认知框架。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 20,
+          "timing": {
+            "start_age": 29.14,
+            "end_age": 31.0,
+            "start_date": "2016-03-20T20:09:46.099200",
+            "end_date": "2018-01-28T03:31:45.801600",
+            "duration_years": 1.86
+          },
+          "lords": {
+            "major": "MERCURY",
+            "sub": "VENUS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.172,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 65.8,
+            "wealth": 72.1,
+            "relationship": 64.6,
+            "health": 64.2,
+            "family": 61.7
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 1.05,
+            "sub_score": 0.06,
+            "aspect_signature": [
+              "六合 土星，容许度 0.31°",
+              "六合 金星，容许度 2.93°"
+            ]
+          },
+          "title": "水星 - 金星 阶段",
+          "summary": "水星主运、金星辅运。主星落在风险与转化，先天状态为平常，因此这段时间的人生重心会围绕财富与事业展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "水星主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "放大水星在财富上的能力，优先做可复用、可沉淀的成果。",
+            "放大金星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让水星的顺风感演变成过度承诺，犹疑、分心、过度比较是这段的代价点。",
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把复杂问题拆成流程，建立可复用的认知框架。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 21,
+          "timing": {
+            "start_age": 31.0,
+            "end_age": 32.29,
+            "start_date": "2018-01-28T03:31:45.801600",
+            "end_date": "2019-05-12T17:51:36.364800",
+            "duration_years": 1.29
+          },
+          "lords": {
+            "major": "MOON",
+            "sub": "MOON"
+          },
+          "trend": {
+            "bonus_coefficient": 0.002,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 55.8,
+            "wealth": 56.0,
+            "relationship": 69.8,
+            "health": 58.8,
+            "family": 62.3
+          },
+          "astrology": {
+            "sign": "CAPRICORN",
+            "sign_label": "摩羯座",
+            "house": 7,
+            "house_title": "伴侣与合作",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": 0.01,
+            "sub_score": 0.01,
+            "aspect_signature": [
+              "六合 木星，容许度 2.61°"
+            ]
+          },
+          "title": "月亮 - 月亮 阶段",
+          "summary": "月亮主运、月亮辅运。主星落在伴侣与合作，先天状态为失势，因此这段时间的人生重心会围绕关系与家庭展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "月亮主题被放大",
+            "重点落在伴侣与合作",
+            "关系是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住月亮在关系上的能力，优先做可复用、可沉淀的成果。",
+            "稳住月亮在家庭上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。",
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给关系和家庭。",
+            "先稳定作息与关系边界，再谈效率和决策。",
+            "关键突破来自合作关系，谈规则比谈感觉更重要。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 22,
+          "timing": {
+            "start_age": 32.29,
+            "end_age": 33.57,
+            "start_date": "2019-05-12T17:51:36.364800",
+            "end_date": "2020-08-24T08:11:26.928000",
+            "duration_years": 1.29
+          },
+          "lords": {
+            "major": "MOON",
+            "sub": "SATURN"
+          },
+          "trend": {
+            "bonus_coefficient": 0.057,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 59.4,
+            "wealth": 57.6,
+            "relationship": 69.4,
+            "health": 59.2,
+            "family": 61.9
+          },
+          "astrology": {
+            "sign": "CAPRICORN",
+            "sign_label": "摩羯座",
+            "house": 7,
+            "house_title": "伴侣与合作",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": 0.01,
+            "sub_score": 0.89,
+            "aspect_signature": [
+              "六合 木星，容许度 2.61°"
+            ]
+          },
+          "title": "月亮 - 土星 阶段",
+          "summary": "月亮主运、土星辅运。主星落在伴侣与合作，先天状态为失势，因此这段时间的人生重心会围绕关系与家庭展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "月亮主题被放大",
+            "重点落在伴侣与合作",
+            "关系是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住月亮在关系上的能力，优先做可复用、可沉淀的成果。",
+            "稳住土星在家庭上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。",
+            "即使局面平稳，也要注意压抑、迟滞、过度保守，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给关系和家庭。",
+            "先稳定作息与关系边界，再谈效率和决策。",
+            "关键突破来自合作关系，谈规则比谈感觉更重要。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 23,
+          "timing": {
+            "start_age": 33.57,
+            "end_age": 34.86,
+            "start_date": "2020-08-24T08:11:26.928000",
+            "end_date": "2021-12-06T22:31:17.491200",
+            "duration_years": 1.29
+          },
+          "lords": {
+            "major": "MOON",
+            "sub": "JUPITER"
+          },
+          "trend": {
+            "bonus_coefficient": 0.11,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 59.4,
+            "wealth": 60.4,
+            "relationship": 71.4,
+            "health": 59.6,
+            "family": 63.1
+          },
+          "astrology": {
+            "sign": "CAPRICORN",
+            "sign_label": "摩羯座",
+            "house": 7,
+            "house_title": "伴侣与合作",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": 0.01,
+            "sub_score": 1.75,
+            "aspect_signature": [
+              "六合 木星，容许度 2.61°"
+            ]
+          },
+          "title": "月亮 - 木星 阶段",
+          "summary": "月亮主运、木星辅运。主星落在伴侣与合作，先天状态为失势，因此这段时间的人生重心会围绕关系与家庭展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "月亮主题被放大",
+            "重点落在伴侣与合作",
+            "关系是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住月亮在关系上的能力，优先做可复用、可沉淀的成果。",
+            "稳住木星在家庭上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。",
+            "即使局面平稳，也要注意过度乐观、承诺过量、理想化，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给关系和家庭。",
+            "先稳定作息与关系边界，再谈效率和决策。",
+            "关键突破来自合作关系，谈规则比谈感觉更重要。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 24,
+          "timing": {
+            "start_age": 34.86,
+            "end_age": 36.14,
+            "start_date": "2021-12-06T22:31:17.491200",
+            "end_date": "2023-03-21T12:51:08.054400",
+            "duration_years": 1.29
+          },
+          "lords": {
+            "major": "MOON",
+            "sub": "MARS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.172,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 61.9,
+            "wealth": 60.1,
+            "relationship": 71.9,
+            "health": 62.1,
+            "family": 64.0
+          },
+          "astrology": {
+            "sign": "CAPRICORN",
+            "sign_label": "摩羯座",
+            "house": 7,
+            "house_title": "伴侣与合作",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": 0.01,
+            "sub_score": 2.74,
+            "aspect_signature": [
+              "六合 木星，容许度 2.61°"
+            ]
+          },
+          "title": "月亮 - 火星 阶段",
+          "summary": "月亮主运、火星辅运。主星落在伴侣与合作，先天状态为失势，因此这段时间的人生重心会围绕关系与家庭展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "月亮主题被放大",
+            "重点落在伴侣与合作",
+            "关系是阶段主轴"
+          ],
+          "opportunities": [
+            "放大月亮在关系上的能力，优先做可复用、可沉淀的成果。",
+            "放大火星在家庭上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让月亮的顺风感演变成过度承诺，情绪卷入、节奏被环境牵动是这段的代价点。",
+            "即使局面平稳，也要注意急躁、对抗、提前消耗，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给关系和家庭。",
+            "先稳定作息与关系边界，再谈效率和决策。",
+            "关键突破来自合作关系，谈规则比谈感觉更重要。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 25,
+          "timing": {
+            "start_age": 36.14,
+            "end_age": 37.43,
+            "start_date": "2023-03-21T12:51:08.054400",
+            "end_date": "2024-07-03T03:10:58.617600",
+            "duration_years": 1.29
+          },
+          "lords": {
+            "major": "MOON",
+            "sub": "SUN"
+          },
+          "trend": {
+            "bonus_coefficient": -0.039,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 57.7,
+            "wealth": 55.5,
+            "relationship": 67.7,
+            "health": 56.7,
+            "family": 59.4
+          },
+          "astrology": {
+            "sign": "CAPRICORN",
+            "sign_label": "摩羯座",
+            "house": 7,
+            "house_title": "伴侣与合作",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": 0.01,
+            "sub_score": -0.65,
+            "aspect_signature": [
+              "六合 木星，容许度 2.61°"
+            ]
+          },
+          "title": "月亮 - 太阳 阶段",
+          "summary": "月亮主运、太阳辅运。主星落在伴侣与合作，先天状态为失势，因此这段时间的人生重心会围绕关系与家庭展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "月亮主题被放大",
+            "重点落在伴侣与合作",
+            "关系是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住月亮在关系上的能力，优先做可复用、可沉淀的成果。",
+            "稳住太阳在家庭上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。",
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给关系和家庭。",
+            "先稳定作息与关系边界，再谈效率和决策。",
+            "关键突破来自合作关系，谈规则比谈感觉更重要。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 26,
+          "timing": {
+            "start_age": 37.43,
+            "end_age": 38.71,
+            "start_date": "2024-07-03T03:10:58.617600",
+            "end_date": "2025-10-15T17:30:49.180800",
+            "duration_years": 1.29
+          },
+          "lords": {
+            "major": "MOON",
+            "sub": "VENUS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.005,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 56.3,
+            "wealth": 56.5,
+            "relationship": 71.1,
+            "health": 57.3,
+            "family": 61.2
+          },
+          "astrology": {
+            "sign": "CAPRICORN",
+            "sign_label": "摩羯座",
+            "house": 7,
+            "house_title": "伴侣与合作",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": 0.01,
+            "sub_score": 0.06,
+            "aspect_signature": [
+              "六合 木星，容许度 2.61°"
+            ]
+          },
+          "title": "月亮 - 金星 阶段",
+          "summary": "月亮主运、金星辅运。主星落在伴侣与合作，先天状态为失势，因此这段时间的人生重心会围绕关系与家庭展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "月亮主题被放大",
+            "重点落在伴侣与合作",
+            "关系是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住月亮在关系上的能力，优先做可复用、可沉淀的成果。",
+            "稳住金星在家庭上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。",
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给关系和家庭。",
+            "先稳定作息与关系边界，再谈效率和决策。",
+            "关键突破来自合作关系，谈规则比谈感觉更重要。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 27,
+          "timing": {
+            "start_age": 38.71,
+            "end_age": 40.0,
+            "start_date": "2025-10-15T17:30:49.180800",
+            "end_date": "2027-01-28T07:50:39.744000",
+            "duration_years": 1.29
+          },
+          "lords": {
+            "major": "MOON",
+            "sub": "MERCURY"
+          },
+          "trend": {
+            "bonus_coefficient": 0.067,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 59.2,
+            "wealth": 58.2,
+            "relationship": 70.0,
+            "health": 58.6,
+            "family": 61.7
+          },
+          "astrology": {
+            "sign": "CAPRICORN",
+            "sign_label": "摩羯座",
+            "house": 7,
+            "house_title": "伴侣与合作",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": 0.01,
+            "sub_score": 1.05,
+            "aspect_signature": [
+              "六合 木星，容许度 2.61°"
+            ]
+          },
+          "title": "月亮 - 水星 阶段",
+          "summary": "月亮主运、水星辅运。主星落在伴侣与合作，先天状态为失势，因此这段时间的人生重心会围绕关系与家庭展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "月亮主题被放大",
+            "重点落在伴侣与合作",
+            "关系是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住月亮在关系上的能力，优先做可复用、可沉淀的成果。",
+            "稳住水星在家庭上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。",
+            "即使局面平稳，也要注意犹疑、分心、过度比较，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给关系和家庭。",
+            "先稳定作息与关系边界，再谈效率和决策。",
+            "关键突破来自合作关系，谈规则比谈感觉更重要。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 28,
+          "timing": {
+            "start_age": 40.0,
+            "end_age": 41.57,
+            "start_date": "2027-01-28T07:50:39.744000",
+            "end_date": "2028-08-24T06:41:34.876800",
+            "duration_years": 1.57
+          },
+          "lords": {
+            "major": "SATURN",
+            "sub": "SATURN"
+          },
+          "trend": {
+            "bonus_coefficient": 0.199,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 75.1,
+            "wealth": 64.4,
+            "relationship": 60.7,
+            "health": 71.0,
+            "family": 63.1
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.89,
+            "sub_score": 0.89,
+            "aspect_signature": [
+              "六合 水星，容许度 0.31°",
+              "合相 金星，容许度 3.24°"
+            ]
+          },
+          "title": "土星 - 土星 阶段",
+          "summary": "土星主运、土星辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "土星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大土星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大土星在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让土星的顺风感演变成过度承诺，压抑、迟滞、过度保守是这段的代价点。",
+            "即使局面平稳，也要注意压抑、迟滞、过度保守，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "用时间换确定性，先筑底盘再谈跃迁。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 29,
+          "timing": {
+            "start_age": 41.57,
+            "end_age": 43.14,
+            "start_date": "2028-08-24T06:41:34.876800",
+            "end_date": "2030-03-21T05:32:30.009600",
+            "duration_years": 1.57
+          },
+          "lords": {
+            "major": "SATURN",
+            "sub": "JUPITER"
+          },
+          "trend": {
+            "bonus_coefficient": 0.252,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 75.0,
+            "wealth": 67.1,
+            "relationship": 62.6,
+            "health": 71.3,
+            "family": 64.2
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.89,
+            "sub_score": 1.75,
+            "aspect_signature": [
+              "六合 水星，容许度 0.31°",
+              "合相 金星，容许度 3.24°"
+            ]
+          },
+          "title": "土星 - 木星 阶段",
+          "summary": "土星主运、木星辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "土星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大土星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大木星在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让土星的顺风感演变成过度承诺，压抑、迟滞、过度保守是这段的代价点。",
+            "即使局面平稳，也要注意过度乐观、承诺过量、理想化，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "用时间换确定性，先筑底盘再谈跃迁。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 30,
+          "timing": {
+            "start_age": 43.14,
+            "end_age": 44.71,
+            "start_date": "2030-03-21T05:32:30.009600",
+            "end_date": "2031-10-16T04:23:25.142400",
+            "duration_years": 1.57
+          },
+          "lords": {
+            "major": "SATURN",
+            "sub": "MARS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.314,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 77.6,
+            "wealth": 66.9,
+            "relationship": 63.2,
+            "health": 73.9,
+            "family": 65.2
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.89,
+            "sub_score": 2.74,
+            "aspect_signature": [
+              "六合 水星，容许度 0.31°",
+              "合相 金星，容许度 3.24°"
+            ]
+          },
+          "title": "土星 - 火星 阶段",
+          "summary": "土星主运、火星辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "土星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大土星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大火星在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让土星的顺风感演变成过度承诺，压抑、迟滞、过度保守是这段的代价点。",
+            "即使局面平稳，也要注意急躁、对抗、提前消耗，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "用时间换确定性，先筑底盘再谈跃迁。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 31,
+          "timing": {
+            "start_age": 44.71,
+            "end_age": 46.29,
+            "start_date": "2031-10-16T04:23:25.142400",
+            "end_date": "2033-05-12T03:14:20.275200",
+            "duration_years": 1.57
+          },
+          "lords": {
+            "major": "SATURN",
+            "sub": "SUN"
+          },
+          "trend": {
+            "bonus_coefficient": 0.103,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 73.4,
+            "wealth": 62.3,
+            "relationship": 59.0,
+            "health": 68.5,
+            "family": 60.6
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.89,
+            "sub_score": -0.65,
+            "aspect_signature": [
+              "六合 水星，容许度 0.31°",
+              "合相 金星，容许度 3.24°"
+            ]
+          },
+          "title": "土星 - 太阳 阶段",
+          "summary": "土星主运、太阳辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "土星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住土星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "稳住太阳在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意压抑、迟滞、过度保守，别被惯性牵着走。",
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "用时间换确定性，先筑底盘再谈跃迁。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 32,
+          "timing": {
+            "start_age": 46.29,
+            "end_age": 47.86,
+            "start_date": "2033-05-12T03:14:20.275200",
+            "end_date": "2034-12-07T02:05:15.408000",
+            "duration_years": 1.57
+          },
+          "lords": {
+            "major": "SATURN",
+            "sub": "VENUS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.147,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 71.9,
+            "wealth": 63.2,
+            "relationship": 62.3,
+            "health": 69.0,
+            "family": 62.3
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.89,
+            "sub_score": 0.06,
+            "aspect_signature": [
+              "六合 水星，容许度 0.31°",
+              "合相 金星，容许度 3.24°"
+            ]
+          },
+          "title": "土星 - 金星 阶段",
+          "summary": "土星主运、金星辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "土星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住土星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "稳住金星在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意压抑、迟滞、过度保守，别被惯性牵着走。",
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "用时间换确定性，先筑底盘再谈跃迁。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 33,
+          "timing": {
+            "start_age": 47.86,
+            "end_age": 49.43,
+            "start_date": "2034-12-07T02:05:15.408000",
+            "end_date": "2036-07-03T00:56:10.540800",
+            "duration_years": 1.57
+          },
+          "lords": {
+            "major": "SATURN",
+            "sub": "MERCURY"
+          },
+          "trend": {
+            "bonus_coefficient": 0.208,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 74.9,
+            "wealth": 65.0,
+            "relationship": 61.3,
+            "health": 70.4,
+            "family": 62.9
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.89,
+            "sub_score": 1.05,
+            "aspect_signature": [
+              "六合 水星，容许度 0.31°",
+              "合相 金星，容许度 3.24°"
+            ]
+          },
+          "title": "土星 - 水星 阶段",
+          "summary": "土星主运、水星辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "土星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大土星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大水星在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让土星的顺风感演变成过度承诺，压抑、迟滞、过度保守是这段的代价点。",
+            "即使局面平稳，也要注意犹疑、分心、过度比较，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "用时间换确定性，先筑底盘再谈跃迁。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 34,
+          "timing": {
+            "start_age": 49.43,
+            "end_age": 51.0,
+            "start_date": "2036-07-03T00:56:10.540800",
+            "end_date": "2038-01-27T23:47:05.673600",
+            "duration_years": 1.57
+          },
+          "lords": {
+            "major": "SATURN",
+            "sub": "MOON"
+          },
+          "trend": {
+            "bonus_coefficient": 0.144,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 71.5,
+            "wealth": 62.8,
+            "relationship": 61.1,
+            "health": 70.6,
+            "family": 63.5
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.89,
+            "sub_score": 0.01,
+            "aspect_signature": [
+              "六合 水星，容许度 0.31°",
+              "合相 金星，容许度 3.24°"
+            ]
+          },
+          "title": "土星 - 月亮 阶段",
+          "summary": "土星主运、月亮辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "土星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住土星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "稳住月亮在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意压抑、迟滞、过度保守，别被惯性牵着走。",
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "用时间换确定性，先筑底盘再谈跃迁。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 35,
+          "timing": {
+            "start_age": 51.0,
+            "end_age": 52.71,
+            "start_date": "2038-01-27T23:47:05.673600",
+            "end_date": "2039-10-16T02:53:33.091200",
+            "duration_years": 1.71
+          },
+          "lords": {
+            "major": "JUPITER",
+            "sub": "JUPITER"
+          },
+          "trend": {
+            "bonus_coefficient": 0.388,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 66.1,
+            "wealth": 66.7,
+            "relationship": 61.5,
+            "health": 57.8,
+            "family": 60.2
+          },
+          "astrology": {
+            "sign": "PISCES",
+            "sign_label": "双鱼座",
+            "house": 9,
+            "house_title": "远方与意义",
+            "dignity": "domicile",
+            "dignity_label": "入庙",
+            "major_score": 1.75,
+            "sub_score": 1.75,
+            "aspect_signature": [
+              "刑相 金星，容许度 1.11°",
+              "六合 月亮，容许度 2.61°"
+            ]
+          },
+          "title": "木星 - 木星 阶段",
+          "summary": "木星主运、木星辅运。主星落在远方与意义，先天状态为入庙，因此这段时间的人生重心会围绕财富与事业展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "木星主题被放大",
+            "重点落在远方与意义",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "放大木星在财富上的能力，优先做可复用、可沉淀的成果。",
+            "放大木星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让木星的顺风感演变成过度承诺，过度乐观、承诺过量、理想化是这段的代价点。",
+            "即使局面平稳，也要注意过度乐观、承诺过量、理想化，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "扩张时保留边界与节奏，把好运落到制度上。",
+            "围绕远方与意义做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 36,
+          "timing": {
+            "start_age": 52.71,
+            "end_age": 54.43,
+            "start_date": "2039-10-16T02:53:33.091200",
+            "end_date": "2041-07-03T06:00:00.508799",
+            "duration_years": 1.71
+          },
+          "lords": {
+            "major": "JUPITER",
+            "sub": "MARS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.45,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 68.6,
+            "wealth": 66.4,
+            "relationship": 62.0,
+            "health": 60.3,
+            "family": 61.1
+          },
+          "astrology": {
+            "sign": "PISCES",
+            "sign_label": "双鱼座",
+            "house": 9,
+            "house_title": "远方与意义",
+            "dignity": "domicile",
+            "dignity_label": "入庙",
+            "major_score": 1.75,
+            "sub_score": 2.74,
+            "aspect_signature": [
+              "刑相 金星，容许度 1.11°",
+              "六合 月亮，容许度 2.61°"
+            ]
+          },
+          "title": "木星 - 火星 阶段",
+          "summary": "木星主运、火星辅运。主星落在远方与意义，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "木星主题被放大",
+            "重点落在远方与意义",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大木星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大火星在财富上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让木星的顺风感演变成过度承诺，过度乐观、承诺过量、理想化是这段的代价点。",
+            "即使局面平稳，也要注意急躁、对抗、提前消耗，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和财富。",
+            "扩张时保留边界与节奏，把好运落到制度上。",
+            "围绕远方与意义做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 37,
+          "timing": {
+            "start_age": 54.43,
+            "end_age": 56.14,
+            "start_date": "2041-07-03T06:00:00.508799",
+            "end_date": "2043-03-21T09:06:27.926399",
+            "duration_years": 1.71
+          },
+          "lords": {
+            "major": "JUPITER",
+            "sub": "SUN"
+          },
+          "trend": {
+            "bonus_coefficient": 0.239,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 64.4,
+            "wealth": 61.8,
+            "relationship": 57.8,
+            "health": 54.9,
+            "family": 56.5
+          },
+          "astrology": {
+            "sign": "PISCES",
+            "sign_label": "双鱼座",
+            "house": 9,
+            "house_title": "远方与意义",
+            "dignity": "domicile",
+            "dignity_label": "入庙",
+            "major_score": 1.75,
+            "sub_score": -0.65,
+            "aspect_signature": [
+              "刑相 金星，容许度 1.11°",
+              "六合 月亮，容许度 2.61°"
+            ]
+          },
+          "title": "木星 - 太阳 阶段",
+          "summary": "木星主运、太阳辅运。主星落在远方与意义，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "木星主题被放大",
+            "重点落在远方与意义",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大木星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大太阳在财富上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让木星的顺风感演变成过度承诺，过度乐观、承诺过量、理想化是这段的代价点。",
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和财富。",
+            "扩张时保留边界与节奏，把好运落到制度上。",
+            "围绕远方与意义做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 38,
+          "timing": {
+            "start_age": 56.14,
+            "end_age": 57.86,
+            "start_date": "2043-03-21T09:06:27.926399",
+            "end_date": "2044-12-06T12:12:55.344000",
+            "duration_years": 1.71
+          },
+          "lords": {
+            "major": "JUPITER",
+            "sub": "VENUS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.283,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 63.0,
+            "wealth": 62.8,
+            "relationship": 61.2,
+            "health": 55.5,
+            "family": 58.3
+          },
+          "astrology": {
+            "sign": "PISCES",
+            "sign_label": "双鱼座",
+            "house": 9,
+            "house_title": "远方与意义",
+            "dignity": "domicile",
+            "dignity_label": "入庙",
+            "major_score": 1.75,
+            "sub_score": 0.06,
+            "aspect_signature": [
+              "刑相 金星，容许度 1.11°",
+              "六合 月亮，容许度 2.61°"
+            ]
+          },
+          "title": "木星 - 金星 阶段",
+          "summary": "木星主运、金星辅运。主星落在远方与意义，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "木星主题被放大",
+            "重点落在远方与意义",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大木星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大金星在财富上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让木星的顺风感演变成过度承诺，过度乐观、承诺过量、理想化是这段的代价点。",
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和财富。",
+            "扩张时保留边界与节奏，把好运落到制度上。",
+            "围绕远方与意义做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 39,
+          "timing": {
+            "start_age": 57.86,
+            "end_age": 59.57,
+            "start_date": "2044-12-06T12:12:55.344000",
+            "end_date": "2046-08-24T15:19:22.761600",
+            "duration_years": 1.71
+          },
+          "lords": {
+            "major": "JUPITER",
+            "sub": "MERCURY"
+          },
+          "trend": {
+            "bonus_coefficient": 0.345,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 65.9,
+            "wealth": 64.5,
+            "relationship": 60.1,
+            "health": 56.8,
+            "family": 58.8
+          },
+          "astrology": {
+            "sign": "PISCES",
+            "sign_label": "双鱼座",
+            "house": 9,
+            "house_title": "远方与意义",
+            "dignity": "domicile",
+            "dignity_label": "入庙",
+            "major_score": 1.75,
+            "sub_score": 1.05,
+            "aspect_signature": [
+              "刑相 金星，容许度 1.11°",
+              "六合 月亮，容许度 2.61°"
+            ]
+          },
+          "title": "木星 - 水星 阶段",
+          "summary": "木星主运、水星辅运。主星落在远方与意义，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "木星主题被放大",
+            "重点落在远方与意义",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大木星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大水星在财富上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让木星的顺风感演变成过度承诺，过度乐观、承诺过量、理想化是这段的代价点。",
+            "即使局面平稳，也要注意犹疑、分心、过度比较，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和财富。",
+            "扩张时保留边界与节奏，把好运落到制度上。",
+            "围绕远方与意义做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 40,
+          "timing": {
+            "start_age": 59.57,
+            "end_age": 61.29,
+            "start_date": "2046-08-24T15:19:22.761600",
+            "end_date": "2048-05-11T18:25:50.179200",
+            "duration_years": 1.71
+          },
+          "lords": {
+            "major": "JUPITER",
+            "sub": "MOON"
+          },
+          "trend": {
+            "bonus_coefficient": 0.28,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 62.5,
+            "wealth": 62.3,
+            "relationship": 59.9,
+            "health": 57.0,
+            "family": 59.4
+          },
+          "astrology": {
+            "sign": "PISCES",
+            "sign_label": "双鱼座",
+            "house": 9,
+            "house_title": "远方与意义",
+            "dignity": "domicile",
+            "dignity_label": "入庙",
+            "major_score": 1.75,
+            "sub_score": 0.01,
+            "aspect_signature": [
+              "刑相 金星，容许度 1.11°",
+              "六合 月亮，容许度 2.61°"
+            ]
+          },
+          "title": "木星 - 月亮 阶段",
+          "summary": "木星主运、月亮辅运。主星落在远方与意义，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "木星主题被放大",
+            "重点落在远方与意义",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大木星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大月亮在财富上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让木星的顺风感演变成过度承诺，过度乐观、承诺过量、理想化是这段的代价点。",
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和财富。",
+            "扩张时保留边界与节奏，把好运落到制度上。",
+            "围绕远方与意义做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 41,
+          "timing": {
+            "start_age": 61.29,
+            "end_age": 63.0,
+            "start_date": "2048-05-11T18:25:50.179200",
+            "end_date": "2050-01-27T21:32:17.596800",
+            "duration_years": 1.71
+          },
+          "lords": {
+            "major": "JUPITER",
+            "sub": "SATURN"
+          },
+          "trend": {
+            "bonus_coefficient": 0.335,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 66.1,
+            "wealth": 63.9,
+            "relationship": 59.5,
+            "health": 57.4,
+            "family": 59.0
+          },
+          "astrology": {
+            "sign": "PISCES",
+            "sign_label": "双鱼座",
+            "house": 9,
+            "house_title": "远方与意义",
+            "dignity": "domicile",
+            "dignity_label": "入庙",
+            "major_score": 1.75,
+            "sub_score": 0.89,
+            "aspect_signature": [
+              "刑相 金星，容许度 1.11°",
+              "六合 月亮，容许度 2.61°"
+            ]
+          },
+          "title": "木星 - 土星 阶段",
+          "summary": "木星主运、土星辅运。主星落在远方与意义，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "木星主题被放大",
+            "重点落在远方与意义",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大木星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大土星在财富上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让木星的顺风感演变成过度承诺，过度乐观、承诺过量、理想化是这段的代价点。",
+            "即使局面平稳，也要注意压抑、迟滞、过度保守，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和财富。",
+            "扩张时保留边界与节奏，把好运落到制度上。",
+            "围绕远方与意义做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 42,
+          "timing": {
+            "start_age": 63.0,
+            "end_age": 64.0,
+            "start_date": "2050-01-27T21:32:17.596800",
+            "end_date": "2051-01-28T03:21:03.590400",
+            "duration_years": 1.0
+          },
+          "lords": {
+            "major": "MARS",
+            "sub": "MARS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.609,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 86.0,
+            "wealth": 72.0,
+            "relationship": 67.2,
+            "health": 71.1,
+            "family": 67.2
+          },
+          "astrology": {
+            "sign": "ARIES",
+            "sign_label": "白羊座",
+            "house": 10,
+            "house_title": "事业与名望",
+            "dignity": "domicile",
+            "dignity_label": "入庙",
+            "major_score": 2.74,
+            "sub_score": 2.74,
+            "aspect_signature": [
+              "三合 土星，容许度 4.34°",
+              "六合 水星，容许度 4.65°"
+            ]
+          },
+          "title": "火星 - 火星 阶段",
+          "summary": "火星主运、火星辅运。主星落在事业与名望，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "火星主题被放大",
+            "重点落在事业与名望",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大火星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大火星在财富上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让火星的顺风感演变成过度承诺，急躁、对抗、提前消耗是这段的代价点。",
+            "即使局面平稳，也要注意急躁、对抗、提前消耗，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和财富。",
+            "把火力聚焦在关键战役，而不是到处起冲突。",
+            "把资源押在能形成社会可见度、职位抬升或作品背书的事项上。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 43,
+          "timing": {
+            "start_age": 64.0,
+            "end_age": 65.0,
+            "start_date": "2051-01-28T03:21:03.590400",
+            "end_date": "2052-01-28T09:09:49.584000",
+            "duration_years": 1.0
+          },
+          "lords": {
+            "major": "MARS",
+            "sub": "SUN"
+          },
+          "trend": {
+            "bonus_coefficient": 0.398,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 81.8,
+            "wealth": 67.4,
+            "relationship": 63.0,
+            "health": 65.7,
+            "family": 62.6
+          },
+          "astrology": {
+            "sign": "ARIES",
+            "sign_label": "白羊座",
+            "house": 10,
+            "house_title": "事业与名望",
+            "dignity": "domicile",
+            "dignity_label": "入庙",
+            "major_score": 2.74,
+            "sub_score": -0.65,
+            "aspect_signature": [
+              "三合 土星，容许度 4.34°",
+              "六合 水星，容许度 4.65°"
+            ]
+          },
+          "title": "火星 - 太阳 阶段",
+          "summary": "火星主运、太阳辅运。主星落在事业与名望，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "火星主题被放大",
+            "重点落在事业与名望",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大火星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大太阳在财富上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让火星的顺风感演变成过度承诺，急躁、对抗、提前消耗是这段的代价点。",
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和财富。",
+            "把火力聚焦在关键战役，而不是到处起冲突。",
+            "把资源押在能形成社会可见度、职位抬升或作品背书的事项上。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 44,
+          "timing": {
+            "start_age": 65.0,
+            "end_age": 66.0,
+            "start_date": "2052-01-28T09:09:49.584000",
+            "end_date": "2053-01-27T14:58:35.577600",
+            "duration_years": 1.0
+          },
+          "lords": {
+            "major": "MARS",
+            "sub": "VENUS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.442,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 80.3,
+            "wealth": 68.3,
+            "relationship": 66.3,
+            "health": 66.2,
+            "family": 64.3
+          },
+          "astrology": {
+            "sign": "ARIES",
+            "sign_label": "白羊座",
+            "house": 10,
+            "house_title": "事业与名望",
+            "dignity": "domicile",
+            "dignity_label": "入庙",
+            "major_score": 2.74,
+            "sub_score": 0.06,
+            "aspect_signature": [
+              "三合 土星，容许度 4.34°",
+              "六合 水星，容许度 4.65°"
+            ]
+          },
+          "title": "火星 - 金星 阶段",
+          "summary": "火星主运、金星辅运。主星落在事业与名望，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "火星主题被放大",
+            "重点落在事业与名望",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大火星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大金星在财富上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让火星的顺风感演变成过度承诺，急躁、对抗、提前消耗是这段的代价点。",
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和财富。",
+            "把火力聚焦在关键战役，而不是到处起冲突。",
+            "把资源押在能形成社会可见度、职位抬升或作品背书的事项上。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 45,
+          "timing": {
+            "start_age": 66.0,
+            "end_age": 67.0,
+            "start_date": "2053-01-27T14:58:35.577600",
+            "end_date": "2054-01-27T20:47:21.571200",
+            "duration_years": 1.0
+          },
+          "lords": {
+            "major": "MARS",
+            "sub": "MERCURY"
+          },
+          "trend": {
+            "bonus_coefficient": 0.504,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 83.3,
+            "wealth": 70.1,
+            "relationship": 65.3,
+            "health": 67.6,
+            "family": 64.9
+          },
+          "astrology": {
+            "sign": "ARIES",
+            "sign_label": "白羊座",
+            "house": 10,
+            "house_title": "事业与名望",
+            "dignity": "domicile",
+            "dignity_label": "入庙",
+            "major_score": 2.74,
+            "sub_score": 1.05,
+            "aspect_signature": [
+              "三合 土星，容许度 4.34°",
+              "六合 水星，容许度 4.65°"
+            ]
+          },
+          "title": "火星 - 水星 阶段",
+          "summary": "火星主运、水星辅运。主星落在事业与名望，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "火星主题被放大",
+            "重点落在事业与名望",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大火星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大水星在财富上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让火星的顺风感演变成过度承诺，急躁、对抗、提前消耗是这段的代价点。",
+            "即使局面平稳，也要注意犹疑、分心、过度比较，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和财富。",
+            "把火力聚焦在关键战役，而不是到处起冲突。",
+            "把资源押在能形成社会可见度、职位抬升或作品背书的事项上。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 46,
+          "timing": {
+            "start_age": 67.0,
+            "end_age": 68.0,
+            "start_date": "2054-01-27T20:47:21.571200",
+            "end_date": "2055-01-28T02:36:07.564800",
+            "duration_years": 1.0
+          },
+          "lords": {
+            "major": "MARS",
+            "sub": "MOON"
+          },
+          "trend": {
+            "bonus_coefficient": 0.439,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 79.9,
+            "wealth": 67.9,
+            "relationship": 65.1,
+            "health": 67.8,
+            "family": 65.5
+          },
+          "astrology": {
+            "sign": "ARIES",
+            "sign_label": "白羊座",
+            "house": 10,
+            "house_title": "事业与名望",
+            "dignity": "domicile",
+            "dignity_label": "入庙",
+            "major_score": 2.74,
+            "sub_score": 0.01,
+            "aspect_signature": [
+              "三合 土星，容许度 4.34°",
+              "六合 水星，容许度 4.65°"
+            ]
+          },
+          "title": "火星 - 月亮 阶段",
+          "summary": "火星主运、月亮辅运。主星落在事业与名望，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "火星主题被放大",
+            "重点落在事业与名望",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大火星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大月亮在财富上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让火星的顺风感演变成过度承诺，急躁、对抗、提前消耗是这段的代价点。",
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和财富。",
+            "把火力聚焦在关键战役，而不是到处起冲突。",
+            "把资源押在能形成社会可见度、职位抬升或作品背书的事项上。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 47,
+          "timing": {
+            "start_age": 68.0,
+            "end_age": 69.0,
+            "start_date": "2055-01-28T02:36:07.564800",
+            "end_date": "2056-01-28T08:24:53.558400",
+            "duration_years": 1.0
+          },
+          "lords": {
+            "major": "MARS",
+            "sub": "SATURN"
+          },
+          "trend": {
+            "bonus_coefficient": 0.494,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 83.5,
+            "wealth": 69.5,
+            "relationship": 64.7,
+            "health": 68.2,
+            "family": 65.1
+          },
+          "astrology": {
+            "sign": "ARIES",
+            "sign_label": "白羊座",
+            "house": 10,
+            "house_title": "事业与名望",
+            "dignity": "domicile",
+            "dignity_label": "入庙",
+            "major_score": 2.74,
+            "sub_score": 0.89,
+            "aspect_signature": [
+              "三合 土星，容许度 4.34°",
+              "六合 水星，容许度 4.65°"
+            ]
+          },
+          "title": "火星 - 土星 阶段",
+          "summary": "火星主运、土星辅运。主星落在事业与名望，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "火星主题被放大",
+            "重点落在事业与名望",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大火星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大土星在财富上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让火星的顺风感演变成过度承诺，急躁、对抗、提前消耗是这段的代价点。",
+            "即使局面平稳，也要注意压抑、迟滞、过度保守，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和财富。",
+            "把火力聚焦在关键战役，而不是到处起冲突。",
+            "把资源押在能形成社会可见度、职位抬升或作品背书的事项上。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 48,
+          "timing": {
+            "start_age": 69.0,
+            "end_age": 70.0,
+            "start_date": "2056-01-28T08:24:53.558400",
+            "end_date": "2057-01-27T14:13:39.552000",
+            "duration_years": 1.0
+          },
+          "lords": {
+            "major": "MARS",
+            "sub": "JUPITER"
+          },
+          "trend": {
+            "bonus_coefficient": 0.547,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 83.4,
+            "wealth": 72.2,
+            "relationship": 66.6,
+            "health": 68.5,
+            "family": 66.2
+          },
+          "astrology": {
+            "sign": "ARIES",
+            "sign_label": "白羊座",
+            "house": 10,
+            "house_title": "事业与名望",
+            "dignity": "domicile",
+            "dignity_label": "入庙",
+            "major_score": 2.74,
+            "sub_score": 1.75,
+            "aspect_signature": [
+              "三合 土星，容许度 4.34°",
+              "六合 水星，容许度 4.65°"
+            ]
+          },
+          "title": "火星 - 木星 阶段",
+          "summary": "火星主运、木星辅运。主星落在事业与名望，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "火星主题被放大",
+            "重点落在事业与名望",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大火星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大木星在财富上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让火星的顺风感演变成过度承诺，急躁、对抗、提前消耗是这段的代价点。",
+            "即使局面平稳，也要注意过度乐观、承诺过量、理想化，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和财富。",
+            "把火力聚焦在关键战役，而不是到处起冲突。",
+            "把资源押在能形成社会可见度、职位抬升或作品背书的事项上。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 51,
+          "timing": {
+            "start_age": 75.0,
+            "end_age": 76.43,
+            "start_date": "2062-01-27T19:17:29.520000",
+            "end_date": "2063-07-03T13:52:52.368000",
+            "duration_years": 1.43
+          },
+          "lords": {
+            "major": "SUN",
+            "sub": "SUN"
+          },
+          "trend": {
+            "bonus_coefficient": -0.144,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 59.4,
+            "wealth": 60.6,
+            "relationship": 51.6,
+            "health": 54.9,
+            "family": 50.3
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": -0.65,
+            "sub_score": -0.65,
+            "aspect_signature": []
+          },
+          "title": "太阳 - 太阳 阶段",
+          "summary": "太阳主运、太阳辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "太阳主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住太阳在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住太阳在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。",
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把注意力放在长期目标、名望与作品沉淀上。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 52,
+          "timing": {
+            "start_age": 76.43,
+            "end_age": 77.86,
+            "start_date": "2063-07-03T13:52:52.368000",
+            "end_date": "2064-12-06T08:28:15.216000",
+            "duration_years": 1.43
+          },
+          "lords": {
+            "major": "SUN",
+            "sub": "VENUS"
+          },
+          "trend": {
+            "bonus_coefficient": -0.1,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 58.0,
+            "wealth": 61.6,
+            "relationship": 55.0,
+            "health": 55.5,
+            "family": 52.1
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": -0.65,
+            "sub_score": 0.06,
+            "aspect_signature": []
+          },
+          "title": "太阳 - 金星 阶段",
+          "summary": "太阳主运、金星辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "太阳主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住太阳在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住金星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。",
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把注意力放在长期目标、名望与作品沉淀上。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 53,
+          "timing": {
+            "start_age": 77.86,
+            "end_age": 79.29,
+            "start_date": "2064-12-06T08:28:15.216000",
+            "end_date": "2066-05-12T03:03:38.064000",
+            "duration_years": 1.43
+          },
+          "lords": {
+            "major": "SUN",
+            "sub": "MERCURY"
+          },
+          "trend": {
+            "bonus_coefficient": -0.039,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 61.0,
+            "wealth": 63.4,
+            "relationship": 54.0,
+            "health": 56.9,
+            "family": 52.7
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": -0.65,
+            "sub_score": 1.05,
+            "aspect_signature": []
+          },
+          "title": "太阳 - 水星 阶段",
+          "summary": "太阳主运、水星辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "太阳主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住太阳在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住水星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。",
+            "即使局面平稳，也要注意犹疑、分心、过度比较，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把注意力放在长期目标、名望与作品沉淀上。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 54,
+          "timing": {
+            "start_age": 79.29,
+            "end_age": 80.71,
+            "start_date": "2066-05-12T03:03:38.064000",
+            "end_date": "2067-10-15T21:39:00.912000",
+            "duration_years": 1.43
+          },
+          "lords": {
+            "major": "SUN",
+            "sub": "MOON"
+          },
+          "trend": {
+            "bonus_coefficient": -0.104,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 57.5,
+            "wealth": 61.1,
+            "relationship": 53.7,
+            "health": 57.0,
+            "family": 53.2
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": -0.65,
+            "sub_score": 0.01,
+            "aspect_signature": []
+          },
+          "title": "太阳 - 月亮 阶段",
+          "summary": "太阳主运、月亮辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "太阳主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住太阳在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住月亮在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。",
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把注意力放在长期目标、名望与作品沉淀上。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 55,
+          "timing": {
+            "start_age": 80.71,
+            "end_age": 82.14,
+            "start_date": "2067-10-15T21:39:00.912000",
+            "end_date": "2069-03-20T16:14:23.760000",
+            "duration_years": 1.43
+          },
+          "lords": {
+            "major": "SUN",
+            "sub": "SATURN"
+          },
+          "trend": {
+            "bonus_coefficient": -0.048,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 61.1,
+            "wealth": 62.7,
+            "relationship": 53.3,
+            "health": 57.4,
+            "family": 52.8
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": -0.65,
+            "sub_score": 0.89,
+            "aspect_signature": []
+          },
+          "title": "太阳 - 土星 阶段",
+          "summary": "太阳主运、土星辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "太阳主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住太阳在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住土星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。",
+            "即使局面平稳，也要注意压抑、迟滞、过度保守，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把注意力放在长期目标、名望与作品沉淀上。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 56,
+          "timing": {
+            "start_age": 82.14,
+            "end_age": 83.57,
+            "start_date": "2069-03-20T16:14:23.760000",
+            "end_date": "2070-08-24T10:49:46.608000",
+            "duration_years": 1.43
+          },
+          "lords": {
+            "major": "SUN",
+            "sub": "JUPITER"
+          },
+          "trend": {
+            "bonus_coefficient": 0.005,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 61.1,
+            "wealth": 65.5,
+            "relationship": 55.3,
+            "health": 57.8,
+            "family": 54.0
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": -0.65,
+            "sub_score": 1.75,
+            "aspect_signature": []
+          },
+          "title": "太阳 - 木星 阶段",
+          "summary": "太阳主运、木星辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "太阳主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住太阳在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住木星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。",
+            "即使局面平稳，也要注意过度乐观、承诺过量、理想化，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把注意力放在长期目标、名望与作品沉淀上。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 57,
+          "timing": {
+            "start_age": 83.57,
+            "end_age": 85.0,
+            "start_date": "2070-08-24T10:49:46.608000",
+            "end_date": "2072-01-28T05:25:09.456000",
+            "duration_years": 1.43
+          },
+          "lords": {
+            "major": "SUN",
+            "sub": "MARS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.067,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 63.7,
+            "wealth": 65.3,
+            "relationship": 55.9,
+            "health": 60.4,
+            "family": 55.0
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "major_score": -0.65,
+            "sub_score": 2.74,
+            "aspect_signature": []
+          },
+          "title": "太阳 - 火星 阶段",
+          "summary": "太阳主运、火星辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "太阳主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住太阳在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住火星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。",
+            "即使局面平稳，也要注意急躁、对抗、提前消耗，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把注意力放在长期目标、名望与作品沉淀上。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 58,
+          "timing": {
+            "start_age": 85.0,
+            "end_age": 86.14,
+            "start_date": "2072-01-28T05:25:09.456000",
+            "end_date": "2073-03-20T15:29:27.734400",
+            "duration_years": 1.14
+          },
+          "lords": {
+            "major": "VENUS",
+            "sub": "VENUS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.013,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 60.1,
+            "wealth": 55.9,
+            "relationship": 61.3,
+            "health": 59.9,
+            "family": 55.9
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.06,
+            "sub_score": 0.06,
+            "aspect_signature": [
+              "刑相 木星，容许度 1.11°",
+              "合相 土星，容许度 3.24°"
+            ]
+          },
+          "title": "金星 - 金星 阶段",
+          "summary": "金星主运、金星辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕关系与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "金星主题被放大",
+            "重点落在工作与健康",
+            "关系是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住金星在关系上的能力，优先做可复用、可沉淀的成果。",
+            "稳住金星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。",
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给关系和事业。",
+            "通过关系与价值交换打开局面，但不要牺牲底线。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 59,
+          "timing": {
+            "start_age": 86.14,
+            "end_age": 87.29,
+            "start_date": "2073-03-20T15:29:27.734400",
+            "end_date": "2074-05-12T01:33:46.012800",
+            "duration_years": 1.14
+          },
+          "lords": {
+            "major": "VENUS",
+            "sub": "MERCURY"
+          },
+          "trend": {
+            "bonus_coefficient": 0.075,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 63.1,
+            "wealth": 57.7,
+            "relationship": 60.3,
+            "health": 61.3,
+            "family": 56.5
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.06,
+            "sub_score": 1.05,
+            "aspect_signature": [
+              "刑相 木星，容许度 1.11°",
+              "合相 土星，容许度 3.24°"
+            ]
+          },
+          "title": "金星 - 水星 阶段",
+          "summary": "金星主运、水星辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "金星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住金星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "稳住水星在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。",
+            "即使局面平稳，也要注意犹疑、分心、过度比较，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "通过关系与价值交换打开局面，但不要牺牲底线。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 60,
+          "timing": {
+            "start_age": 87.29,
+            "end_age": 88.43,
+            "start_date": "2074-05-12T01:33:46.012800",
+            "end_date": "2075-07-03T11:38:04.291200",
+            "duration_years": 1.14
+          },
+          "lords": {
+            "major": "VENUS",
+            "sub": "MOON"
+          },
+          "trend": {
+            "bonus_coefficient": 0.01,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 59.6,
+            "wealth": 55.4,
+            "relationship": 60.0,
+            "health": 61.4,
+            "family": 57.0
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.06,
+            "sub_score": 0.01,
+            "aspect_signature": [
+              "刑相 木星，容许度 1.11°",
+              "合相 土星，容许度 3.24°"
+            ]
+          },
+          "title": "金星 - 月亮 阶段",
+          "summary": "金星主运、月亮辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕健康与关系展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "金星主题被放大",
+            "重点落在工作与健康",
+            "健康是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住金星在健康上的能力，优先做可复用、可沉淀的成果。",
+            "稳住月亮在关系上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。",
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给健康和关系。",
+            "通过关系与价值交换打开局面，但不要牺牲底线。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 61,
+          "timing": {
+            "start_age": 88.43,
+            "end_age": 89.57,
+            "start_date": "2075-07-03T11:38:04.291200",
+            "end_date": "2076-08-23T21:42:22.569600",
+            "duration_years": 1.14
+          },
+          "lords": {
+            "major": "VENUS",
+            "sub": "SATURN"
+          },
+          "trend": {
+            "bonus_coefficient": 0.065,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 63.2,
+            "wealth": 57.0,
+            "relationship": 59.6,
+            "health": 61.8,
+            "family": 56.6
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.06,
+            "sub_score": 0.89,
+            "aspect_signature": [
+              "刑相 木星，容许度 1.11°",
+              "合相 土星，容许度 3.24°"
+            ]
+          },
+          "title": "金星 - 土星 阶段",
+          "summary": "金星主运、土星辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "金星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住金星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "稳住土星在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。",
+            "即使局面平稳，也要注意压抑、迟滞、过度保守，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "通过关系与价值交换打开局面，但不要牺牲底线。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 62,
+          "timing": {
+            "start_age": 89.57,
+            "end_age": 90.71,
+            "start_date": "2076-08-23T21:42:22.569600",
+            "end_date": "2077-10-15T07:46:40.848000",
+            "duration_years": 1.14
+          },
+          "lords": {
+            "major": "VENUS",
+            "sub": "JUPITER"
+          },
+          "trend": {
+            "bonus_coefficient": 0.118,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 63.2,
+            "wealth": 59.8,
+            "relationship": 61.6,
+            "health": 62.2,
+            "family": 57.8
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.06,
+            "sub_score": 1.75,
+            "aspect_signature": [
+              "刑相 木星，容许度 1.11°",
+              "合相 土星，容许度 3.24°"
+            ]
+          },
+          "title": "金星 - 木星 阶段",
+          "summary": "金星主运、木星辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "金星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住金星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "稳住木星在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。",
+            "即使局面平稳，也要注意过度乐观、承诺过量、理想化，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "通过关系与价值交换打开局面，但不要牺牲底线。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 63,
+          "timing": {
+            "start_age": 90.71,
+            "end_age": 91.86,
+            "start_date": "2077-10-15T07:46:40.848000",
+            "end_date": "2078-12-06T17:50:59.126400",
+            "duration_years": 1.14
+          },
+          "lords": {
+            "major": "VENUS",
+            "sub": "MARS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.18,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 65.8,
+            "wealth": 59.6,
+            "relationship": 62.2,
+            "health": 64.8,
+            "family": 58.8
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.06,
+            "sub_score": 2.74,
+            "aspect_signature": [
+              "刑相 木星，容许度 1.11°",
+              "合相 土星，容许度 3.24°"
+            ]
+          },
+          "title": "金星 - 火星 阶段",
+          "summary": "金星主运、火星辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "金星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "放大金星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "放大火星在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让金星的顺风感演变成过度承诺，讨好、依赖外部认可、享乐分散是这段的代价点。",
+            "即使局面平稳，也要注意急躁、对抗、提前消耗，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "通过关系与价值交换打开局面，但不要牺牲底线。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 64,
+          "timing": {
+            "start_age": 91.86,
+            "end_age": 93.0,
+            "start_date": "2078-12-06T17:50:59.126400",
+            "end_date": "2080-01-28T03:55:17.404800",
+            "duration_years": 1.14
+          },
+          "lords": {
+            "major": "VENUS",
+            "sub": "SUN"
+          },
+          "trend": {
+            "bonus_coefficient": -0.031,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 61.5,
+            "wealth": 54.9,
+            "relationship": 57.9,
+            "health": 59.3,
+            "family": 54.1
+          },
+          "astrology": {
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 0.06,
+            "sub_score": -0.65,
+            "aspect_signature": [
+              "刑相 木星，容许度 1.11°",
+              "合相 土星，容许度 3.24°"
+            ]
+          },
+          "title": "金星 - 太阳 阶段",
+          "summary": "金星主运、太阳辅运。主星落在工作与健康，先天状态为平常，因此这段时间的人生重心会围绕事业与健康展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "金星主题被放大",
+            "重点落在工作与健康",
+            "事业是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住金星在事业上的能力，优先做可复用、可沉淀的成果。",
+            "稳住太阳在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。",
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给事业和健康。",
+            "通过关系与价值交换打开局面，但不要牺牲底线。",
+            "你的胜负点不在灵感，而在习惯、流程和执行耐力。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 65,
+          "timing": {
+            "start_age": 93.0,
+            "end_age": 94.86,
+            "start_date": "2080-01-28T03:55:17.404800",
+            "end_date": "2081-12-06T11:17:17.107200",
+            "duration_years": 1.86
+          },
+          "lords": {
+            "major": "MERCURY",
+            "sub": "MERCURY"
+          },
+          "trend": {
+            "bonus_coefficient": 0.234,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 68.8,
+            "wealth": 73.9,
+            "relationship": 63.6,
+            "health": 65.6,
+            "family": 62.3
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 1.05,
+            "sub_score": 1.05,
+            "aspect_signature": [
+              "六合 土星，容许度 0.31°",
+              "六合 金星，容许度 2.93°"
+            ]
+          },
+          "title": "水星 - 水星 阶段",
+          "summary": "水星主运、水星辅运。主星落在风险与转化，先天状态为平常，因此这段时间的人生重心会围绕财富与事业展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "水星主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "放大水星在财富上的能力，优先做可复用、可沉淀的成果。",
+            "放大水星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让水星的顺风感演变成过度承诺，犹疑、分心、过度比较是这段的代价点。",
+            "即使局面平稳，也要注意犹疑、分心、过度比较，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把复杂问题拆成流程，建立可复用的认知框架。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 66,
+          "timing": {
+            "start_age": 94.86,
+            "end_age": 96.71,
+            "start_date": "2081-12-06T11:17:17.107200",
+            "end_date": "2083-10-15T18:39:16.809599",
+            "duration_years": 1.86
+          },
+          "lords": {
+            "major": "MERCURY",
+            "sub": "MOON"
+          },
+          "trend": {
+            "bonus_coefficient": 0.169,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 65.4,
+            "wealth": 71.7,
+            "relationship": 63.4,
+            "health": 65.8,
+            "family": 62.9
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 1.05,
+            "sub_score": 0.01,
+            "aspect_signature": [
+              "六合 土星，容许度 0.31°",
+              "六合 金星，容许度 2.93°"
+            ]
+          },
+          "title": "水星 - 月亮 阶段",
+          "summary": "水星主运、月亮辅运。主星落在风险与转化，先天状态为平常，因此这段时间的人生重心会围绕财富与健康展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "水星主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "放大水星在财富上的能力，优先做可复用、可沉淀的成果。",
+            "放大月亮在健康上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让水星的顺风感演变成过度承诺，犹疑、分心、过度比较是这段的代价点。",
+            "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和健康。",
+            "把复杂问题拆成流程，建立可复用的认知框架。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 67,
+          "timing": {
+            "start_age": 96.71,
+            "end_age": 98.57,
+            "start_date": "2083-10-15T18:39:16.809599",
+            "end_date": "2085-08-24T02:01:16.512000",
+            "duration_years": 1.86
+          },
+          "lords": {
+            "major": "MERCURY",
+            "sub": "SATURN"
+          },
+          "trend": {
+            "bonus_coefficient": 0.224,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 69.0,
+            "wealth": 73.3,
+            "relationship": 63.0,
+            "health": 66.2,
+            "family": 62.5
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 1.05,
+            "sub_score": 0.89,
+            "aspect_signature": [
+              "六合 土星，容许度 0.31°",
+              "六合 金星，容许度 2.93°"
+            ]
+          },
+          "title": "水星 - 土星 阶段",
+          "summary": "水星主运、土星辅运。主星落在风险与转化，先天状态为平常，因此这段时间的人生重心会围绕财富与事业展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "水星主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "放大水星在财富上的能力，优先做可复用、可沉淀的成果。",
+            "放大土星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让水星的顺风感演变成过度承诺，犹疑、分心、过度比较是这段的代价点。",
+            "即使局面平稳，也要注意压抑、迟滞、过度保守，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把复杂问题拆成流程，建立可复用的认知框架。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 68,
+          "timing": {
+            "start_age": 98.57,
+            "end_age": 100.43,
+            "start_date": "2085-08-24T02:01:16.512000",
+            "end_date": "2087-07-03T09:23:16.214400",
+            "duration_years": 1.86
+          },
+          "lords": {
+            "major": "MERCURY",
+            "sub": "JUPITER"
+          },
+          "trend": {
+            "bonus_coefficient": 0.277,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 68.9,
+            "wealth": 76.0,
+            "relationship": 64.9,
+            "health": 66.5,
+            "family": 63.6
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 1.05,
+            "sub_score": 1.75,
+            "aspect_signature": [
+              "六合 土星，容许度 0.31°",
+              "六合 金星，容许度 2.93°"
+            ]
+          },
+          "title": "水星 - 木星 阶段",
+          "summary": "水星主运、木星辅运。主星落在风险与转化，先天状态为平常，因此这段时间的人生重心会围绕财富与事业展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "水星主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "放大水星在财富上的能力，优先做可复用、可沉淀的成果。",
+            "放大木星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让水星的顺风感演变成过度承诺，犹疑、分心、过度比较是这段的代价点。",
+            "即使局面平稳，也要注意过度乐观、承诺过量、理想化，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把复杂问题拆成流程，建立可复用的认知框架。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 69,
+          "timing": {
+            "start_age": 100.43,
+            "end_age": 102.29,
+            "start_date": "2087-07-03T09:23:16.214400",
+            "end_date": "2089-05-11T16:45:15.916800",
+            "duration_years": 1.86
+          },
+          "lords": {
+            "major": "MERCURY",
+            "sub": "MARS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.339,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 71.5,
+            "wealth": 75.8,
+            "relationship": 65.5,
+            "health": 69.1,
+            "family": 64.6
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 1.05,
+            "sub_score": 2.74,
+            "aspect_signature": [
+              "六合 土星，容许度 0.31°",
+              "六合 金星，容许度 2.93°"
+            ]
+          },
+          "title": "水星 - 火星 阶段",
+          "summary": "水星主运、火星辅运。主星落在风险与转化，先天状态为平常，因此这段时间的人生重心会围绕财富与事业展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "水星主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "放大水星在财富上的能力，优先做可复用、可沉淀的成果。",
+            "放大火星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让水星的顺风感演变成过度承诺，犹疑、分心、过度比较是这段的代价点。",
+            "即使局面平稳，也要注意急躁、对抗、提前消耗，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把复杂问题拆成流程，建立可复用的认知框架。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 70,
+          "timing": {
+            "start_age": 102.29,
+            "end_age": 104.14,
+            "start_date": "2089-05-11T16:45:15.916800",
+            "end_date": "2091-03-21T00:07:15.619200",
+            "duration_years": 1.86
+          },
+          "lords": {
+            "major": "MERCURY",
+            "sub": "SUN"
+          },
+          "trend": {
+            "bonus_coefficient": 0.128,
+            "type": "stable"
+          },
+          "domains": {
+            "career": 67.3,
+            "wealth": 71.2,
+            "relationship": 61.3,
+            "health": 63.7,
+            "family": 60.0
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 1.05,
+            "sub_score": -0.65,
+            "aspect_signature": [
+              "六合 土星，容许度 0.31°",
+              "六合 金星，容许度 2.93°"
+            ]
+          },
+          "title": "水星 - 太阳 阶段",
+          "summary": "水星主运、太阳辅运。主星落在风险与转化，先天状态为平常，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+          "themes": [
+            "水星主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "稳住水星在财富上的能力，优先做可复用、可沉淀的成果。",
+            "稳住太阳在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "即使局面平稳，也要注意犹疑、分心、过度比较，别被惯性牵着走。",
+            "即使局面平稳，也要注意过度自尊或只按意志推进，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把复杂问题拆成流程，建立可复用的认知框架。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        },
+        {
+          "index": 71,
+          "timing": {
+            "start_age": 104.14,
+            "end_age": 106.0,
+            "start_date": "2091-03-21T00:07:15.619200",
+            "end_date": "2093-01-27T07:29:15.321600",
+            "duration_years": 1.86
+          },
+          "lords": {
+            "major": "MERCURY",
+            "sub": "VENUS"
+          },
+          "trend": {
+            "bonus_coefficient": 0.172,
+            "type": "bull"
+          },
+          "domains": {
+            "career": 65.8,
+            "wealth": 72.1,
+            "relationship": 64.6,
+            "health": 64.2,
+            "family": 61.7
+          },
+          "astrology": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 8,
+            "house_title": "风险与转化",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "major_score": 1.05,
+            "sub_score": 0.06,
+            "aspect_signature": [
+              "六合 土星，容许度 0.31°",
+              "六合 金星，容许度 2.93°"
+            ]
+          },
+          "title": "水星 - 金星 阶段",
+          "summary": "水星主运、金星辅运。主星落在风险与转化，先天状态为平常，因此这段时间的人生重心会围绕财富与事业展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。",
+          "themes": [
+            "水星主题被放大",
+            "重点落在风险与转化",
+            "财富是阶段主轴"
+          ],
+          "opportunities": [
+            "放大水星在财富上的能力，优先做可复用、可沉淀的成果。",
+            "放大金星在事业上的能力，优先做可复用、可沉淀的成果。"
+          ],
+          "cautions": [
+            "别让水星的顺风感演变成过度承诺，犹疑、分心、过度比较是这段的代价点。",
+            "即使局面平稳，也要注意讨好、依赖外部认可、享乐分散，别被惯性牵着走。"
+          ],
+          "action_focus": [
+            "把时间优先给财富和事业。",
+            "把复杂问题拆成流程，建立可复用的认知框架。",
+            "围绕风险与转化做结构化经营，而不是被情绪和偶然性牵着走。"
+          ],
+          "type": "major"
+        }
+      ]
+    },
+    "natal_chart": {
+      "ascendant": {
+        "sign": "CANCER",
+        "sign_label": "巨蟹座",
+        "degree": 12.226187
+      },
+      "houses": [
+        {
+          "house": 1,
+          "sign": "CANCER",
+          "sign_label": "巨蟹座",
+          "degree": 12.226187,
+          "title": "自我与身体"
+        },
+        {
+          "house": 2,
+          "sign": "LEO",
+          "sign_label": "狮子座",
+          "degree": 5.970515,
+          "title": "收入与资源"
+        },
+        {
+          "house": 3,
+          "sign": "VIRGO",
+          "sign_label": "处女座",
+          "degree": 1.376821,
+          "title": "学习与表达"
+        },
+        {
+          "house": 4,
+          "sign": "VIRGO",
+          "sign_label": "处女座",
+          "degree": 28.321936,
+          "title": "家庭与根基"
+        },
+        {
+          "house": 5,
+          "sign": "SCORPIO",
+          "sign_label": "天蝎座",
+          "degree": 5.708242,
+          "title": "创造与恋爱"
+        },
+        {
+          "house": 6,
+          "sign": "SAGITTARIUS",
+          "sign_label": "射手座",
+          "degree": 9.985975,
+          "title": "工作与健康"
+        },
+        {
+          "house": 7,
+          "sign": "CAPRICORN",
+          "sign_label": "摩羯座",
+          "degree": 12.226187,
+          "title": "伴侣与合作"
+        },
+        {
+          "house": 8,
+          "sign": "AQUARIUS",
+          "sign_label": "水瓶座",
+          "degree": 5.970515,
+          "title": "风险与转化"
+        },
+        {
+          "house": 9,
+          "sign": "PISCES",
+          "sign_label": "双鱼座",
+          "degree": 1.376821,
+          "title": "远方与意义"
+        },
+        {
+          "house": 10,
+          "sign": "PISCES",
+          "sign_label": "双鱼座",
+          "degree": 28.321936,
+          "title": "事业与名望"
+        },
+        {
+          "house": 11,
+          "sign": "TAURUS",
+          "sign_label": "金牛座",
+          "degree": 5.708242,
+          "title": "社群与愿景"
+        },
+        {
+          "house": 12,
+          "sign": "GEMINI",
+          "sign_label": "双子座",
+          "degree": 9.985975,
+          "title": "潜意识与退隐"
+        }
+      ],
+      "sect": "day",
+      "sect_label": "日盘",
+      "chart_ruler": "MOON",
+      "chart_ruler_label": "月亮",
+      "signature": "这是一个以巨蟹座上升起盘、太阳落在水瓶座、月亮落在摩羯座的命盘。命主星是月亮，主导力量偏向火星、木星。整体不是靠单一高光取胜，而是靠把人生关键主题做成长期结构。",
+      "planets": {
+        "SUN": {
+          "sign": "AQUARIUS",
+          "sign_label": "水瓶座",
+          "house": 8,
+          "house_title": "风险与转化",
+          "dignity": "detriment",
+          "dignity_label": "失势",
+          "degree": 7.826595,
+          "retrograde": false,
+          "score": -0.65,
+          "keywords": [
+            "自我定义与主导能力",
+            "风险",
+            "共享资源"
+          ],
+          "gift": "自我定义与主导能力",
+          "shadow": "过度自尊或只按意志推进",
+          "strategy": "把注意力放在长期目标、名望与作品沉淀上。",
+          "aspect_signature": [],
+          "reason": "太阳落在风险与转化，先天状态为失势。 支持与压力并存，需要靠节奏管理来定胜负。",
+          "longitude": 307.826595
+        },
+        "MOON": {
+          "sign": "CAPRICORN",
+          "sign_label": "摩羯座",
+          "house": 7,
+          "house_title": "伴侣与合作",
+          "dignity": "detriment",
+          "dignity_label": "失势",
+          "degree": 19.913082,
+          "retrograde": false,
+          "score": 0.01,
+          "keywords": [
+            "情绪感知、照料与安全需求的把握",
+            "伴侣",
+            "合作"
+          ],
+          "gift": "情绪感知、照料与安全需求的把握",
+          "shadow": "情绪卷入、节奏被环境牵动",
+          "strategy": "先稳定作息与关系边界，再谈效率和决策。",
+          "aspect_signature": [
+            "六合 木星，容许度 2.61°"
+          ],
+          "reason": "月亮落在伴侣与合作，先天状态为失势。 支持与压力并存，需要靠节奏管理来定胜负。 这也是整张命盘的命主星，权重更高。",
+          "longitude": 289.913082
+        },
+        "MERCURY": {
+          "sign": "AQUARIUS",
+          "sign_label": "水瓶座",
+          "house": 8,
+          "house_title": "风险与转化",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "degree": 18.477504,
+          "retrograde": false,
+          "score": 1.05,
+          "keywords": [
+            "信息整合、表达、交易与学习能力",
+            "风险",
+            "共享资源"
+          ],
+          "gift": "信息整合、表达、交易与学习能力",
+          "shadow": "犹疑、分心、过度比较",
+          "strategy": "把复杂问题拆成流程，建立可复用的认知框架。",
+          "aspect_signature": [
+            "六合 土星，容许度 0.31°",
+            "六合 金星，容许度 2.93°",
+            "六合 火星，容许度 4.65°"
+          ],
+          "reason": "水星落在风险与转化，先天状态为平常。 相位支持较多，能把天赋顺着结构用出来。",
+          "longitude": 318.477504
+        },
+        "VENUS": {
+          "sign": "SAGITTARIUS",
+          "sign_label": "射手座",
+          "house": 6,
+          "house_title": "工作与健康",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "degree": 21.408205,
+          "retrograde": false,
+          "score": 0.06,
+          "keywords": [
+            "关系经营、审美、合作与资源协调",
+            "执行",
+            "习惯"
+          ],
+          "gift": "关系经营、审美、合作与资源协调",
+          "shadow": "讨好、依赖外部认可、享乐分散",
+          "strategy": "通过关系与价值交换打开局面，但不要牺牲底线。",
+          "aspect_signature": [
+            "刑相 木星，容许度 1.11°",
+            "合相 土星，容许度 3.24°",
+            "六合 水星，容许度 2.93°"
+          ],
+          "reason": "金星落在工作与健康，先天状态为平常。 支持与压力并存，需要靠节奏管理来定胜负。",
+          "longitude": 261.408205
+        },
+        "MARS": {
+          "sign": "ARIES",
+          "sign_label": "白羊座",
+          "house": 10,
+          "house_title": "事业与名望",
+          "dignity": "domicile",
+          "dignity_label": "入庙",
+          "degree": 13.822917,
+          "retrograde": false,
+          "score": 2.74,
+          "keywords": [
+            "行动力、竞争性、突破与执行",
+            "事业地位",
+            "公众形象"
+          ],
+          "gift": "行动力、竞争性、突破与执行",
+          "shadow": "急躁、对抗、提前消耗",
+          "strategy": "把火力聚焦在关键战役，而不是到处起冲突。",
+          "aspect_signature": [
+            "三合 土星，容许度 4.34°",
+            "六合 水星，容许度 4.65°"
+          ],
+          "reason": "火星落在事业与名望，先天状态为入庙。 支持与压力并存，需要靠节奏管理来定胜负。",
+          "longitude": 13.822917
+        },
+        "JUPITER": {
+          "sign": "PISCES",
+          "sign_label": "双鱼座",
+          "house": 9,
+          "house_title": "远方与意义",
+          "dignity": "domicile",
+          "dignity_label": "入庙",
+          "degree": 22.521875,
+          "retrograde": false,
+          "score": 1.75,
+          "keywords": [
+            "扩张、信念、机会识别与贵人运",
+            "高阶学习",
+            "远行"
+          ],
+          "gift": "扩张、信念、机会识别与贵人运",
+          "shadow": "过度乐观、承诺过量、理想化",
+          "strategy": "扩张时保留边界与节奏，把好运落到制度上。",
+          "aspect_signature": [
+            "刑相 金星，容许度 1.11°",
+            "六合 月亮，容许度 2.61°",
+            "刑相 土星，容许度 4.36°"
+          ],
+          "reason": "木星落在远方与意义，先天状态为入庙。 相位拉扯偏重，人生会通过摩擦逼出成熟度。",
+          "longitude": 352.521875
+        },
+        "SATURN": {
+          "sign": "SAGITTARIUS",
+          "sign_label": "射手座",
+          "house": 6,
+          "house_title": "工作与健康",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "degree": 18.165038,
+          "retrograde": false,
+          "score": 0.89,
+          "keywords": [
+            "结构、耐力、长期主义与责任",
+            "执行",
+            "习惯"
+          ],
+          "gift": "结构、耐力、长期主义与责任",
+          "shadow": "压抑、迟滞、过度保守",
+          "strategy": "用时间换确定性，先筑底盘再谈跃迁。",
+          "aspect_signature": [
+            "六合 水星，容许度 0.31°",
+            "合相 金星，容许度 3.24°",
+            "三合 火星，容许度 4.34°"
+          ],
+          "reason": "土星落在工作与健康，先天状态为平常。 相位支持较多，能把天赋顺着结构用出来。",
+          "longitude": 258.165038
+        },
+        "URANUS": {
+          "sign": "SAGITTARIUS",
+          "sign_label": "射手座",
+          "house": 6,
+          "house_title": "工作与健康",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "degree": 25.087859,
+          "retrograde": false,
+          "reason": "天王星落在工作与健康，用于补充本命盘的完整轮盘视图。",
+          "longitude": 265.087859
+        },
+        "NEPTUNE": {
+          "sign": "CAPRICORN",
+          "sign_label": "摩羯座",
+          "house": 6,
+          "house_title": "工作与健康",
+          "dignity": "fall",
+          "dignity_label": "落陷",
+          "degree": 6.67557,
+          "retrograde": false,
+          "reason": "海王星落在工作与健康，用于补充本命盘的完整轮盘视图。",
+          "longitude": 276.67557
+        },
+        "PLUTO": {
+          "sign": "SCORPIO",
+          "sign_label": "天蝎座",
+          "house": 5,
+          "house_title": "创造与恋爱",
+          "dignity": "domicile",
+          "dignity_label": "入庙",
+          "degree": 9.912801,
+          "retrograde": false,
+          "reason": "冥王星落在创造与恋爱，用于补充本命盘的完整轮盘视图。",
+          "longitude": 219.912801
+        },
+        "NORTH_NODE": {
+          "sign": "ARIES",
+          "sign_label": "白羊座",
+          "house": 10,
+          "house_title": "事业与名望",
+          "dignity": "auxiliary",
+          "dignity_label": "附加点",
+          "degree": 13.910429,
+          "retrograde": true,
+          "reason": "北交点用于补充本命轮盘阅读。",
+          "longitude": 13.910429
+        },
+        "SOUTH_NODE": {
+          "sign": "LIBRA",
+          "sign_label": "天秤座",
+          "house": 4,
+          "house_title": "家庭与根基",
+          "dignity": "auxiliary",
+          "dignity_label": "附加点",
+          "degree": 13.910429,
+          "retrograde": false,
+          "reason": "南交点用于补充本命轮盘阅读。",
+          "longitude": 193.910429
+        }
+      },
+      "dominant_planets": [
+        {
+          "planet": "MARS",
+          "label": "火星",
+          "score": 2.74,
+          "reason": "火星落在事业与名望，先天状态为入庙。 支持与压力并存，需要靠节奏管理来定胜负。"
+        },
+        {
+          "planet": "JUPITER",
+          "label": "木星",
+          "score": 1.75,
+          "reason": "木星落在远方与意义，先天状态为入庙。 相位拉扯偏重，人生会通过摩擦逼出成熟度。"
+        },
+        {
+          "planet": "MERCURY",
+          "label": "水星",
+          "score": 1.05,
+          "reason": "水星落在风险与转化，先天状态为平常。 相位支持较多，能把天赋顺着结构用出来。"
+        }
+      ],
+      "pressure_points": [
+        {
+          "planet": "SUN",
+          "label": "太阳",
+          "score": -0.65,
+          "reason": "太阳落在风险与转化，先天状态为失势。 支持与压力并存，需要靠节奏管理来定胜负。"
+        },
+        {
+          "planet": "MOON",
+          "label": "月亮",
+          "score": 0.01,
+          "reason": "月亮落在伴侣与合作，先天状态为失势。 支持与压力并存，需要靠节奏管理来定胜负。 这也是整张命盘的命主星，权重更高。"
+        }
+      ],
+      "house_emphasis": [
+        {
+          "house": 8,
+          "title": "风险与转化",
+          "keywords": [
+            "风险",
+            "共享资源",
+            "深层转变"
+          ],
+          "weight": 2.2
+        },
+        {
+          "house": 6,
+          "title": "工作与健康",
+          "keywords": [
+            "执行",
+            "习惯",
+            "健康管理"
+          ],
+          "weight": 2.0
+        },
+        {
+          "house": 7,
+          "title": "伴侣与合作",
+          "keywords": [
+            "伴侣",
+            "合作",
+            "契约关系"
+          ],
+          "weight": 1.2
+        },
+        {
+          "house": 9,
+          "title": "远方与意义",
+          "keywords": [
+            "高阶学习",
+            "远行",
+            "世界观"
+          ],
+          "weight": 1.0
+        }
+      ],
+      "major_aspects": [
+        {
+          "title": "金星 刑相 木星",
+          "strength": 0.645,
+          "nature": "challenging",
+          "summary": "金星与木星存在张力，逼你调整方法。"
+        },
+        {
+          "title": "水星 六合 土星",
+          "strength": 0.563,
+          "nature": "supportive",
+          "summary": "水星与土星互相配合，适合主动争取。"
+        },
+        {
+          "title": "金星 合相 土星",
+          "strength": 0.436,
+          "nature": "supportive",
+          "summary": "金星与土星合流，主题会被放大。"
+        },
+        {
+          "title": "月亮 六合 木星",
+          "strength": 0.287,
+          "nature": "supportive",
+          "summary": "月亮与木星互相配合，适合主动争取。"
+        },
+        {
+          "title": "火星 三合 土星",
+          "strength": 0.249,
+          "nature": "supportive",
+          "summary": "火星与土星形成顺流，推进更自然。"
+        },
+        {
+          "title": "水星 六合 金星",
+          "strength": 0.248,
+          "nature": "supportive",
+          "summary": "水星与金星互相配合，适合主动争取。"
+        }
+      ]
+    },
+    "current_phase": {
+      "age_range": "38 - 40 岁",
+      "start_date": "2025-10-15T17:30:49.180800",
+      "end_date": "2027-01-28T07:50:39.744000",
+      "major_lord": "MOON",
+      "sub_lord": "MERCURY",
+      "trend_type": "stable",
+      "score": 52.7,
+      "keywords": [
+        "月亮主题被放大",
+        "重点落在伴侣与合作",
+        "关系是阶段主轴"
+      ],
+      "feeling": "当前阶段不会剧烈翻盘，但伴侣与合作会成为你持续经营的主线。",
+      "description": "平稳段",
+      "summary": "月亮主运、水星辅运。主星落在伴侣与合作，先天状态为失势，因此这段时间的人生重心会围绕关系与家庭展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。",
+      "opportunities": [
+        "稳住月亮在关系上的能力，优先做可复用、可沉淀的成果。",
+        "稳住水星在家庭上的能力，优先做可复用、可沉淀的成果。"
+      ],
+      "cautions": [
+        "即使局面平稳，也要注意情绪卷入、节奏被环境牵动，别被惯性牵着走。",
+        "即使局面平稳，也要注意犹疑、分心、过度比较，别被惯性牵着走。"
+      ],
+      "action_focus": [
+        "把时间优先给关系和家庭。",
+        "先稳定作息与关系边界，再谈效率和决策。",
+        "关键突破来自合作关系，谈规则比谈感觉更重要。"
+      ],
+      "dominant_domains": [
+        {
+          "key": "relationship",
+          "label": "关系",
+          "score": 70.0
+        },
+        {
+          "key": "family",
+          "label": "家庭",
+          "score": 61.7
+        },
+        {
+          "key": "career",
+          "label": "事业",
+          "score": 59.2
+        }
+      ],
+      "why_now": "主运星落在伴侣与合作，且先天状态为失势，所以这几年的人生议题会更集中、更具体。"
+    },
+    "life_model": {
+      "title": "巨蟹座上升 · 火星 / 木星 主导型人生模型",
+      "summary": "这是一个以巨蟹座上升起盘、太阳落在水瓶座、月亮落在摩羯座的命盘。命主星是月亮，主导力量偏向火星、木星。整体不是靠单一高光取胜，而是靠把人生关键主题做成长期结构。",
+      "core_themes": [
+        "风险与转化是人生主轴",
+        "工作与健康是人生主轴",
+        "伴侣与合作是人生主轴"
+      ],
+      "strengths": [
+        "火星落在事业与名望，先天状态为入庙。 支持与压力并存，需要靠节奏管理来定胜负。",
+        "木星落在远方与意义，先天状态为入庙。 相位拉扯偏重，人生会通过摩擦逼出成熟度。"
+      ],
+      "challenges": [
+        "太阳落在风险与转化，先天状态为失势。 支持与压力并存，需要靠节奏管理来定胜负。",
+        "月亮落在伴侣与合作，先天状态为失势。 支持与压力并存，需要靠节奏管理来定胜负。 这也是整张命盘的命主星，权重更高。"
+      ],
+      "growth_path": [
+        "先把风险与转化做成稳定结构，再去追求更大的舞台和结果。",
+        "对太阳的课题，不能只靠天赋，应建立规则、边界与复盘机制。",
+        "命主星是月亮，真正的跃迁来自持续经营而不是偶发爆发。"
+      ],
+      "strategy": [
+        "当前阶段优先处理关系，这是此刻最能带动全局的入口。",
+        "把时间优先给关系和家庭。",
+        "先稳定作息与关系边界，再谈效率和决策。",
+        "长期来看，要让火星的优势变成可复制的方法，而不是只在状态好时才出现。"
+      ],
+      "peak_windows": [
+        {
+          "age_range": "63-64岁",
+          "lords": "火星/火星",
+          "summary": "火星主运、火星辅运。主星落在事业与名望，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。"
+        },
+        {
+          "age_range": "69-70岁",
+          "lords": "火星/木星",
+          "summary": "火星主运、木星辅运。主星落在事业与名望，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。"
+        },
+        {
+          "age_range": "66-67岁",
+          "lords": "火星/水星",
+          "summary": "火星主运、水星辅运。主星落在事业与名望，先天状态为入庙，因此这段时间的人生重心会围绕事业与财富展开。 整体是扩张窗口，适合把已经成熟的能力推向更大舞台。"
+        }
+      ],
+      "reset_windows": [
+        {
+          "age_range": "0-1岁",
+          "lords": "太阳/太阳",
+          "summary": "太阳主运、太阳辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。"
+        },
+        {
+          "age_range": "75-76岁",
+          "lords": "太阳/太阳",
+          "summary": "太阳主运、太阳辅运。主星落在风险与转化，先天状态为失势，因此这段时间的人生重心会围绕财富与事业展开。 整体偏平稳，重点在于打磨方法、搭好结构、耐心推进。"
+        }
+      ]
+    },
+    "natal_blueprint": {
+      "role_title": "联盟扩张型整合者",
+      "summary": "本命蓝图不只看性格，而是看月亮落在第7宫 伴侣与合作之后，你如何通过风险与转化、工作与健康、伴侣与合作这些核心场景，把自己活成“联盟扩张型整合者”。",
+      "signature": "这是一个以巨蟹座上升起盘、太阳落在水瓶座、月亮落在摩羯座的命盘。命主星是月亮，主导力量偏向火星、木星。整体不是靠单一高光取胜，而是靠把人生关键主题做成长期结构。",
+      "keywords": [
+        "风险共担、利益绑定、债务与筹码",
+        "执行系统、差事、日常工序、用人管理",
+        "联盟、客户、对手、契约、师徒、保护关系",
+        "理念、旗号、远方资源、合法性"
+      ],
+      "key_signals": [
+        {
+          "label": "命主入口",
+          "value": "月亮落第7宫 伴侣与合作",
+          "hint": "月亮落在伴侣与合作，先天状态为失势。 支持与压力并存，需要靠节奏管理来定胜负。 这也是整张命盘的命主星，权重更高。"
+        },
+        {
+          "label": "第一杠杆",
+          "value": "第8宫 风险与转化",
+          "hint": "风险共担、利益绑定、债务与筹码"
+        },
+        {
+          "label": "第二杠杆",
+          "value": "第6宫 工作与健康",
+          "hint": "执行系统、差事、日常工序、用人管理"
+        },
+        {
+          "label": "角色定位",
+          "value": "联盟扩张型整合者",
+          "hint": "这不是性格测试结果，而是命盘在社会中的运作身份。"
+        },
+        {
+          "label": "主要代价",
+          "value": "太阳",
+          "hint": "太阳落在风险与转化，先天状态为失势。 支持与压力并存，需要靠节奏管理来定胜负。"
+        }
+      ],
+      "layers": [
+        {
+          "key": "structure",
+          "title": "结构层",
+          "headline": "巨蟹座上升 · 月亮命主",
+          "summary": "这张盘的底层不是靠单点爆发取胜，而是靠把核心议题做成长期结构。",
+          "evidence": [
+            "巨蟹座上升",
+            "月亮落第7宫 伴侣与合作",
+            "1R 月亮飞7宫",
+            "主导行星 火星 / 木星",
+            "重点宫位 风险与转化、工作与健康、伴侣与合作",
+            "金星 刑相 木星"
+          ],
+          "focus_cards": [
+            {
+              "label": "命主入口",
+              "value": "月亮落第7宫 伴侣与合作",
+              "hint": "月亮落在伴侣与合作，先天状态为失势。 支持与压力并存，需要靠节奏管理来定胜负。 这也是整张命盘的命主星，权重更高。"
+            },
+            {
+              "label": "主导行星",
+              "value": "火星 / 木星",
+              "hint": "这几颗星决定整张盘最容易被放大的主线。"
+            },
+            {
+              "label": "重心宫位",
+              "value": "风险与转化、工作与健康",
+              "hint": "这些宫位会反复变成你的人生主场景。"
+            }
+          ],
+          "points": [
+            "上升在巨蟹座，命主星是月亮。这说明你的人生入口更依赖情绪感知、照料与安全需求的把握。",
+            "主导力量偏向火星、木星，真正能带来跃迁的，往往不是单个高光，而是持续放大的主轴。",
+            "最强宫位集中在风险与转化、工作与健康、伴侣与合作，它们不是零散主题，而是会反复塑造人生路径的主结构。",
+            "月亮先天状态为失势，这条线能成事，但常常要靠失衡、代价或绕路来推进。",
+            "命盘显眼相位之一是“金星 刑相 木星”，说明主轴不是单线推进，而会和其他核心议题持续联动。"
+          ]
+        },
+        {
+          "key": "power",
+          "title": "权力层",
+          "headline": "资源、关系与控制如何运作",
+          "summary": "真正影响人生走向的，不只是性格，而是你如何获得资源、进入系统并形成控制力。",
+          "evidence": [
+            "第一杠杆 第8宫",
+            "第二杠杆 第6宫",
+            "7R 土星飞6宫",
+            "10R 木星飞9宫",
+            "12R 水星飞8宫"
+          ],
+          "focus_cards": [
+            {
+              "label": "第一杠杆",
+              "value": "第8宫 风险与转化",
+              "hint": "风险共担、利益绑定、债务与筹码"
+            },
+            {
+              "label": "第二杠杆",
+              "value": "第6宫 工作与健康",
+              "hint": "执行系统、差事、日常工序、用人管理"
+            },
+            {
+              "label": "借力入口",
+              "value": "7R 土星飞6宫",
+              "hint": "你最容易通过哪里拿到平台、合作、制度入口或公开位置。"
+            }
+          ],
+          "points": [
+            "第一权力入口在第8宫：风险共担、利益绑定、债务与筹码。",
+            "决定你如何处理权力背后的代价、筹码和深度绑定。",
+            "第二杠杆在第6宫：执行系统、差事、日常工序、用人管理。",
+            "7宫主链路是“7R 土星飞6宫”，说明伴侣、合作、贵人、对手或联盟关系会直接参与资源流向。",
+            "10宫主链路是“10R 木星飞9宫”，这决定了公开位置、职业身份和社会认可如何被做出来。",
+            "12宫主链路是“12R 水星飞8宫”，说明你的杠杆里往往还夹带幕后系统、隐线压力或收尾成本。"
+          ]
+        },
+        {
+          "key": "role",
+          "title": "角色层",
+          "headline": "联盟扩张型整合者",
+          "summary": "本命蓝图不只回答“你像什么人”，还要回答“你在社会中更像哪一种角色”。",
+          "evidence": [
+            "联盟扩张型整合者",
+            "月亮落第7宫 伴侣与合作",
+            "10R 木星飞9宫",
+            "主导行星 火星 / 木星",
+            "重点宫位社会义 风险与转化（风险共担、利益绑定、债务与筹码）；工作与健康（执行系统、差事、日常工序、用人管理）；伴侣与合作（联盟、客户、对手、契约、师徒、保护关系）"
+          ],
+          "focus_cards": [
+            {
+              "label": "角色标题",
+              "value": "联盟扩张型整合者",
+              "hint": "这是命盘在社会层面的运作身份，不只是性格标签。"
+            },
+            {
+              "label": "社会舞台",
+              "value": "伴侣与合作",
+              "hint": "命主星落宫，决定核心能力最容易在哪类场景显形。"
+            },
+            {
+              "label": "公开线",
+              "value": "10R 木星飞9宫",
+              "hint": "社会如何看见你，通常要看这条线。"
+            }
+          ],
+          "points": [
+            "这张盘更像“联盟扩张型整合者”，而不是单纯的性格标签。",
+            "命主星月亮落在第7宫，说明你的核心能力会通过特定社会场景显形，而不是停留在抽象潜能。",
+            "重点宫位的成人社会义分别落在：风险与转化（风险共担、利益绑定、债务与筹码）；工作与健康（执行系统、差事、日常工序、用人管理）；伴侣与合作（联盟、客户、对手、契约、师徒、保护关系）；远方与意义（理念、旗号、远方资源、合法性）。",
+            "公开角色会沿着“10R 木星飞9宫”这条线被社会确认，所以别人记住你的方式，往往和这条职业/名望线路直接相关。"
+          ]
+        },
+        {
+          "key": "cost",
+          "title": "代价层",
+          "headline": "能力的反噬点与收束方式",
+          "summary": "每种强项都有对应的代价。越能成事的结构，越需要知道它会从哪里反噬。",
+          "evidence": [
+            "第一代价 太阳",
+            "第二代价 月亮",
+            "12R 水星飞8宫",
+            "太阳落在风险与转化，先天状态为失势。 支持与压力并存，需要靠节奏管理来定胜负。"
+          ],
+          "focus_cards": [
+            {
+              "label": "第一压力点",
+              "value": "太阳",
+              "hint": "太阳落在风险与转化，先天状态为失势。 支持与压力并存，需要靠节奏管理来定胜负。"
+            },
+            {
+              "label": "隐线代价",
+              "value": "12R 水星飞8宫",
+              "hint": "强项背后的幕后压力、收尾机制和延迟代价。"
+            },
+            {
+              "label": "回收方式",
+              "value": "风险与转化",
+              "hint": "当最强宫位失衡时，优势最容易从这里变成负担。"
+            }
+          ],
+          "points": [
+            "首要代价点在太阳：太阳落在风险与转化，先天状态为失势。 支持与压力并存，需要靠节奏管理来定胜负。",
+            "第二代价点在月亮：月亮落在伴侣与合作，先天状态为失势。 支持与压力并存，需要靠节奏管理来定胜负。 这也是整张命盘的命主星，权重更高。",
+            "当第8宫议题失衡时，最容易把优势变成负担。",
+            "12宫主链路是“12R 水星飞8宫”，这意味着有些代价不会立刻爆发，而会以幕后压力、关系回收或阶段性清算的方式出现。"
+          ]
+        }
+      ]
+    },
+    "advanced_patterns": {
+      "summary": "把几宫主飞几宫、同一行星统领哪些宫位，先拆成规则层，再进入现实语言解释。",
+      "house_rulers": [
+        {
+          "house": 1,
+          "title": "自我与身体",
+          "sign": "CANCER",
+          "sign_label": "巨蟹座",
+          "ruler": "MOON",
+          "ruler_label": "月亮",
+          "ruler_house": 7,
+          "ruler_house_title": "伴侣与合作",
+          "ruler_sign": "CAPRICORN",
+          "ruler_sign_label": "摩羯座",
+          "dignity": "detriment",
+          "dignity_label": "失势",
+          "adult_meaning": "个人姿态、身体存在感、出面方式",
+          "notation": "1R",
+          "line": "1R 月亮飞7宫"
+        },
+        {
+          "house": 2,
+          "title": "收入与资源",
+          "sign": "LEO",
+          "sign_label": "狮子座",
+          "ruler": "SUN",
+          "ruler_label": "太阳",
+          "ruler_house": 8,
+          "ruler_house_title": "风险与转化",
+          "ruler_sign": "AQUARIUS",
+          "ruler_sign_label": "水瓶座",
+          "dignity": "detriment",
+          "dignity_label": "失势",
+          "adult_meaning": "现金流、资源控制、利益分配、可变现能力",
+          "notation": "2R",
+          "line": "2R 太阳飞8宫"
+        },
+        {
+          "house": 3,
+          "title": "学习与表达",
+          "sign": "VIRGO",
+          "sign_label": "处女座",
+          "ruler": "MERCURY",
+          "ruler_label": "水星",
+          "ruler_house": 8,
+          "ruler_house_title": "风险与转化",
+          "ruler_sign": "AQUARIUS",
+          "ruler_sign_label": "水瓶座",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "adult_meaning": "信息网络、线报、传播、谈判、地面关系、组织口径",
+          "notation": "3R",
+          "line": "3R 水星飞8宫"
+        },
+        {
+          "house": 4,
+          "title": "家庭与根基",
+          "sign": "VIRGO",
+          "sign_label": "处女座",
+          "ruler": "MERCURY",
+          "ruler_label": "水星",
+          "ruler_house": 8,
+          "ruler_house_title": "风险与转化",
+          "ruler_sign": "AQUARIUS",
+          "ruler_sign_label": "水瓶座",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "adult_meaning": "家族根基、地盘、安全盘、退路",
+          "notation": "4R",
+          "line": "4R 水星飞8宫"
+        },
+        {
+          "house": 5,
+          "title": "创造与恋爱",
+          "sign": "SCORPIO",
+          "sign_label": "天蝎座",
+          "ruler": "MARS",
+          "ruler_label": "火星",
+          "ruler_house": 10,
+          "ruler_house_title": "事业与名望",
+          "ruler_sign": "ARIES",
+          "ruler_sign_label": "白羊座",
+          "dignity": "domicile",
+          "dignity_label": "入庙",
+          "adult_meaning": "创作表达、名色、娱乐场、个人招牌",
+          "notation": "5R",
+          "line": "5R 火星飞10宫"
+        },
+        {
+          "house": 6,
+          "title": "工作与健康",
+          "sign": "SAGITTARIUS",
+          "sign_label": "射手座",
+          "ruler": "JUPITER",
+          "ruler_label": "木星",
+          "ruler_house": 9,
+          "ruler_house_title": "远方与意义",
+          "ruler_sign": "PISCES",
+          "ruler_sign_label": "双鱼座",
+          "dignity": "domicile",
+          "dignity_label": "入庙",
+          "adult_meaning": "执行系统、差事、日常工序、用人管理",
+          "notation": "6R",
+          "line": "6R 木星飞9宫"
+        },
+        {
+          "house": 7,
+          "title": "伴侣与合作",
+          "sign": "CAPRICORN",
+          "sign_label": "摩羯座",
+          "ruler": "SATURN",
+          "ruler_label": "土星",
+          "ruler_house": 6,
+          "ruler_house_title": "工作与健康",
+          "ruler_sign": "SAGITTARIUS",
+          "ruler_sign_label": "射手座",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "adult_meaning": "联盟、客户、对手、契约、师徒、保护关系",
+          "notation": "7R",
+          "line": "7R 土星飞6宫"
+        },
+        {
+          "house": 8,
+          "title": "风险与转化",
+          "sign": "AQUARIUS",
+          "sign_label": "水瓶座",
+          "ruler": "SATURN",
+          "ruler_label": "土星",
+          "ruler_house": 6,
+          "ruler_house_title": "工作与健康",
+          "ruler_sign": "SAGITTARIUS",
+          "ruler_sign_label": "射手座",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "adult_meaning": "风险共担、利益绑定、债务与筹码",
+          "notation": "8R",
+          "line": "8R 土星飞6宫"
+        },
+        {
+          "house": 9,
+          "title": "远方与意义",
+          "sign": "PISCES",
+          "sign_label": "双鱼座",
+          "ruler": "JUPITER",
+          "ruler_label": "木星",
+          "ruler_house": 9,
+          "ruler_house_title": "远方与意义",
+          "ruler_sign": "PISCES",
+          "ruler_sign_label": "双鱼座",
+          "dignity": "domicile",
+          "dignity_label": "入庙",
+          "adult_meaning": "理念、旗号、远方资源、合法性",
+          "notation": "9R",
+          "line": "9R 木星飞9宫"
+        },
+        {
+          "house": 10,
+          "title": "事业与名望",
+          "sign": "PISCES",
+          "sign_label": "双鱼座",
+          "ruler": "JUPITER",
+          "ruler_label": "木星",
+          "ruler_house": 9,
+          "ruler_house_title": "远方与意义",
+          "ruler_sign": "PISCES",
+          "ruler_sign_label": "双鱼座",
+          "dignity": "domicile",
+          "dignity_label": "入庙",
+          "adult_meaning": "公开地位、制度名望、社会抬头",
+          "notation": "10R",
+          "line": "10R 木星飞9宫"
+        },
+        {
+          "house": 11,
+          "title": "社群与愿景",
+          "sign": "TAURUS",
+          "sign_label": "金牛座",
+          "ruler": "VENUS",
+          "ruler_label": "金星",
+          "ruler_house": 6,
+          "ruler_house_title": "工作与健康",
+          "ruler_sign": "SAGITTARIUS",
+          "ruler_sign_label": "射手座",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "adult_meaning": "人脉团体、门生网络、长期势力",
+          "notation": "11R",
+          "line": "11R 金星飞6宫"
+        },
+        {
+          "house": 12,
+          "title": "潜意识与退隐",
+          "sign": "GEMINI",
+          "sign_label": "双子座",
+          "ruler": "MERCURY",
+          "ruler_label": "水星",
+          "ruler_house": 8,
+          "ruler_house_title": "风险与转化",
+          "ruler_sign": "AQUARIUS",
+          "ruler_sign_label": "水瓶座",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "adult_meaning": "幕后运作、监禁清算、隐形敌人、收尾代价",
+          "notation": "12R",
+          "line": "12R 水星飞8宫"
+        }
+      ],
+      "ruler_groups": [
+        {
+          "ruler": "MOON",
+          "ruler_label": "月亮",
+          "houses": [
+            1
+          ],
+          "house_titles": [
+            "自我与身体"
+          ],
+          "notation": "1R",
+          "line": "1R 月亮飞7宫",
+          "ruler_house": 7,
+          "ruler_house_title": "伴侣与合作",
+          "ruler_sign": "CAPRICORN",
+          "ruler_sign_label": "摩羯座",
+          "dignity": "detriment",
+          "dignity_label": "失势"
+        },
+        {
+          "ruler": "SUN",
+          "ruler_label": "太阳",
+          "houses": [
+            2
+          ],
+          "house_titles": [
+            "收入与资源"
+          ],
+          "notation": "2R",
+          "line": "2R 太阳飞8宫",
+          "ruler_house": 8,
+          "ruler_house_title": "风险与转化",
+          "ruler_sign": "AQUARIUS",
+          "ruler_sign_label": "水瓶座",
+          "dignity": "detriment",
+          "dignity_label": "失势"
+        },
+        {
+          "ruler": "MERCURY",
+          "ruler_label": "水星",
+          "houses": [
+            3,
+            4,
+            12
+          ],
+          "house_titles": [
+            "学习与表达",
+            "家庭与根基",
+            "潜意识与退隐"
+          ],
+          "notation": "3R/4R/12R",
+          "line": "3R/4R/12R 水星飞8宫",
+          "ruler_house": 8,
+          "ruler_house_title": "风险与转化",
+          "ruler_sign": "AQUARIUS",
+          "ruler_sign_label": "水瓶座",
+          "dignity": "peregrine",
+          "dignity_label": "平常"
+        },
+        {
+          "ruler": "MARS",
+          "ruler_label": "火星",
+          "houses": [
+            5
+          ],
+          "house_titles": [
+            "创造与恋爱"
+          ],
+          "notation": "5R",
+          "line": "5R 火星飞10宫",
+          "ruler_house": 10,
+          "ruler_house_title": "事业与名望",
+          "ruler_sign": "ARIES",
+          "ruler_sign_label": "白羊座",
+          "dignity": "domicile",
+          "dignity_label": "入庙"
+        },
+        {
+          "ruler": "JUPITER",
+          "ruler_label": "木星",
+          "houses": [
+            6,
+            9,
+            10
+          ],
+          "house_titles": [
+            "工作与健康",
+            "远方与意义",
+            "事业与名望"
+          ],
+          "notation": "6R/9R/10R",
+          "line": "6R/9R/10R 木星飞9宫",
+          "ruler_house": 9,
+          "ruler_house_title": "远方与意义",
+          "ruler_sign": "PISCES",
+          "ruler_sign_label": "双鱼座",
+          "dignity": "domicile",
+          "dignity_label": "入庙"
+        },
+        {
+          "ruler": "SATURN",
+          "ruler_label": "土星",
+          "houses": [
+            7,
+            8
+          ],
+          "house_titles": [
+            "伴侣与合作",
+            "风险与转化"
+          ],
+          "notation": "7R/8R",
+          "line": "7R/8R 土星飞6宫",
+          "ruler_house": 6,
+          "ruler_house_title": "工作与健康",
+          "ruler_sign": "SAGITTARIUS",
+          "ruler_sign_label": "射手座",
+          "dignity": "peregrine",
+          "dignity_label": "平常"
+        },
+        {
+          "ruler": "VENUS",
+          "ruler_label": "金星",
+          "houses": [
+            11
+          ],
+          "house_titles": [
+            "社群与愿景"
+          ],
+          "notation": "11R",
+          "line": "11R 金星飞6宫",
+          "ruler_house": 6,
+          "ruler_house_title": "工作与健康",
+          "ruler_sign": "SAGITTARIUS",
+          "ruler_sign_label": "射手座",
+          "dignity": "peregrine",
+          "dignity_label": "平常"
+        }
+      ],
+      "reception_groups": [
+        {
+          "receiver": "JUPITER",
+          "receiver_label": "木星",
+          "receiver_house": 9,
+          "receiver_house_title": "远方与意义",
+          "receiver_sign": "PISCES",
+          "receiver_sign_label": "双鱼座",
+          "guests": [
+            {
+              "planet": "VENUS",
+              "label": "金星",
+              "house": 6,
+              "house_title": "工作与健康",
+              "sign": "SAGITTARIUS",
+              "sign_label": "射手座"
+            },
+            {
+              "planet": "SATURN",
+              "label": "土星",
+              "house": 6,
+              "house_title": "工作与健康",
+              "sign": "SAGITTARIUS",
+              "sign_label": "射手座"
+            }
+          ],
+          "line": "木星接纳金星/土星",
+          "summary": "木星会接住落在其守护星座内的议题，并把它们带到第9宫 远方与意义去运作。"
+        },
+        {
+          "receiver": "SATURN",
+          "receiver_label": "土星",
+          "receiver_house": 6,
+          "receiver_house_title": "工作与健康",
+          "receiver_sign": "SAGITTARIUS",
+          "receiver_sign_label": "射手座",
+          "guests": [
+            {
+              "planet": "MERCURY",
+              "label": "水星",
+              "house": 8,
+              "house_title": "风险与转化",
+              "sign": "AQUARIUS",
+              "sign_label": "水瓶座"
+            }
+          ],
+          "line": "土星接纳水星",
+          "summary": "土星会接住落在其守护星座内的议题，并把它们带到第6宫 工作与健康去运作。"
+        }
+      ],
+      "mutual_receptions": [],
+      "derived_houses": [
+        {
+          "base_house": 7,
+          "base_label": "伴侣",
+          "summary": "转宫不是单看伴侣宫位本身，还要看围绕伴侣展开的信念、事业、资源与隐藏代价。",
+          "links": [
+            {
+              "label": "伴侣本人",
+              "derived_house": 1,
+              "radical_house": 7,
+              "title": "伴侣与合作",
+              "adult_meaning": "联盟、客户、对手、契约、师徒、保护关系",
+              "line": "伴侣本人看本盘第7宫",
+              "ruler_line": "7R 土星飞6宫"
+            },
+            {
+              "label": "伴侣的钱财",
+              "derived_house": 2,
+              "radical_house": 8,
+              "title": "风险与转化",
+              "adult_meaning": "风险共担、利益绑定、债务与筹码",
+              "line": "伴侣的钱财看本盘第8宫",
+              "ruler_line": "8R 土星飞6宫"
+            },
+            {
+              "label": "伴侣的信念",
+              "derived_house": 9,
+              "radical_house": 3,
+              "title": "学习与表达",
+              "adult_meaning": "信息网络、线报、传播、谈判、地面关系、组织口径",
+              "line": "伴侣的信念看本盘第3宫",
+              "ruler_line": "3R 水星飞8宫"
+            },
+            {
+              "label": "伴侣的事业",
+              "derived_house": 10,
+              "radical_house": 4,
+              "title": "家庭与根基",
+              "adult_meaning": "家族根基、地盘、安全盘、退路",
+              "line": "伴侣的事业看本盘第4宫",
+              "ruler_line": "4R 水星飞8宫"
+            },
+            {
+              "label": "伴侣的隐藏代价",
+              "derived_house": 12,
+              "radical_house": 6,
+              "title": "工作与健康",
+              "adult_meaning": "执行系统、差事、日常工序、用人管理",
+              "line": "伴侣的隐藏代价看本盘第6宫",
+              "ruler_line": "6R 木星飞9宫"
+            }
+          ]
+        },
+        {
+          "base_house": 10,
+          "base_label": "事业",
+          "summary": "转宫不是单看事业宫位本身，还要看围绕事业展开的信念、事业、资源与隐藏代价。",
+          "links": [
+            {
+              "label": "事业本身",
+              "derived_house": 1,
+              "radical_house": 10,
+              "title": "事业与名望",
+              "adult_meaning": "公开地位、制度名望、社会抬头",
+              "line": "事业本身看本盘第10宫",
+              "ruler_line": "10R 木星飞9宫"
+            },
+            {
+              "label": "事业的钱",
+              "derived_house": 2,
+              "radical_house": 11,
+              "title": "社群与愿景",
+              "adult_meaning": "人脉团体、门生网络、长期势力",
+              "line": "事业的钱看本盘第11宫",
+              "ruler_line": "11R 金星飞6宫"
+            },
+            {
+              "label": "事业的合作/对手",
+              "derived_house": 7,
+              "radical_house": 4,
+              "title": "家庭与根基",
+              "adult_meaning": "家族根基、地盘、安全盘、退路",
+              "line": "事业的合作/对手看本盘第4宫",
+              "ruler_line": "4R 水星飞8宫"
+            },
+            {
+              "label": "事业的隐性代价",
+              "derived_house": 12,
+              "radical_house": 9,
+              "title": "远方与意义",
+              "adult_meaning": "理念、旗号、远方资源、合法性",
+              "line": "事业的隐性代价看本盘第9宫",
+              "ruler_line": "9R 木星飞9宫"
+            }
+          ]
+        },
+        {
+          "base_house": 2,
+          "base_label": "财富",
+          "summary": "转宫不是单看财富宫位本身，还要看围绕财富展开的信念、事业、资源与隐藏代价。",
+          "links": [
+            {
+              "label": "财富本身",
+              "derived_house": 1,
+              "radical_house": 2,
+              "title": "收入与资源",
+              "adult_meaning": "现金流、资源控制、利益分配、可变现能力",
+              "line": "财富本身看本盘第2宫",
+              "ruler_line": "2R 太阳飞8宫"
+            },
+            {
+              "label": "财富的投机与扩张",
+              "derived_house": 5,
+              "radical_house": 6,
+              "title": "工作与健康",
+              "adult_meaning": "执行系统、差事、日常工序、用人管理",
+              "line": "财富的投机与扩张看本盘第6宫",
+              "ruler_line": "6R 木星飞9宫"
+            },
+            {
+              "label": "财富的合作绑定",
+              "derived_house": 7,
+              "radical_house": 8,
+              "title": "风险与转化",
+              "adult_meaning": "风险共担、利益绑定、债务与筹码",
+              "line": "财富的合作绑定看本盘第8宫",
+              "ruler_line": "8R 土星飞6宫"
+            },
+            {
+              "label": "财富的隐形代价",
+              "derived_house": 12,
+              "radical_house": 1,
+              "title": "自我与身体",
+              "adult_meaning": "个人姿态、身体存在感、出面方式",
+              "line": "财富的隐形代价看本盘第1宫",
+              "ruler_line": "1R 月亮飞7宫"
+            }
+          ]
+        }
+      ],
+      "core_threads": [
+        {
+          "house": 1,
+          "title": "1R 月亮飞7宫",
+          "summary": "自我与身体不会停留在抽象层，而会通过伴侣与合作显形。",
+          "points": [
+            "自我与身体的成人社会义是：个人姿态、身体存在感、出面方式。",
+            "宫主月亮落在第7宫 伴侣与合作，所以这条线会通过具体场景运作。",
+            "先天状态为失势，这会影响这条线是顺手放大，还是带着代价运作。"
+          ]
+        },
+        {
+          "house": 2,
+          "title": "2R 太阳飞8宫",
+          "summary": "收入与资源不会停留在抽象层，而会通过风险与转化显形。",
+          "points": [
+            "收入与资源的成人社会义是：现金流、资源控制、利益分配、可变现能力。",
+            "宫主太阳落在第8宫 风险与转化，所以这条线会通过具体场景运作。",
+            "先天状态为失势，这会影响这条线是顺手放大，还是带着代价运作。"
+          ]
+        },
+        {
+          "house": 3,
+          "title": "3R 水星飞8宫",
+          "summary": "学习与表达不会停留在抽象层，而会通过风险与转化显形。",
+          "points": [
+            "学习与表达的成人社会义是：信息网络、线报、传播、谈判、地面关系、组织口径。",
+            "宫主水星落在第8宫 风险与转化，所以这条线会通过具体场景运作。",
+            "先天状态为平常，这会影响这条线是顺手放大，还是带着代价运作。"
+          ]
+        },
+        {
+          "house": 7,
+          "title": "7R 土星飞6宫",
+          "summary": "伴侣与合作不会停留在抽象层，而会通过工作与健康显形。",
+          "points": [
+            "伴侣与合作的成人社会义是：联盟、客户、对手、契约、师徒、保护关系。",
+            "宫主土星落在第6宫 工作与健康，所以这条线会通过具体场景运作。",
+            "先天状态为平常，这会影响这条线是顺手放大，还是带着代价运作。"
+          ]
+        },
+        {
+          "house": 10,
+          "title": "10R 木星飞9宫",
+          "summary": "事业与名望不会停留在抽象层，而会通过远方与意义显形。",
+          "points": [
+            "事业与名望的成人社会义是：公开地位、制度名望、社会抬头。",
+            "宫主木星落在第9宫 远方与意义，所以这条线会通过具体场景运作。",
+            "先天状态为入庙，这会影响这条线是顺手放大，还是带着代价运作。"
+          ]
+        },
+        {
+          "house": 12,
+          "title": "12R 水星飞8宫",
+          "summary": "潜意识与退隐不会停留在抽象层，而会通过风险与转化显形。",
+          "points": [
+            "潜意识与退隐的成人社会义是：幕后运作、监禁清算、隐形敌人、收尾代价。",
+            "宫主水星落在第8宫 风险与转化，所以这条线会通过具体场景运作。",
+            "先天状态为平常，这会影响这条线是顺手放大，还是带着代价运作。"
+          ]
+        }
+      ],
+      "pattern_readings": [
+        {
+          "key": "core_axis",
+          "title": "命主线与事业线",
+          "summary": "这张盘先看 1宫主 怎么落地，再看 10宫主 怎么显化。它决定了命主是把自己活成事业，还是需要先分清人设与职业。",
+          "evidence": [
+            "1R 月亮飞7宫",
+            "10R 木星飞9宫",
+            "月亮失势"
+          ],
+          "points": [
+            "1宫主 月亮 落在第7宫 伴侣与合作，说明你本人会通过这类现实场景被定义。",
+            "10宫主 木星 落在第9宫 远方与意义，事业和公开位置会顺着这条线被社会看见。",
+            "1宫和10宫分属不同主星，说明“你是谁”和“你如何成事”需要两套方法协同。",
+            "月亮先天状态为失势，这条线能成事，但常常要靠失衡、代价或绕路来推进。"
+          ]
+        },
+        {
+          "key": "alliance_axis",
+          "title": "7宫助力与联盟入口",
+          "summary": "7宫决定你如何借别人上桌。对很多盘来说，真正的抬升并不来自单打独斗，而来自伴侣、合作、贵人和对手。",
+          "evidence": [
+            "7R 土星飞6宫",
+            "土星接纳水星",
+            "伴侣本人看本盘第7宫",
+            "伴侣的信念看本盘第3宫",
+            "伴侣的事业看本盘第4宫"
+          ],
+          "points": [
+            "7宫主 土星 落在第6宫 工作与健康，伴侣、合作、贵人和公开对手会通过这类场景进入命运。",
+            "7宫不只讲婚姻，也讲你会通过哪类人进入更大的系统、平台和资源网络。",
+            "7宫主先天状态为平常，这条线更依赖后天环境、方法和所处平台来定胜负。",
+            "土星接纳了3R/4R/12R，说明联盟关系不会只带来感情或合约，也会连带更多资源和任务一起进场。",
+            "转宫继续展开时，伴侣本人看本盘第7宫；伴侣的信念看本盘第3宫；伴侣的事业看本盘第4宫，所以这类关系会深度卷入你的现实结构。"
+          ]
+        },
+        {
+          "key": "wealth_axis",
+          "title": "财富结构",
+          "summary": "财路不只看 2宫。真正的财富结构要同时看 2宫的变现能力、5宫的扩张方式、8宫的绑定与代价。",
+          "evidence": [
+            "2R 太阳飞8宫",
+            "5R 火星飞10宫",
+            "8R 土星飞6宫",
+            "太阳失势",
+            "财富的投机与扩张看本盘第6宫",
+            "财富的合作绑定看本盘第8宫",
+            "财富的隐形代价看本盘第1宫"
+          ],
+          "points": [
+            "2宫主 太阳 落在第8宫 风险与转化，说明你的钱会通过这类场景进入和流动。",
+            "5宫主 火星 落在第10宫 事业与名望，投机、创作、名气或让人上头的东西怎么参与财富，会看这条线。",
+            "8宫主 土星 落在第6宫 工作与健康，共享资源、债务、利益绑定与灰度成本也会从这里进入。",
+            "2宫主先天状态为失势，这条线能成事，但常常要靠失衡、代价或绕路来推进。"
+          ]
+        },
+        {
+          "key": "partner_profile",
+          "title": "伴侣/合作方画像",
+          "summary": "转宫的价值，在于把“对象本人、对象的钱、对象的信念、对象的事业、对象的隐性代价”拆开看，而不是把7宫压扁成单一情感标签。",
+          "evidence": [
+            "7R 土星飞6宫",
+            "伴侣本人看本盘第7宫",
+            "伴侣的钱财看本盘第8宫",
+            "伴侣的信念看本盘第3宫",
+            "伴侣的事业看本盘第4宫",
+            "伴侣的隐藏代价看本盘第6宫"
+          ],
+          "points": [
+            "伴侣本人看本盘第7宫 伴侣与合作，说明这段关系会把“联盟、客户、对手、契约、师徒、保护关系”这类现实议题带进来。",
+            "伴侣的钱财看本盘第8宫 风险与转化，说明这段关系会把“风险共担、利益绑定、债务与筹码”这类现实议题带进来。",
+            "伴侣的信念看本盘第3宫 学习与表达，说明这段关系会把“信息网络、线报、传播、谈判、地面关系、组织口径”这类现实议题带进来。",
+            "伴侣的事业看本盘第4宫 家庭与根基，说明这段关系会把“家族根基、地盘、安全盘、退路”这类现实议题带进来。",
+            "伴侣的隐藏代价看本盘第6宫 工作与健康，说明这段关系会把“执行系统、差事、日常工序、用人管理”这类现实议题带进来。",
+            "所以 7宫不是单看对象性格，而是看你最容易通过哪类人形成稳定的借力、绑定与代价。"
+          ]
+        },
+        {
+          "key": "hidden_cost",
+          "title": "幕后结构与后期代价",
+          "summary": "12宫不是一句“潜意识”就能带过。它更像台面下的系统、收尾机制、隐形敌人，以及后期要被回收的代价。",
+          "evidence": [
+            "12R 水星飞8宫",
+            "8R 土星飞6宫"
+          ],
+          "points": [
+            "12宫主 水星 落在第8宫 风险与转化，幕后运作、隐线压力、清算与收束会通过这里出现。",
+            "12宫主先天状态为平常，这条线更依赖后天环境、方法和所处平台来定胜负。"
+          ]
+        }
+      ],
+      "case_themes": []
+    },
+    "timeline_validation": null
+  },
+  "stored_at": "2026-06-17T07:39:12.081858"
+}

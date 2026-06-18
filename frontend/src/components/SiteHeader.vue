@@ -11,6 +11,7 @@
 
       <nav class="nav">
         <button class="navLink" type="button" @click="goHome">解读目录</button>
+        <button class="navLink" type="button" @click="goUsers">测试用户</button>
         <button class="navLink" type="button" @click="goPhaseNavigation">当前阶段</button>
         <el-button type="primary" round class="navAction" @click="goPhaseNavigation">
           开始解读
@@ -32,6 +33,10 @@ const router = useRouter();
 
 function goHome() {
   router.push({ name: "entry" });
+}
+
+function goUsers() {
+  router.push({ name: "users" });
 }
 
 function goPhaseNavigation() {
@@ -57,7 +62,7 @@ function goPhaseNavigation() {
 
 .content {
   height: 100%;
-  max-width: 1240px;
+  max-width: var(--page-shell-max);
   margin: 0 auto;
   padding: 0 24px;
   display: flex;

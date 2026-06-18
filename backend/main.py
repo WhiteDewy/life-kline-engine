@@ -194,6 +194,7 @@ class AnalysisDefinitionModel(FlexibleModel):
 
 class AnalysisSubject(FlexibleModel):
     name: Optional[str] = None
+    gender: Optional[str] = None
     birth_time: str = Field(..., description="Birth time in ISO 8601 format")
     lat: float = Field(..., description="Latitude")
     lon: float = Field(..., description="Longitude")
@@ -206,6 +207,7 @@ class AnalysisRequest(FlexibleModel):
 
 
 class UserInput(FlexibleModel):
+    gender: Optional[str] = None
     birth_time: str = Field(..., description="Birth time in ISO 8601 format")
     lat: float = Field(..., description="Latitude")
     lon: float = Field(..., description="Longitude")
@@ -218,6 +220,7 @@ class ReportMeta(FlexibleModel):
 
 
 class UserInfo(FlexibleModel):
+    gender: Optional[str] = None
     birth_time_local: str
     birth_time_utc: str
     lat: float
@@ -399,13 +402,14 @@ def run_analysis(input_data: AnalysisRequest) -> Dict[str, Any]:
         )
 
     try:
-        if input_data.analysis_type == "phase_navigation":
+        if input_data.analysis_type in {"phase_navigation", "natal_blueprint"}:
             subject = subjects[0]
             report = service.generate_report(
                 birth_time_iso=subject.birth_time,
                 lat=subject.lat,
                 lon=subject.lon,
                 timezone_offset=subject.timezone,
+                gender=subject.gender,
             )
         else:
             raise HTTPException(status_code=501, detail="Analysis engine not implemented yet")
@@ -481,6 +485,7 @@ async def analyze_life_path(input_data: UserInput) -> Dict[str, Any]:
         analysis_type="phase_navigation",
         subjects=[
             AnalysisSubject(
+                gender=input_data.gender,
                 birth_time=input_data.birth_time,
                 lat=input_data.lat,
                 lon=input_data.lon,

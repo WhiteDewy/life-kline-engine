@@ -12,26 +12,25 @@ ANALYSIS_TYPES: List[Dict[str, Any]] = [
     {
         "key": "natal_blueprint",
         "title": "本命蓝图",
-        "tagline": "识别人格结构、驱动力和长期人生命题。",
+        "tagline": "先看你是什么样的人，再看你适合把自己活成什么职业路径。",
         "description": (
-            "围绕上升、命主星、重点宫位和关键相位，建立一个长期稳定的本命结构画像。"
+            "围绕星体、星座、宫位、相位与互溶接纳，先定人格基调与用户角色，再分析结构、杠杆、发光点和可发展的职业路线。"
         ),
         "category": "structure",
-        "status": "planned",
+        "status": "active",
         "subjects_count": 1,
         "required_inputs": ["birth_time", "lat", "lon", "timezone"],
         "engines": ["natal_core"],
-        "modules": ["natal_summary", "house_focus", "aspect_field", "life_strategy"],
-        "primary_cta": "即将开放",
+        "modules": ["用户角色", "结构与杠杆", "职业路线", "理论依据", "本命星盘", "样例校验"],
+        "primary_cta": "进入体验",
         "output_route": "/reports/:id",
     },
     {
         "key": "phase_navigation",
         "title": "阶段导航",
-        "tagline": "用本命结构 + 法达阶段理解你当下的主旋律。",
+        "tagline": "用本命结构 + 法达阶段理解你当下的人生旋律。",
         "description": (
-            "当前版本的核心可用分析。先用本命结构定义底盘，再用法达主运与子运识别人生阶段、"
-            "机会窗口和风险点。"
+            "当前版本的核心可用分析。先用本命结构定义底盘，再用法达主运与子运识别人生命题、机会窗口和风险点。"
         ),
         "category": "timing",
         "status": "active",
@@ -39,17 +38,16 @@ ANALYSIS_TYPES: List[Dict[str, Any]] = [
         "required_inputs": ["birth_time", "lat", "lon", "timezone"],
         "engines": ["natal_core", "firdaria"],
         "modules": [
-            "hero_overview",
-            "natal_chart",
-            "natal_blueprint",
-            "advanced_patterns",
-            "case_themes",
-            "current_phase",
-            "life_model",
-            "timeline_validation",
-            "life_rhythm_chart",
-            "domain_projection",
-            "firdaria_table",
+            "阶段总览",
+            "本命星盘",
+            "本命蓝图",
+            "高级规则",
+            "样例校验",
+            "当前阶段",
+            "人生主轴",
+            "人生曲线",
+            "领域投射",
+            "阶段时间表",
         ],
         "primary_cta": "进入体验",
         "output_route": "/reports/:id",
@@ -57,16 +55,16 @@ ANALYSIS_TYPES: List[Dict[str, Any]] = [
     {
         "key": "annual_profection",
         "title": "年度节奏",
-        "tagline": "把每个年龄年的主轴和重点议题拆出来。",
+        "tagline": "把每一个年龄年的主轴和重点议题拆出来。",
         "description": (
-            "以后将通过小限、年度主星与主题宫位，判断某一年应把火力集中在哪里。"
+            "后续将通过小限、年度主星与主题宫位，判断某一年应把火力集中在哪里。"
         ),
         "category": "timing",
         "status": "planned",
         "subjects_count": 1,
         "required_inputs": ["birth_time", "lat", "lon", "timezone"],
         "engines": ["natal_core", "profection"],
-        "modules": ["annual_focus", "lord_cycle", "topic_emphasis"],
+        "modules": ["年度焦点", "主星切换", "主题强化"],
         "primary_cta": "路线图中",
         "output_route": "/reports/:id",
     },
@@ -82,14 +80,14 @@ ANALYSIS_TYPES: List[Dict[str, Any]] = [
         "subjects_count": 1,
         "required_inputs": ["birth_time", "lat", "lon", "timezone"],
         "engines": ["natal_core", "secondary_progression"],
-        "modules": ["inner_timing", "progressed_highlights", "phase_brief"],
+        "modules": ["内在节奏", "进展高光", "阶段简报"],
         "primary_cta": "路线图中",
         "output_route": "/reports/:id",
     },
     {
         "key": "synastry",
         "title": "关系合盘",
-        "tagline": "分析两个人的吸引、磨合与长期结构。",
+        "tagline": "分析两个人的吸引、摩擦与长期结构。",
         "description": (
             "后续会支持双人出生资料输入，从吸引机制、冲突模式、关系边界和长期协同来解释关系。"
         ),
@@ -98,7 +96,7 @@ ANALYSIS_TYPES: List[Dict[str, Any]] = [
         "subjects_count": 2,
         "required_inputs": ["birth_time", "lat", "lon", "timezone"],
         "engines": ["natal_core", "synastry"],
-        "modules": ["compatibility_overview", "attraction_axis", "friction_axis", "growth_advice"],
+        "modules": ["关系总览", "吸引轴", "摩擦轴", "成长建议"],
         "primary_cta": "路线图中",
         "output_route": "/reports/:id",
     },

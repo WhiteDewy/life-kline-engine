@@ -354,7 +354,7 @@ const aspects = [
   color: @text;
   font-family: var(--font-sans);
   padding: 64px 24px;
-  max-width: 1200px; /* Updated width */
+  max-width: var(--report-shell-max);
   margin: 0 auto;
 }
 

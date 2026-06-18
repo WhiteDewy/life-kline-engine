@@ -90,13 +90,49 @@ class EphemerisEngine:
         signs = list(Sign)
         return signs[sign_index], degree
 
+    def _longitude_from_sign_degree(self, sign: Sign, degree: float) -> float:
+        """将星座内度数转换为黄经 0-360。"""
+        return list(Sign).index(sign) * 30.0 + float(degree or 0.0)
+
+    def _infer_house_from_cusps(
+        self,
+        houses: List[Tuple[Sign, float]],
+        longitude: float,
+    ) -> int:
+        """
+        按宫头黄经区间判定落宫，保证落宫结果与显示出的宫头列表一致。
+        """
+        if not houses:
+            return 0
+
+        cusps: List[float] = []
+        previous = -1.0
+
+        for sign, degree in houses[:12]:
+            cusp_longitude = self._longitude_from_sign_degree(sign, degree)
+            while cusp_longitude <= previous:
+                cusp_longitude += 360.0
+            cusps.append(cusp_longitude)
+            previous = cusp_longitude
+
+        target = longitude % 360.0
+        while target < cusps[0]:
+            target += 360.0
+
+        for index, start in enumerate(cusps):
+            end = cusps[index + 1] if index < len(cusps) - 1 else cusps[0] + 360.0
+            if start <= target < end:
+                return index + 1
+
+        return 12
+
     def calculate_chart(
         self, 
         dt: datetime, 
         lat: float, 
         lon: float, 
         alt: float = 0.0,
-        house_system: str = 'P' # Placidus
+        house_system: str = 'B' # Alcabitius
     ) -> ChartData:
         """
         计算星盘数据
@@ -106,7 +142,7 @@ class EphemerisEngine:
             lat: 纬度 (北纬为正)
             lon: 经度 (东经为正)
             alt: 海拔 (米)
-            house_system: 分宫制代码 ('P'=Placidus, 'W'=Whole Sign 等)
+            house_system: 分宫制代码 ('B'=Alcabitius, 'P'=Placidus, 'W'=Whole Sign 等)
             
         返回:
             ChartData 对象
@@ -159,27 +195,10 @@ class EphemerisEngine:
                 
                 sign, degree = self._get_sign_from_longitude(lon_val)
                 
-                # 计算所在宫位
-                # swe.house_pos(armc, geolat, eps, hsys, xpin, ypin) 比较复杂
-                # 我们可以简化：直接看它落在哪个宫头之间
-                # 但更准确的方法是再次调用 swe.house_pos
-                # 这里我们用简单的逻辑：
-                # 遍历宫头，找到所在的区间
-                
-                # 简单宫位计算逻辑 (处理跨越 360/0 度的情况比较麻烦)
-                # 使用 swisseph 的 house_pos 可能会更好，但这里我们可以先用简单的
-                # 为了精确，我们调用 swe.house_pos
-                armc = ascmc[2]
-                eps = ascmc[0] # 这里有点问题，ascmc[0]是Asc。我们需要黄赤交角
-                # 获取黄赤交角
-                # swe.calc_ut 返回 (result_tuple, flag)
-                ecl_res, ecl_flag = swe.calc_ut(jd, swe.ECL_NUT, 0) 
-                true_eps = ecl_res[0]
-                
-                # swe.house_pos(armc, geolat, eps, (lon, lat), hsys)
-                h_pos = swe.house_pos(armc, lat, true_eps, (lon_val, lat_val), str.encode(house_system))
-                house_num = int(h_pos) 
-                if house_num == 0: house_num = 12 # 偶尔边界情况
+                # 直接按宫头区间判定落宫，保证落宫与宫头列表一致。
+                house_num = self._infer_house_from_cusps(chart_houses, lon_val)
+                if house_num == 0:
+                    house_num = 12
                 
                 # 构建 PlanetInfo
                 p_info = PlanetInfo(

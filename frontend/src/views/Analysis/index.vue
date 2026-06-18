@@ -92,17 +92,24 @@
                 <el-input v-model="form.name" placeholder="例如：Luna" clearable />
               </el-form-item>
 
-              <el-form-item label="出生日期与时间" prop="birthDatetime">
-                <el-date-picker
-                  v-model="form.birthDatetime"
-                  type="datetime"
-                  style="width: 100%"
-                  format="YYYY-MM-DD HH:mm"
-                  value-format="YYYY-MM-DDTHH:mm"
-                  placeholder="选择出生日期与时间"
-                />
+              <el-form-item label="性别" prop="gender">
+                <el-select v-model="form.gender" placeholder="请选择" style="width: 100%">
+                  <el-option label="女" value="女" />
+                  <el-option label="男" value="男" />
+                </el-select>
               </el-form-item>
             </div>
+
+            <el-form-item label="出生日期与时间" prop="birthDatetime">
+              <el-date-picker
+                v-model="form.birthDatetime"
+                type="datetime"
+                style="width: 100%"
+                format="YYYY-MM-DD HH:mm"
+                value-format="YYYY-MM-DDTHH:mm"
+                placeholder="选择出生日期与时间"
+              />
+            </el-form-item>
 
             <el-form-item label="出生地点" prop="birthPlace">
               <el-input
@@ -119,18 +126,18 @@
               </el-input>
             </el-form-item>
 
-            <div class="coordPreview" v-if="form.lat && form.lon">
+            <div class="coordPreview" v-if="hasCoordinates">
               <div class="coordItem">
                 <span>纬度</span>
-                <strong>{{ form.lat }}</strong>
+                <strong>{{ latitudePreview }}</strong>
               </div>
               <div class="coordItem">
                 <span>经度</span>
-                <strong>{{ form.lon }}</strong>
+                <strong>{{ longitudePreview }}</strong>
               </div>
               <div class="coordItem">
                 <span>时区</span>
-                <strong>UTC{{ form.timezone >= 0 ? "+" : "" }}{{ form.timezone }}</strong>
+                <strong>{{ timezonePreview }}</strong>
               </div>
             </div>
 
@@ -200,13 +207,64 @@
                 <el-input v-model="form.birthPlace" placeholder="例如：北京市朝阳区" />
               </el-form-item>
 
-              <div class="twoCol compact">
-                <el-form-item label="纬度" required>
-                  <el-input v-model="form.lat" type="number" placeholder="39.9042" />
-                </el-form-item>
-                <el-form-item label="经度" required>
-                  <el-input v-model="form.lon" type="number" placeholder="116.4074" />
-                </el-form-item>
+              <div class="manualCoordGrid">
+                <div class="manualCoordCard">
+                  <el-form-item label="纬度" required>
+                    <div class="manualCoordRow">
+                      <el-input-number
+                        v-model="manualCoords.latDegrees"
+                        :min="0"
+                        :max="90"
+                        :step="1"
+                        :precision="0"
+                        controls-position="right"
+                      />
+                      <span class="coordUnit">°</span>
+                      <el-input-number
+                        v-model="manualCoords.latMinutes"
+                        :min="0"
+                        :max="59"
+                        :step="1"
+                        :precision="0"
+                        controls-position="right"
+                      />
+                      <span class="coordUnit">′</span>
+                      <el-select v-model="manualCoords.latDirection" class="coordDirection">
+                        <el-option label="N" value="N" />
+                        <el-option label="S" value="S" />
+                      </el-select>
+                    </div>
+                  </el-form-item>
+                  <p class="manualCoordHint">{{ latitudeManualPreview }}</p>
+
+                  <el-form-item label="经度" required>
+                    <div class="manualCoordRow">
+                      <el-input-number
+                        v-model="manualCoords.lonDegrees"
+                        :min="0"
+                        :max="180"
+                        :step="1"
+                        :precision="0"
+                        controls-position="right"
+                      />
+                      <span class="coordUnit">°</span>
+                      <el-input-number
+                        v-model="manualCoords.lonMinutes"
+                        :min="0"
+                        :max="59"
+                        :step="1"
+                        :precision="0"
+                        controls-position="right"
+                      />
+                      <span class="coordUnit">′</span>
+                      <el-select v-model="manualCoords.lonDirection" class="coordDirection">
+                        <el-option label="E" value="E" />
+                        <el-option label="W" value="W" />
+                      </el-select>
+                    </div>
+                  </el-form-item>
+                  <p class="manualCoordHint">{{ longitudeManualPreview }}</p>
+                </div>
               </div>
 
               <el-form-item label="时区" required>
@@ -218,6 +276,7 @@
                     :value="tz.value"
                   />
                 </el-select>
+                <p class="manualCoordHint timezoneHint">{{ timezonePreview }}</p>
               </el-form-item>
             </div>
           </el-tab-pane>
@@ -235,12 +294,20 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage, type FormInstance, type FormRules } from "element-plus";
 import { Location, Position } from "@element-plus/icons-vue";
 import { regionData, codeToText } from "element-china-area-data";
 import { apiClient } from "@/config/api";
+import { DEFAULT_TEST_SUBJECT as SHARED_DEFAULT_TEST_SUBJECT } from "@/config/examples";
+import { getTestUserProfileByKey } from "@/config/testProfiles";
+import {
+  composeCoordinateValue,
+  formatCoordinateLabel,
+  formatTimezoneLabel,
+  splitCoordinateParts,
+} from "@/utils/coordinates";
 import { ANALYSIS_CATEGORY_LABELS, FALLBACK_ANALYSIS_TYPES } from "@/utils/analysis";
 import type { AnalysisDefinition, AnalysisResponse, AnalysisStatus, LifeReport } from "@/utils/types";
 
@@ -255,44 +322,75 @@ const selectedOptions = ref<string[]>([]);
 const geoLoading = ref(false);
 const loading = ref(false);
 
-const commonTimezones = [
-  { label: "UTC-12:00", value: -12 },
-  { label: "UTC-11:00", value: -11 },
-  { label: "UTC-10:00", value: -10 },
-  { label: "UTC-09:00", value: -9 },
-  { label: "UTC-08:00 (Pacific)", value: -8 },
-  { label: "UTC-07:00 (Mountain)", value: -7 },
-  { label: "UTC-06:00 (Central)", value: -6 },
-  { label: "UTC-05:00 (Eastern)", value: -5 },
-  { label: "UTC-04:00", value: -4 },
-  { label: "UTC-03:00", value: -3 },
-  { label: "UTC-02:00", value: -2 },
-  { label: "UTC-01:00", value: -1 },
-  { label: "UTC+00:00 (GMT)", value: 0 },
-  { label: "UTC+01:00 (CET)", value: 1 },
-  { label: "UTC+02:00 (EET)", value: 2 },
-  { label: "UTC+03:00", value: 3 },
-  { label: "UTC+04:00", value: 4 },
-  { label: "UTC+05:00", value: 5 },
-  { label: "UTC+06:00", value: 6 },
-  { label: "UTC+07:00", value: 7 },
-  { label: "UTC+08:00 (CST)", value: 8 },
-  { label: "UTC+09:00 (JST)", value: 9 },
-  { label: "UTC+10:00", value: 10 },
-  { label: "UTC+11:00", value: 11 },
-  { label: "UTC+12:00", value: 12 },
+const timezonePresets = [
+  { value: -12 },
+  { value: -11 },
+  { value: -10 },
+  { value: -9 },
+  { value: -8, note: "Pacific" },
+  { value: -7, note: "Mountain" },
+  { value: -6, note: "Central" },
+  { value: -5, note: "Eastern" },
+  { value: -4 },
+  { value: -3 },
+  { value: -2 },
+  { value: -1 },
+  { value: 0, note: "GMT" },
+  { value: 1, note: "CET" },
+  { value: 2, note: "EET" },
+  { value: 3 },
+  { value: 4 },
+  { value: 5 },
+  { value: 6 },
+  { value: 7 },
+  { value: 8, note: "CST" },
+  { value: 9, note: "JST" },
+  { value: 10 },
+  { value: 11 },
+  { value: 12 },
 ];
 
-const form = reactive({
-  name: "",
-  birthDatetime: "",
-  birthPlace: "",
-  lat: 0,
-  lon: 0,
+const commonTimezones = timezonePresets.map((item) => ({
+  label: item.note ? `${formatTimezoneLabel(item.value)} (${item.note})` : formatTimezoneLabel(item.value),
+  value: item.value,
+}));
+
+const DEFAULT_TEST_SUBJECT = {
+  name: "夏天",
+  gender: "女",
+  birthDatetime: "1991-03-21T09:25",
+  birthPlace: "山西省陵川县附城镇青杨庄村",
+  lat: 35.7,
+  lon: 113.35,
   timezone: 8,
+};
+
+void DEFAULT_TEST_SUBJECT;
+
+const form = reactive({
+  name: SHARED_DEFAULT_TEST_SUBJECT.name,
+  gender: SHARED_DEFAULT_TEST_SUBJECT.gender,
+  birthDatetime: SHARED_DEFAULT_TEST_SUBJECT.birthDatetime,
+  birthPlace: SHARED_DEFAULT_TEST_SUBJECT.birthPlace,
+  lat: SHARED_DEFAULT_TEST_SUBJECT.lat,
+  lon: SHARED_DEFAULT_TEST_SUBJECT.lon,
+  timezone: SHARED_DEFAULT_TEST_SUBJECT.timezone,
 });
 
+const manualCoords = reactive({
+  latDegrees: 0,
+  latMinutes: 0,
+  latDirection: "N",
+  lonDegrees: 0,
+  lonMinutes: 0,
+  lonDirection: "E",
+});
+
+const MANUAL_COORDINATE_WARNING = "\u8bf7\u6309 xx\u00b0xx\u2032 \u5b8c\u6574\u586b\u5199\u7ecf\u7eac\u5ea6";
+const TIMEZONE_REQUIRED_WARNING = "\u8bf7\u5148\u8865\u5168\u65f6\u533a";
+
 const rules: FormRules = {
+  gender: [{ required: true, message: "请选择性别", trigger: "change" }],
   birthDatetime: [{ required: true, message: "请选择出生日期与时间", trigger: "change" }],
   birthPlace: [{ required: true, message: "请设置出生地点", trigger: "blur" }],
 };
@@ -306,10 +404,52 @@ const categoryLabel = computed(() => {
   return ANALYSIS_CATEGORY_LABELS[analysis.value?.category || ""] || "未分类";
 });
 
+const hasCoordinates = computed(
+  () => Number.isFinite(Number(form.lat)) && Number.isFinite(Number(form.lon))
+);
+const hasTimezone = computed(() => parseTimezoneValue(form.timezone) !== null);
+const latitudePreview = computed(() => formatCoordinateLabel(Number(form.lat), "latitude"));
+const longitudePreview = computed(() => formatCoordinateLabel(Number(form.lon), "longitude"));
+const timezonePreview = computed(() => {
+  const timezone = parseTimezoneValue(form.timezone);
+  return timezone === null ? "-" : formatTimezoneLabel(timezone);
+});
+const latitudeManualPreview = computed(() =>
+  formatCoordinateLabel(
+    composeCoordinateValue(
+      Number(manualCoords.latDegrees),
+      Number(manualCoords.latMinutes),
+      manualCoords.latDirection as "N" | "S",
+      "latitude"
+    ),
+    "latitude"
+  )
+);
+const longitudeManualPreview = computed(() =>
+  formatCoordinateLabel(
+    composeCoordinateValue(
+      Number(manualCoords.lonDegrees),
+      Number(manualCoords.lonMinutes),
+      manualCoords.lonDirection as "E" | "W",
+      "longitude"
+    ),
+    "longitude"
+  )
+);
+
 const birthTimePayload = computed(() => {
   if (!form.birthDatetime) return "";
   return form.birthDatetime.length === 16 ? `${form.birthDatetime}:00` : form.birthDatetime;
 });
+
+function currentProfileKey() {
+  const profile = route.query.profile;
+  return typeof profile === "string" && profile ? profile : undefined;
+}
+
+function currentProfile() {
+  return getTestUserProfileByKey(currentProfileKey());
+}
 
 function statusLabel(status: AnalysisStatus) {
   return status === "active" ? "已开放" : "即将上线";
@@ -327,6 +467,61 @@ function handleAddressChange(codes: string[]) {
   form.birthPlace = codes.map((code) => codeToText[code]).join(" ");
 }
 
+function parseTimezoneValue(value: unknown) {
+  if (value === "" || value === null || value === undefined) return null;
+
+  const timezone = Number(value);
+  return Number.isFinite(timezone) ? timezone : null;
+}
+
+function syncManualCoordsFromForm() {
+  const latitude = splitCoordinateParts(Number(form.lat), "latitude");
+  const longitude = splitCoordinateParts(Number(form.lon), "longitude");
+
+  manualCoords.latDegrees = latitude.degrees;
+  manualCoords.latMinutes = latitude.minutes;
+  manualCoords.latDirection = latitude.direction;
+  manualCoords.lonDegrees = longitude.degrees;
+  manualCoords.lonMinutes = longitude.minutes;
+  manualCoords.lonDirection = longitude.direction;
+}
+
+function hasValidCoordinateParts(axis: "latitude" | "longitude") {
+  const maxDegrees = axis === "latitude" ? 90 : 180;
+  const degrees = Number(axis === "latitude" ? manualCoords.latDegrees : manualCoords.lonDegrees);
+  const minutes = Number(axis === "latitude" ? manualCoords.latMinutes : manualCoords.lonMinutes);
+
+  if (!Number.isFinite(degrees) || !Number.isFinite(minutes)) return false;
+  if (degrees < 0 || degrees > maxDegrees) return false;
+  if (minutes < 0 || minutes > 59) return false;
+  if (degrees === maxDegrees && minutes > 0) return false;
+  return true;
+}
+
+function syncFormCoordsFromManual() {
+  if (!hasValidCoordinateParts("latitude") || !hasValidCoordinateParts("longitude")) {
+    /*
+    ElMessage.warning("璇锋寜 xx°xx′ 鏍煎紡瀹屾暣濉啓缁忕含搴?);
+    */
+    ElMessage.warning(MANUAL_COORDINATE_WARNING);
+    return false;
+  }
+
+  form.lat = composeCoordinateValue(
+    Number(manualCoords.latDegrees),
+    Number(manualCoords.latMinutes),
+    manualCoords.latDirection as "N" | "S",
+    "latitude"
+  );
+  form.lon = composeCoordinateValue(
+    Number(manualCoords.lonDegrees),
+    Number(manualCoords.lonMinutes),
+    manualCoords.lonDirection as "E" | "W",
+    "longitude"
+  );
+  return true;
+}
+
 async function autoGeocode() {
   if (!form.birthPlace) {
     ElMessage.warning("请先选择出生地点");
@@ -341,6 +536,7 @@ async function autoGeocode() {
       form.lat = Number(lat);
       form.lon = Number(lon);
       form.timezone = Number(timezone);
+      syncManualCoordsFromForm();
       ElMessage.success("已获取坐标");
       return;
     }
@@ -367,22 +563,32 @@ function savePlaceSettings() {
     ElMessage.warning("请先设置出生地点");
     return;
   }
-  if (!form.lat || !form.lon) {
+  if (locationMode.value === "custom" && !syncFormCoordsFromManual()) {
+    return;
+  }
+  if (!hasCoordinates.value) {
     ElMessage.warning("请先获取或填写坐标");
+    return;
+  }
+  if (!hasTimezone.value) {
+    ElMessage.warning(TIMEZONE_REQUIRED_WARNING);
     return;
   }
   placeDialogOpen.value = false;
 }
 
 function resetForm() {
-  form.name = "";
-  form.birthDatetime = "";
-  form.birthPlace = "";
-  form.lat = 0;
-  form.lon = 0;
-  form.timezone = 8;
+  const profile = currentProfile() || SHARED_DEFAULT_TEST_SUBJECT;
+  form.name = profile.name;
+  form.gender = profile.gender;
+  form.birthDatetime = profile.birthDatetime;
+  form.birthPlace = profile.birthPlace;
+  form.lat = profile.lat;
+  form.lon = profile.lon;
+  form.timezone = profile.timezone;
+  syncManualCoordsFromForm();
   selectedOptions.value = [];
-  locationMode.value = "auto";
+  locationMode.value = "custom";
 }
 
 async function onSubmit() {
@@ -390,8 +596,13 @@ async function onSubmit() {
   const valid = await formRef.value.validate().catch(() => false);
   if (!valid) return;
 
-  if (!form.lat || !form.lon) {
+  if (!hasCoordinates.value) {
     ElMessage.warning("请先设置出生地点对应的坐标");
+    return;
+  }
+
+  if (!hasTimezone.value) {
+    ElMessage.warning(TIMEZONE_REQUIRED_WARNING);
     return;
   }
 
@@ -402,6 +613,7 @@ async function onSubmit() {
       subjects: [
         {
           name: form.name || undefined,
+          gender: form.gender,
           birth_time: birthTimePayload.value,
           lat: Number(form.lat),
           lon: Number(form.lon),
@@ -441,7 +653,21 @@ async function loadCatalog() {
   }
 }
 
+watch(placeDialogOpen, (open) => {
+  if (open) {
+    syncManualCoordsFromForm();
+  }
+});
+
+watch(
+  () => route.query.profile,
+  () => {
+    resetForm();
+  }
+);
+
 onMounted(() => {
+  resetForm();
   loadCatalog();
 });
 </script>
@@ -471,7 +697,7 @@ onMounted(() => {
 .wrap {
   position: relative;
   z-index: 1;
-  max-width: 1240px;
+  max-width: var(--page-shell-max);
   margin: 0 auto;
 }
 
@@ -705,6 +931,54 @@ onMounted(() => {
   gap: 12px;
 }
 
+.manualCoordGrid {
+  display: grid;
+  gap: 12px;
+}
+
+.manualCoordCard {
+  padding: 14px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.manualCoordRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto 92px;
+  gap: 10px;
+  align-items: center;
+}
+
+.form :deep(.manualCoordRow .el-input-number) {
+  width: 100%;
+}
+
+.form :deep(.manualCoordRow .el-input-number .el-input__wrapper) {
+  width: 100%;
+}
+
+.coordDirection {
+  width: 92px;
+}
+
+.coordUnit {
+  color: var(--text-secondary);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.manualCoordHint {
+  margin: 8px 0 0;
+  color: rgba(248, 250, 252, 0.82);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.timezoneHint {
+  margin-top: 10px;
+}
+
 .coordPreview {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -792,6 +1066,15 @@ onMounted(() => {
 @media (max-width: 720px) {
   .page {
     padding-inline: 14px;
+  }
+
+  .manualCoordRow {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto 78px;
+    gap: 8px;
+  }
+
+  .coordDirection {
+    width: 78px;
   }
 
   .heroTop,

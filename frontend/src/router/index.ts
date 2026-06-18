@@ -6,6 +6,11 @@ export default createRouter({
   routes: [
     { path: "/", name: "entry", component: Entry },
     {
+      path: "/users",
+      name: "users",
+      component: () => import("@/views/Users/index.vue"),
+    },
+    {
       path: "/analysis/:type",
       name: "analysis",
       component: () => import("@/views/Analysis/index.vue"),

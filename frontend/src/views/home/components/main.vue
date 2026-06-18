@@ -26,7 +26,7 @@
         <div class="heroMetrics">
           <div class="metricCard">
             <span>当前可体验</span>
-            <strong>阶段导航报告</strong>
+            <strong>本命蓝图 / 阶段导航</strong>
           </div>
           <div class="metricCard">
             <span>当前解读方式</span>
@@ -81,7 +81,7 @@
           <div class="eyebrow">Reading Paths</div>
           <h2 class="sectionTitle">从你当下最关心的问题开始</h2>
           <p class="sectionText">
-            每个入口都对应一种人生提问。当前已开放“阶段导航”，其余模块会沿用同一套解读逻辑逐步上线。
+            每个入口都对应一种人生提问。当前已开放“本命蓝图”和“阶段导航”，其余模块会沿用同一套解读逻辑逐步上线。
           </p>
         </div>
         <div class="legend">
@@ -158,6 +158,43 @@
         </p>
       </article>
     </section>
+
+    <section class="methodSection">
+      <div class="sectionHead">
+        <div>
+          <div class="eyebrow">Methodology</div>
+          <h2 class="sectionTitle">我们如何理解占星与人生</h2>
+          <p class="sectionText">
+            占星不是把人锁死的标签系统，而是一套帮助你看见结构、建立信念、拓展可能性的阅读方法。
+          </p>
+        </div>
+      </div>
+
+      <div class="principleGrid">
+        <article v-for="item in readingPrinciples" :key="item.key" class="principleCard">
+          <div class="principleTitle">{{ item.title }}</div>
+          <p>{{ item.summary }}</p>
+        </article>
+      </div>
+
+      <div class="beliefBanner">
+        <div class="beliefEyebrow">Core Belief</div>
+        <p>{{ coreBelief }}</p>
+      </div>
+
+      <div class="planetGroupGrid">
+        <article v-for="group in planetGroups" :key="group.key" class="planetGroupCard">
+          <div class="planetGroupEyebrow">{{ group.title }}</div>
+          <h3>{{ group.summary }}</h3>
+          <div class="planetMiniList">
+            <div v-for="planet in group.planets" :key="planet.name" class="planetMiniItem">
+              <strong>{{ planet.name }}</strong>
+              <p>{{ planet.meaning }}</p>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -166,6 +203,7 @@ import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { apiClient } from "@/config/api";
 import { FEATURED_NATAL_EXAMPLE, HOMEPAGE_EXAMPLE_VISIBLE } from "@/config/examples";
+import { CORE_BELIEF, PLANET_GROUPS, READING_PRINCIPLES } from "@/config/methodology";
 import { ANALYSIS_CATEGORY_LABELS, FALLBACK_ANALYSIS_TYPES } from "@/utils/analysis";
 import type { AnalysisDefinition, AnalysisStatus } from "@/utils/types";
 
@@ -175,6 +213,9 @@ const catalog = ref<AnalysisDefinition[]>([...FALLBACK_ANALYSIS_TYPES]);
 const transitData = ref<any>(null);
 const featuredExample = FEATURED_NATAL_EXAMPLE;
 const showHomepageExample = HOMEPAGE_EXAMPLE_VISIBLE;
+const coreBelief = CORE_BELIEF;
+const readingPrinciples = READING_PRINCIPLES;
+const planetGroups = PLANET_GROUPS;
 
 function scrollToCatalog() {
   document.getElementById("analysis-catalog")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -202,7 +243,7 @@ function goToAnalysis(item: AnalysisDefinition) {
 function openDefaultAnalysis() {
   router.push({
     name: "analysis",
-    params: { type: "phase_navigation" },
+    params: { type: "natal_blueprint" },
   });
 }
 
@@ -211,6 +252,7 @@ function openFeaturedExample() {
     name: "report",
     query: {
       example: featuredExample.key,
+      analysis: "natal_blueprint",
     },
   });
 }
@@ -282,7 +324,7 @@ onMounted(async () => {
 .featureGrid {
   position: relative;
   z-index: 1;
-  max-width: 1240px;
+  max-width: var(--page-shell-max);
   margin: 0 auto;
 }
 
@@ -640,11 +682,120 @@ onMounted(async () => {
   font-size: 24px;
 }
 
+.methodSection {
+  position: relative;
+  z-index: 1;
+  max-width: var(--page-shell-max);
+  margin: 22px auto 0;
+}
+
+.principleGrid,
+.planetGroupGrid {
+  margin-top: 22px;
+  display: grid;
+  gap: 18px;
+}
+
+.principleGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.planetGroupGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.principleCard,
+.planetGroupCard,
+.beliefBanner {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.74);
+  backdrop-filter: blur(18px);
+  border-radius: 28px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
+}
+
+.principleCard,
+.planetGroupCard {
+  padding: 24px;
+}
+
+.principleTitle,
+.planetGroupCard h3 {
+  margin: 0;
+  color: var(--text);
+}
+
+.principleTitle {
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.principleCard p,
+.planetMiniItem p,
+.beliefBanner p {
+  margin: 12px 0 0;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.beliefBanner {
+  margin-top: 22px;
+  padding: 22px 26px;
+  background:
+    radial-gradient(circle at top left, rgba(212, 175, 55, 0.12), transparent 34%),
+    rgba(15, 23, 42, 0.82);
+}
+
+.beliefEyebrow,
+.planetGroupEyebrow {
+  color: var(--gold);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.beliefBanner p {
+  margin-top: 10px;
+  color: var(--text);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.planetGroupEyebrow {
+  margin-bottom: 10px;
+}
+
+.planetGroupCard h3 {
+  font-size: 22px;
+  line-height: 1.3;
+}
+
+.planetMiniList {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.planetMiniItem {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.planetMiniItem strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
 @media (max-width: 1100px) {
   .hero,
   .catalogGrid,
   .featureGrid,
-  .heroMetrics {
+  .heroMetrics,
+  .principleGrid,
+  .planetGroupGrid {
     grid-template-columns: 1fr;
   }
 

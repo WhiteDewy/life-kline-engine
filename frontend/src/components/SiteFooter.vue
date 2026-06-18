@@ -4,7 +4,7 @@
       <p class="meta">
         © {{ new Date().getFullYear() }} Life Kline Engine · 一个把占星翻译成现实决策语言的人生解读项目
       </p>
-      <p class="core">先看天赋底盘，再看阶段节奏，最后决定现在怎么走。</p>
+      <p class="core">先看天赋底盘，再看阶段节奏；要相信自己人生有无限可能性。</p>
     </div>
   </footer>
 </template>
@@ -25,7 +25,7 @@ defineEmits<{
 }
 
 .content {
-  max-width: 1240px;
+  max-width: var(--page-shell-max);
   margin: 0 auto;
   padding: 18px 16px 22px;
   display: flex;

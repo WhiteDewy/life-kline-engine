@@ -5,6 +5,7 @@ import router from "./router"
 import ElementPlus from "element-plus"
 import "element-plus/dist/index.css" // Replaced by SCSS source build
 import "@/styles/theme.css"
+import "./style.css"
 
 createApp(App)
   .use(router)

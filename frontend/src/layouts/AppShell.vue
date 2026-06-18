@@ -24,9 +24,9 @@ defineEmits<{
   background: var(--bg);
 }
 .content {
-  /* Remove width restriction for full-width landing page design */
   width: 100%;
-  margin: 0;
+  max-width: var(--page-shell-max);
+  margin: 0 auto;
   padding: calc(var(--h-header)) 0 0;
 }
 </style>

@@ -117,6 +117,7 @@ export interface LifeReport {
     engine_version: string;
   };
   user_info: {
+    gender?: string | null;
     birth_time_local: string;
     birth_time_utc: string;
     lat: number;
@@ -157,14 +158,66 @@ export interface LifeReport {
   natal_blueprint?: {
     role_title?: string;
     summary?: string;
+    signature?: string;
     keywords?: string[];
+    key_signals?: Array<{
+      label: string;
+      value: string;
+      hint?: string;
+    }>;
     layers?: Array<{
       key: string;
       title: string;
       headline: string;
       summary: string;
+      evidence?: string[];
+      focus_cards?: Array<{
+        label: string;
+        value: string;
+        hint?: string;
+      }>;
       points: string[];
     }>;
+    self_profile?: {
+      title?: string;
+      summary?: string;
+      baseline?: string;
+      cards?: Array<{
+        label: string;
+        value: string;
+        hint?: string;
+      }>;
+      evidence?: string[];
+      points?: string[];
+    };
+    career_blueprint?: {
+      title?: string;
+      summary?: string;
+      selection_prompt?: string;
+      method_tags?: string[];
+      paths?: Array<{
+        key: string;
+        title: string;
+        fit_score: number;
+        fit_label: string;
+        track_label?: string;
+        track_reason?: string;
+        summary: string;
+        risk_summary?: string;
+        sources?: string[];
+        roles?: string[];
+        selection_tags?: string[];
+        evidence?: string[];
+        theory?: string[];
+        points?: string[];
+      }>;
+    };
+    theory_basis?: {
+      title?: string;
+      summary?: string;
+      chips?: string[];
+      points?: string[];
+    };
     [key: string]: any;
   } | null;
   advanced_patterns?: {
@@ -185,6 +238,17 @@ export interface LifeReport {
       adult_meaning?: string;
       notation: string;
       line: string;
+      late_five_applied?: boolean;
+      late_five_distance?: number;
+      late_five_note?: string | null;
+      flight_summary?: string | null;
+      flight_positive?: string | null;
+      flight_negative?: string | null;
+      flight_tone?: string | null;
+      flight_tone_label?: string | null;
+      flight_note?: string | null;
+      flight_target_title?: string | null;
+      flight_target_theme?: string | null;
     }>;
     ruler_groups?: Array<{
       ruler: string;
@@ -248,6 +312,7 @@ export interface LifeReport {
       key: string;
       title: string;
       summary: string;
+      risk_summary?: string;
       evidence: string[];
       points: string[];
     }>;
