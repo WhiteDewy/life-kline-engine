@@ -2,7 +2,7 @@
   <section class="card">
     <div class="head">
       <div>
-        <div class="eyebrow">Phase Timeline</div>
+        <div class="eyebrow">阶段时间轴</div>
         <h3 class="title">阶段时间表</h3>
       </div>
       <p class="hint">

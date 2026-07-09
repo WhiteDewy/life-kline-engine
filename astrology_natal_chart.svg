@@ -1,0 +1,517 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1400" viewBox="0 0 1400 1400">
+  <title>Classical Astrology Natal Chart</title>
+  <desc>High precision vector natal chart with zodiac ring, planetary data layer, houses, axes, and chord-based aspect lines.</desc>
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .thin { stroke: #000000; stroke-width: 1.2; fill: none; vector-effect: non-scaling-stroke; }
+      .medium { stroke: #000000; stroke-width: 2; fill: none; vector-effect: non-scaling-stroke; }
+      .heavy { stroke: #000000; stroke-width: 4.2; fill: none; vector-effect: non-scaling-stroke; }
+      .tick-minor { stroke: #000000; stroke-width: 0.8; vector-effect: non-scaling-stroke; }
+      .tick-major { stroke: #000000; stroke-width: 1.45; vector-effect: non-scaling-stroke; }
+      .tick-sign { stroke: #000000; stroke-width: 2.2; vector-effect: non-scaling-stroke; }
+      .house-num { font-family: "Times New Roman", Georgia, serif; font-size: 28px; font-weight: 700; fill: #000000; text-anchor: middle; dominant-baseline: central; }
+      .axis-label { font-family: "Times New Roman", Georgia, serif; font-size: 34px; font-weight: 700; fill: #000000; text-anchor: middle; dominant-baseline: central; letter-spacing: 1px; }
+      .zodiac { font-family: "Times New Roman", Georgia, serif; font-size: 46px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+      .planet { font-family: "Times New Roman", Georgia, serif; font-size: 31px; font-weight: 700; fill: #000000; text-anchor: middle; dominant-baseline: central; }
+      .deg { font-family: "Times New Roman", Georgia, serif; font-size: 15px; fill: #000000; text-anchor: middle; dominant-baseline: central; }
+      .fire { fill: #d21919; }
+      .earth { fill: #128136; }
+      .air { fill: #c99700; }
+      .water { fill: #176bd6; }
+      .aspect-red { stroke: #cf1010; stroke-width: 3; fill: none; vector-effect: non-scaling-stroke; }
+      .aspect-blue { stroke: #1267c9; stroke-width: 3; fill: none; vector-effect: non-scaling-stroke; }
+      .aspect-green { stroke: #168d3b; stroke-width: 3; fill: none; vector-effect: non-scaling-stroke; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1400" height="1400"/>
+
+  <!-- Core concentric circle system -->
+  <circle class="heavy" cx="700" cy="700" r="560"/>
+  <circle class="medium" cx="700" cy="700" r="485"/>
+  <circle class="medium" cx="700" cy="700" r="390"/>
+  <circle class="heavy" cx="700" cy="700" r="315"/>
+
+  <!-- Fine zodiac tick marks: 360 one-degree ticks, longer at 5, 10, and sign boundaries -->
+  <g id="zodiac-ticks">
+    <line class="tick-sign" x1="700.00" y1="140.00" x2="700.00" y2="195.00"/>
+    <line class="tick-minor" x1="709.77" y1="140.09" x2="709.33" y2="165.08"/>
+    <line class="tick-minor" x1="719.54" y1="140.34" x2="718.67" y2="165.31"/>
+    <line class="tick-minor" x1="729.31" y1="140.77" x2="728.00" y2="165.73"/>
+    <line class="tick-minor" x1="739.07" y1="141.36" x2="737.32" y2="166.30"/>
+    <line class="tick-major" x1="748.81" y1="142.13" x2="745.76" y2="176.99"/>
+    <line class="tick-minor" x1="758.54" y1="143.06" x2="755.93" y2="167.92"/>
+    <line class="tick-minor" x1="768.25" y1="144.17" x2="765.21" y2="168.98"/>
+    <line class="tick-minor" x1="777.94" y1="145.44" x2="774.46" y2="170.20"/>
+    <line class="tick-minor" x1="787.60" y1="146.88" x2="783.69" y2="171.57"/>
+    <line class="tick-major" x1="797.24" y1="148.49" x2="791.17" y2="182.96"/>
+    <line class="tick-minor" x1="806.85" y1="150.27" x2="802.08" y2="174.81"/>
+    <line class="tick-minor" x1="816.43" y1="152.22" x2="811.24" y2="176.67"/>
+    <line class="tick-minor" x1="825.97" y1="154.33" x2="820.35" y2="178.69"/>
+    <line class="tick-minor" x1="835.48" y1="156.61" x2="829.43" y2="180.87"/>
+    <line class="tick-major" x1="844.94" y1="159.05" x2="835.89" y2="192.86"/>
+    <line class="tick-minor" x1="854.37" y1="161.66" x2="847.48" y2="185.69"/>
+    <line class="tick-minor" x1="863.74" y1="164.43" x2="856.43" y2="188.34"/>
+    <line class="tick-minor" x1="873.07" y1="167.36" x2="865.34" y2="191.14"/>
+    <line class="tick-minor" x1="882.34" y1="170.45" x2="874.20" y2="194.09"/>
+    <line class="tick-major" x1="891.56" y1="173.70" x2="879.59" y2="206.59"/>
+    <line class="tick-minor" x1="900.72" y1="177.11" x2="891.76" y2="200.45"/>
+    <line class="tick-minor" x1="909.83" y1="180.67" x2="900.44" y2="203.86"/>
+    <line class="tick-minor" x1="918.87" y1="184.39" x2="909.08" y2="207.40"/>
+    <line class="tick-minor" x1="927.85" y1="188.26" x2="917.66" y2="211.10"/>
+    <line class="tick-major" x1="936.75" y1="192.28" x2="921.96" y2="224.01"/>
+    <line class="tick-minor" x1="945.59" y1="196.45" x2="934.63" y2="218.91"/>
+    <line class="tick-minor" x1="954.35" y1="200.77" x2="942.99" y2="223.03"/>
+    <line class="tick-minor" x1="963.03" y1="205.24" x2="951.27" y2="227.29"/>
+    <line class="tick-minor" x1="971.64" y1="209.85" x2="959.49" y2="231.69"/>
+    <line class="tick-sign" x1="980.00" y1="215.03" x2="952.50" y2="262.66"/>
+    <line class="tick-minor" x1="988.61" y1="220.66" x2="975.72" y2="242.08"/>
+    <line class="tick-minor" x1="996.86" y1="225.89" x2="983.60" y2="247.08"/>
+    <line class="tick-minor" x1="1005.02" y1="231.26" x2="991.40" y2="252.22"/>
+    <line class="tick-minor" x1="1013.09" y1="236.78" x2="999.12" y2="257.49"/>
+    <line class="tick-major" x1="1021.06" y1="242.43" x2="1000.99" y2="271.10"/>
+    <line class="tick-minor" x1="1028.93" y1="248.22" x2="1014.25" y2="268.39"/>
+    <line class="tick-minor" x1="1036.70" y1="254.14" x2="1021.68" y2="274.06"/>
+    <line class="tick-minor" x1="1044.37" y1="260.20" x2="1029.00" y2="279.85"/>
+    <line class="tick-minor" x1="1051.93" y1="266.39" x2="1036.22" y2="285.76"/>
+    <line class="tick-major" x1="1059.38" y1="272.71" x2="1037.91" y2="300.36"/>
+    <line class="tick-minor" x1="1066.72" y1="279.16" x2="1050.35" y2="298.02"/>
+    <line class="tick-minor" x1="1073.94" y1="285.73" x2="1057.24" y2="304.30"/>
+    <line class="tick-minor" x1="1081.05" y1="292.43" x2="1064.02" y2="310.70"/>
+    <line class="tick-minor" x1="1088.04" y1="299.25" x2="1070.69" y2="317.21"/>
+    <line class="tick-major" x1="1094.90" y1="306.19" x2="1070.22" y2="331.14"/>
+    <line class="tick-minor" x1="1101.65" y1="313.25" x2="1083.72" y2="330.52"/>
+    <line class="tick-minor" x1="1108.26" y1="320.42" x2="1090.04" y2="337.38"/>
+    <line class="tick-minor" x1="1114.75" y1="327.71" x2="1096.24" y2="344.34"/>
+    <line class="tick-minor" x1="1121.11" y1="335.12" x2="1102.31" y2="351.40"/>
+    <line class="tick-major" x1="1127.33" y1="342.63" x2="1100.63" y2="365.18"/>
+    <line class="tick-minor" x1="1133.43" y1="350.25" x2="1114.15" y2="366.10"/>
+    <line class="tick-minor" x1="1139.38" y1="357.98" x2="1119.83" y2="373.50"/>
+    <line class="tick-minor" x1="1145.20" y1="365.81" x2="1125.38" y2="381.00"/>
+    <line class="tick-minor" x1="1150.88" y1="373.75" x2="1130.81" y2="388.58"/>
+    <line class="tick-sign" x1="1184.97" y1="420.00" x2="1137.34" y2="447.50"/>
+    <line class="tick-minor" x1="1161.83" y1="389.90" x2="1141.25" y2="404.02"/>
+    <line class="tick-minor" x1="1167.10" y1="398.21" x2="1146.28" y2="411.98"/>
+    <line class="tick-minor" x1="1172.16" y1="406.58" x2="1151.11" y2="419.99"/>
+    <line class="tick-minor" x1="1177.08" y1="415.01" x2="1155.80" y2="428.06"/>
+    <line class="tick-major" x1="1181.85" y1="423.53" x2="1151.76" y2="441.38"/>
+    <line class="tick-minor" x1="1186.47" y1="432.13" x2="1164.76" y2="444.09"/>
+    <line class="tick-minor" x1="1190.93" y1="440.81" x2="1169.02" y2="452.38"/>
+    <line class="tick-minor" x1="1195.24" y1="449.57" x2="1173.14" y2="460.74"/>
+    <line class="tick-minor" x1="1199.39" y1="458.41" x2="1177.11" y2="469.19"/>
+    <line class="tick-major" x1="1203.39" y1="467.32" x2="1171.92" y2="482.52"/>
+    <line class="tick-minor" x1="1207.22" y1="476.30" x2="1184.59" y2="486.29"/>
+    <line class="tick-minor" x1="1210.90" y1="485.35" x2="1188.11" y2="494.93"/>
+    <line class="tick-minor" x1="1214.41" y1="494.46" x2="1191.47" y2="503.63"/>
+    <line class="tick-minor" x1="1217.76" y1="503.64" x2="1194.68" y2="512.40"/>
+    <line class="tick-major" x1="1220.95" y1="512.87" x2="1188.40" y2="525.55"/>
+    <line class="tick-minor" x1="1223.96" y1="522.16" x2="1200.54" y2="530.10"/>
+    <line class="tick-minor" x1="1226.82" y1="531.50" x2="1203.27" y2="539.02"/>
+    <line class="tick-minor" x1="1229.50" y1="540.90" x2="1205.83" y2="547.99"/>
+    <line class="tick-minor" x1="1232.01" y1="550.34" x2="1208.24" y2="557.01"/>
+    <line class="tick-major" x1="1234.36" y1="559.82" x2="1200.96" y2="570.10"/>
+    <line class="tick-minor" x1="1236.53" y1="569.34" x2="1212.58" y2="574.88"/>
+    <line class="tick-minor" x1="1238.54" y1="578.90" x2="1214.50" y2="584.01"/>
+    <line class="tick-minor" x1="1240.37" y1="588.49" x2="1216.25" y2="593.17"/>
+    <line class="tick-minor" x1="1242.04" y1="598.11" x2="1217.84" y2="602.36"/>
+    <line class="tick-major" x1="1243.53" y1="607.77" x2="1208.45" y2="614.03"/>
+    <line class="tick-minor" x1="1244.85" y1="617.45" x2="1220.07" y2="620.88"/>
+    <line class="tick-minor" x1="1246.00" y1="627.16" x2="1221.17" y2="630.15"/>
+    <line class="tick-minor" x1="1246.98" y1="636.88" x2="1222.11" y2="639.44"/>
+    <line class="tick-minor" x1="1247.79" y1="646.62" x2="1222.89" y2="648.74"/>
+    <line class="tick-sign" x1="1260.00" y1="700.00" x2="1205.00" y2="700.00"/>
+    <line class="tick-minor" x1="1248.95" y1="666.11" x2="1223.98" y2="667.62"/>
+    <line class="tick-minor" x1="1249.30" y1="675.88" x2="1224.33" y2="676.95"/>
+    <line class="tick-minor" x1="1249.49" y1="685.65" x2="1224.50" y2="686.29"/>
+    <line class="tick-minor" x1="1249.49" y1="695.42" x2="1224.50" y2="695.62"/>
+    <line class="tick-major" x1="1249.33" y1="705.19" x2="1214.33" y2="704.86"/>
+    <line class="tick-minor" x1="1248.99" y1="714.96" x2="1224.02" y2="714.28"/>
+    <line class="tick-minor" x1="1248.49" y1="724.72" x2="1223.53" y2="723.61"/>
+    <line class="tick-minor" x1="1247.81" y1="734.47" x2="1222.88" y2="732.91"/>
+    <line class="tick-minor" x1="1246.97" y1="744.21" x2="1222.07" y2="742.20"/>
+    <line class="tick-major" x1="1245.95" y1="753.93" x2="1211.09" y2="750.57"/>
+    <line class="tick-minor" x1="1244.77" y1="763.62" x2="1220.00" y2="760.72"/>
+    <line class="tick-minor" x1="1243.42" y1="773.29" x2="1218.70" y2="769.96"/>
+    <line class="tick-minor" x1="1241.90" y1="782.94" x2="1217.25" y2="779.18"/>
+    <line class="tick-minor" x1="1240.21" y1="792.56" x2="1215.63" y2="788.37"/>
+    <line class="tick-major" x1="1238.35" y1="802.14" x2="1203.82" y2="796.30"/>
+    <line class="tick-minor" x1="1236.33" y1="811.69" x2="1211.91" y2="806.65"/>
+    <line class="tick-minor" x1="1234.14" y1="821.20" x2="1209.82" y2="815.73"/>
+    <line class="tick-minor" x1="1231.78" y1="830.67" x2="1207.57" y2="824.78"/>
+    <line class="tick-minor" x1="1229.26" y1="840.10" x2="1205.16" y2="833.79"/>
+    <line class="tick-major" x1="1226.57" y1="849.48" x2="1192.82" y2="840.33"/>
+    <line class="tick-minor" x1="1223.72" y1="858.82" x2="1200.01" y2="851.66"/>
+    <line class="tick-minor" x1="1220.70" y1="868.10" x2="1197.14" y2="860.52"/>
+    <line class="tick-minor" x1="1217.53" y1="877.33" x2="1194.11" y2="869.34"/>
+    <line class="tick-minor" x1="1214.19" y1="886.50" x2="1190.92" y2="878.10"/>
+    <line class="tick-major" x1="1210.69" y1="895.61" x2="1178.24" y2="882.67"/>
+    <line class="tick-minor" x1="1207.03" y1="904.66" x2="1184.04" y2="895.88"/>
+    <line class="tick-minor" x1="1203.21" y1="913.64" x2="1180.39" y2="904.45"/>
+    <line class="tick-minor" x1="1199.24" y1="922.55" x2="1176.60" y2="912.96"/>
+    <line class="tick-minor" x1="1195.10" y1="931.38" x2="1172.64" y2="921.39"/>
+    <line class="tick-sign" x1="1184.97" y1="980.00" x2="1137.34" y2="952.50"/>
+    <line class="tick-minor" x1="1186.38" y1="948.91" x2="1164.25" y2="938.16"/>
+    <line class="tick-minor" x1="1181.74" y1="957.50" x2="1159.83" y2="946.38"/>
+    <line class="tick-minor" x1="1176.95" y1="966.01" x2="1155.26" y2="954.53"/>
+    <line class="tick-minor" x1="1172.01" y1="974.44" x2="1150.54" y2="962.59"/>
+    <line class="tick-major" x1="1166.92" y1="982.77" x2="1136.85" y2="965.04"/>
+    <line class="tick-minor" x1="1161.68" y1="991.01" x2="1140.65" y2="978.44"/>
+    <line class="tick-minor" x1="1156.30" y1="999.16" x2="1135.51" y2="986.24"/>
+    <line class="tick-minor" x1="1150.78" y1="1007.22" x2="1130.24" y2="993.94"/>
+    <line class="tick-minor" x1="1145.11" y1="1015.18" x2="1124.82" y2="1001.55"/>
+    <line class="tick-major" x1="1139.31" y1="1023.03" x2="1110.77" y2="1002.85"/>
+    <line class="tick-minor" x1="1133.36" y1="1030.77" x2="1113.54" y2="1016.00"/>
+    <line class="tick-minor" x1="1127.29" y1="1038.41" x2="1107.74" y2="1023.31"/>
+    <line class="tick-minor" x1="1121.08" y1="1045.93" x2="1101.80" y2="1030.50"/>
+    <line class="tick-minor" x1="1114.73" y1="1053.35" x2="1095.73" y2="1037.60"/>
+    <line class="tick-major" x1="1108.26" y1="1060.65" x2="1081.45" y2="1038.07"/>
+    <line class="tick-minor" x1="1101.66" y1="1067.84" x2="1083.26" y2="1051.68"/>
+    <line class="tick-minor" x1="1094.93" y1="1074.90" x2="1076.82" y2="1058.43"/>
+    <line class="tick-minor" x1="1088.08" y1="1081.85" x2="1070.26" y2="1065.08"/>
+    <line class="tick-minor" x1="1081.10" y1="1088.67" x2="1063.58" y2="1071.61"/>
+    <line class="tick-major" x1="1074.01" y1="1095.38" x2="1049.23" y2="1070.70"/>
+    <line class="tick-minor" x1="1066.80" y1="1101.96" x2="1049.89" y2="1084.31"/>
+    <line class="tick-minor" x1="1059.47" y1="1108.42" x2="1042.88" y2="1090.49"/>
+    <line class="tick-minor" x1="1052.02" y1="1114.74" x2="1035.76" y2="1096.55"/>
+    <line class="tick-minor" x1="1044.46" y1="1120.94" x2="1028.53" y2="1102.49"/>
+    <line class="tick-sign" x1="980.00" y1="1184.97" x2="952.50" y2="1137.34"/>
+    <line class="tick-minor" x1="1029.05" y1="1132.98" x2="1013.78" y2="1113.99"/>
+    <line class="tick-minor" x1="1021.27" y1="1138.89" x2="1006.34" y2="1119.64"/>
+    <line class="tick-minor" x1="1013.40" y1="1144.67" x2="998.82" y2="1125.17"/>
+    <line class="tick-minor" x1="1005.42" y1="1150.31" x2="991.20" y2="1130.58"/>
+    <line class="tick-major" x1="997.35" y1="1155.81" x2="977.81" y2="1127.01"/>
+    <line class="tick-minor" x1="989.18" y1="1161.18" x2="975.68" y2="1140.98"/>
+    <line class="tick-minor" x1="980.92" y1="1166.40" x2="967.78" y2="1145.98"/>
+    <line class="tick-minor" x1="972.57" y1="1171.48" x2="959.80" y2="1150.85"/>
+    <line class="tick-minor" x1="964.13" y1="1176.41" x2="951.74" y2="1155.60"/>
+    <line class="tick-major" x1="955.61" y1="1181.20" x2="938.31" y2="1150.93"/>
+    <line class="tick-minor" x1="947.00" y1="1185.84" x2="935.38" y2="1164.66"/>
+    <line class="tick-minor" x1="938.32" y1="1190.33" x2="927.09" y2="1168.95"/>
+    <line class="tick-minor" x1="929.55" y1="1194.47" x2="918.72" y2="1172.89"/>
+    <line class="tick-minor" x1="920.72" y1="1198.46" x2="910.28" y2="1176.70"/>
+    <line class="tick-major" x1="911.81" y1="1202.29" x2="897.24" y2="1170.64"/>
+    <line class="tick-minor" x1="902.84" y1="1205.96" x2="893.18" y2="1183.74"/>
+    <line class="tick-minor" x1="893.80" y1="1209.47" x2="884.54" y2="1187.08"/>
+    <line class="tick-minor" x1="884.71" y1="1212.82" x2="875.83" y2="1190.29"/>
+    <line class="tick-minor" x1="875.55" y1="1216.00" x2="867.08" y2="1193.33"/>
+    <line class="tick-major" x1="866.34" y1="1219.02" x2="854.46" y2="1186.24"/>
+    <line class="tick-minor" x1="857.08" y1="1221.87" x2="849.41" y2="1198.88"/>
+    <line class="tick-minor" x1="847.77" y1="1224.56" x2="840.52" y2="1201.44"/>
+    <line class="tick-minor" x1="838.41" y1="1227.08" x2="831.58" y2="1203.85"/>
+    <line class="tick-minor" x1="829.01" y1="1229.43" x2="822.60" y2="1206.09"/>
+    <line class="tick-sign" x1="700.00" y1="1260.00" x2="700.00" y2="1205.00"/>
+    <line class="tick-minor" x1="810.11" y1="1233.59" x2="804.53" y2="1209.72"/>
+    <line class="tick-minor" x1="800.59" y1="1235.77" x2="795.45" y2="1211.81"/>
+    <line class="tick-minor" x1="791.04" y1="1237.79" x2="786.33" y2="1213.75"/>
+    <line class="tick-minor" x1="781.46" y1="1239.64" x2="777.18" y2="1215.51"/>
+    <line class="tick-major" x1="771.84" y1="1241.32" x2="765.82" y2="1207.09"/>
+    <line class="tick-minor" x1="762.20" y1="1242.83" x2="758.80" y2="1218.57"/>
+    <line class="tick-minor" x1="752.54" y1="1244.16" x2="749.57" y2="1219.86"/>
+    <line class="tick-minor" x1="742.85" y1="1245.32" x2="740.32" y2="1220.97"/>
+    <line class="tick-minor" x1="733.14" y1="1246.31" x2="731.04" y2="1221.91"/>
+    <line class="tick-major" x1="723.42" y1="1247.13" x2="720.45" y2="1212.51"/>
+    <line class="tick-minor" x1="713.68" y1="1247.78" x2="712.45" y2="1223.32"/>
+    <line class="tick-minor" x1="703.92" y1="1248.25" x2="703.13" y2="1223.77"/>
+    <line class="tick-minor" x1="694.17" y1="1248.55" x2="693.82" y2="1224.06"/>
+    <line class="tick-minor" x1="684.41" y1="1248.68" x2="684.49" y2="1224.19"/>
+    <line class="tick-major" x1="674.65" y1="1248.64" x2="676.16" y2="1213.77"/>
+    <line class="tick-minor" x1="664.89" y1="1248.42" x2="665.41" y2="1223.94"/>
+    <line class="tick-minor" x1="655.14" y1="1248.03" x2="656.10" y2="1223.57"/>
+    <line class="tick-minor" x1="645.40" y1="1247.46" x2="646.79" y2="1223.04"/>
+    <line class="tick-minor" x1="635.67" y1="1246.73" x2="637.49" y2="1222.33"/>
+    <line class="tick-major" x1="625.96" y1="1245.82" x2="631.05" y2="1211.26"/>
+    <line class="tick-minor" x1="616.26" y1="1244.74" x2="619.01" y2="1220.44"/>
+    <line class="tick-minor" x1="606.59" y1="1243.48" x2="609.77" y2="1219.24"/>
+    <line class="tick-minor" x1="596.94" y1="1242.06" x2="600.56" y2="1217.88"/>
+    <line class="tick-minor" x1="587.32" y1="1240.46" x2="591.36" y2="1216.35"/>
+    <line class="tick-major" x1="577.72" y1="1238.69" x2="584.51" y2="1204.52"/>
+    <line class="tick-minor" x1="568.16" y1="1236.75" x2="573.05" y2="1212.80"/>
+    <line class="tick-minor" x1="558.63" y1="1234.64" x2="563.95" y2="1210.78"/>
+    <line class="tick-minor" x1="549.14" y1="1232.36" x2="554.88" y2="1208.61"/>
+    <line class="tick-minor" x1="539.69" y1="1229.91" x2="545.85" y2="1206.28"/>
+    <line class="tick-sign" x1="420.00" y1="1184.97" x2="447.50" y2="1137.34"/>
+    <line class="tick-minor" x1="520.91" y1="1224.52" x2="527.90" y2="1201.03"/>
+    <line class="tick-minor" x1="511.58" y1="1221.72" x2="518.99" y2="1198.37"/>
+    <line class="tick-minor" x1="502.30" y1="1218.75" x2="510.13" y2="1195.54"/>
+    <line class="tick-minor" x1="493.08" y1="1215.62" x2="501.32" y2="1192.56"/>
+    <line class="tick-major" x1="483.91" y1="1212.32" x2="495.96" y2="1179.67"/>
+    <line class="tick-minor" x1="474.81" y1="1208.86" x2="483.86" y2="1185.96"/>
+    <line class="tick-minor" x1="465.77" y1="1205.24" x2="475.22" y2="1182.51"/>
+    <line class="tick-minor" x1="456.80" y1="1201.46" x2="466.64" y2="1178.90"/>
+    <line class="tick-minor" x1="447.90" y1="1197.52" x2="458.13" y2="1175.14"/>
+    <line class="tick-major" x1="439.07" y1="1193.42" x2="453.67" y2="1161.75"/>
+    <line class="tick-minor" x1="430.32" y1="1189.16" x2="441.31" y2="1167.16"/>
+    <line class="tick-minor" x1="421.65" y1="1184.75" x2="433.01" y2="1162.94"/>
+    <line class="tick-minor" x1="413.06" y1="1180.18" x2="424.79" y2="1158.58"/>
+    <line class="tick-minor" x1="404.56" y1="1175.46" x2="416.65" y2="1154.07"/>
+    <line class="tick-major" x1="396.14" y1="1170.59" x2="413.23" y2="1140.29"/>
+    <line class="tick-minor" x1="387.82" y1="1165.56" x2="400.62" y2="1144.62"/>
+    <line class="tick-minor" x1="379.59" y1="1160.39" x2="392.73" y2="1139.67"/>
+    <line class="tick-minor" x1="371.46" y1="1155.06" x2="384.93" y2="1134.58"/>
+    <line class="tick-minor" x1="363.42" y1="1149.59" x2="377.22" y2="1129.36"/>
+    <line class="tick-major" x1="355.49" y1="1143.97" x2="375.13" y2="1115.16"/>
+    <line class="tick-minor" x1="347.66" y1="1138.20" x2="362.11" y2="1118.36"/>
+    <line class="tick-minor" x1="339.94" y1="1132.29" x2="354.70" y2="1112.70"/>
+    <line class="tick-minor" x1="332.32" y1="1126.24" x2="347.39" y2="1106.91"/>
+    <line class="tick-minor" x1="324.81" y1="1120.05" x2="340.18" y2="1100.98"/>
+    <line class="tick-sign" x1="215.03" y1="980.00" x2="262.66" y2="952.50"/>
+    <line class="tick-minor" x1="310.14" y1="1107.29" x2="326.09" y2="1088.65"/>
+    <line class="tick-minor" x1="302.99" y1="1100.66" x2="319.23" y2="1082.32"/>
+    <line class="tick-minor" x1="295.96" y1="1093.91" x2="312.48" y2="1075.87"/>
+    <line class="tick-minor" x1="289.05" y1="1087.03" x2="305.85" y2="1069.31"/>
+    <line class="tick-major" x1="282.26" y1="1080.03" x2="306.19" y2="1054.71"/>
+    <line class="tick-minor" x1="275.60" y1="1072.91" x2="292.92" y2="1055.76"/>
+    <line class="tick-minor" x1="269.07" y1="1065.67" x2="286.65" y2="1048.84"/>
+    <line class="tick-minor" x1="262.66" y1="1058.32" x2="280.51" y2="1041.81"/>
+    <line class="tick-minor" x1="256.38" y1="1050.85" x2="274.49" y2="1034.68"/>
+    <line class="tick-major" x1="250.24" y1="1043.27" x2="276.24" y2="1020.14"/>
+    <line class="tick-minor" x1="244.24" y1="1035.58" x2="262.86" y2="1019.98"/>
+    <line class="tick-minor" x1="238.37" y1="1027.79" x2="257.23" y2="1012.52"/>
+    <line class="tick-minor" x1="232.64" y1="1019.89" x2="251.73" y2="1004.95"/>
+    <line class="tick-minor" x1="227.05" y1="1011.90" x2="246.36" y2="997.29"/>
+    <line class="tick-major" x1="221.60" y1="1003.80" x2="249.48" y2="982.78"/>
+    <line class="tick-minor" x1="216.30" y1="995.61" x2="236.03" y2="981.56"/>
+    <line class="tick-minor" x1="211.14" y1="987.33" x2="231.08" y2="973.63"/>
+    <line class="tick-minor" x1="206.13" y1="978.96" x2="226.29" y2="965.62"/>
+    <line class="tick-minor" x1="201.27" y1="970.50" x2="221.64" y2="957.51"/>
+    <line class="tick-major" x1="196.56" y1="961.96" x2="226.06" y2="943.44"/>
+    <line class="tick-minor" x1="192.01" y1="953.34" x2="212.77" y2="940.07"/>
+    <line class="tick-minor" x1="187.60" y1="944.64" x2="208.56" y2="931.75"/>
+    <line class="tick-minor" x1="183.36" y1="935.86" x2="204.50" y2="923.35"/>
+    <line class="tick-minor" x1="179.27" y1="927.01" x2="200.59" y2="914.88"/>
+    <line class="tick-sign" x1="140.00" y1="700.00" x2="195.00" y2="700.00"/>
+    <line class="tick-minor" x1="171.57" y1="909.08" x2="193.23" y2="897.75"/>
+    <line class="tick-minor" x1="167.97" y1="900.00" x2="189.78" y2="889.08"/>
+    <line class="tick-minor" x1="164.54" y1="890.86" x2="186.51" y2="880.34"/>
+    <line class="tick-minor" x1="161.27" y1="881.66" x2="183.40" y2="871.55"/>
+    <line class="tick-major" x1="158.17" y1="872.40" x2="189.56" y2="858.02"/>
+    <line class="tick-minor" x1="155.24" y1="863.09" x2="178.05" y2="853.77"/>
+    <line class="tick-minor" x1="152.48" y1="853.72" x2="175.44" y2="844.82"/>
+    <line class="tick-minor" x1="149.88" y1="844.31" x2="172.99" y2="835.83"/>
+    <line class="tick-minor" x1="147.46" y1="834.85" x2="170.69" y2="826.80"/>
+    <line class="tick-major" x1="145.20" y1="825.35" x2="178.05" y2="814.04"/>
+    <line class="tick-minor" x1="143.11" y1="815.80" x2="166.62" y2="808.18"/>
+    <line class="tick-minor" x1="141.19" y1="806.23" x2="164.83" y2="799.04"/>
+    <line class="tick-minor" x1="139.44" y1="796.62" x2="163.20" y2="789.87"/>
+    <line class="tick-minor" x1="137.86" y1="786.98" x2="161.73" y2="780.68"/>
+    <line class="tick-major" x1="136.45" y1="777.32" x2="170.43" y2="768.36"/>
+    <line class="tick-minor" x1="135.21" y1="767.63" x2="159.26" y2="762.19"/>
+    <line class="tick-minor" x1="134.14" y1="757.92" x2="158.29" y2="752.91"/>
+    <line class="tick-minor" x1="133.24" y1="748.19" x2="157.48" y2="743.62"/>
+    <line class="tick-minor" x1="132.51" y1="738.46" x2="156.83" y2="734.32"/>
+    <line class="tick-major" x1="131.95" y1="728.71" x2="166.62" y2="723.52"/>
+    <line class="tick-minor" x1="131.56" y1="718.95" x2="155.99" y2="716.27"/>
+    <line class="tick-minor" x1="131.34" y1="709.19" x2="155.81" y2="706.94"/>
+    <line class="tick-minor" x1="131.29" y1="699.43" x2="155.79" y2="697.62"/>
+    <line class="tick-minor" x1="131.41" y1="689.67" x2="155.93" y2="688.30"/>
+    <line class="tick-major" x1="131.70" y1="679.91" x2="166.63" y2="679.04"/>
+    <line class="tick-minor" x1="132.16" y1="670.16" x2="156.70" y2="670.00"/>
+    <line class="tick-minor" x1="132.79" y1="660.42" x2="157.33" y2="660.70"/>
+    <line class="tick-minor" x1="133.59" y1="650.69" x2="158.11" y2="651.43"/>
+    <line class="tick-minor" x1="134.56" y1="640.97" x2="159.06" y2="642.17"/>
+    <line class="tick-sign" x1="215.03" y1="420.00" x2="262.66" y2="447.50"/>
+    <line class="tick-minor" x1="137.00" y1="621.62" x2="161.28" y2="624.04"/>
+    <line class="tick-minor" x1="138.48" y1="611.99" x2="162.70" y2="614.84"/>
+    <line class="tick-minor" x1="140.13" y1="602.40" x2="164.29" y2="605.69"/>
+    <line class="tick-minor" x1="141.95" y1="592.83" x2="166.03" y2="596.57"/>
+    <line class="tick-major" x1="143.94" y1="583.31" x2="178.15" y2="589.05"/>
+    <line class="tick-minor" x1="146.10" y1="573.82" x2="170.00" y2="578.50"/>
+    <line class="tick-minor" x1="148.43" y1="564.37" x2="172.22" y2="569.48"/>
+    <line class="tick-minor" x1="150.92" y1="554.96" x2="174.60" y2="560.51"/>
+    <line class="tick-minor" x1="153.58" y1="545.60" x2="177.13" y2="551.59"/>
+    <line class="tick-major" x1="156.41" y1="536.29" x2="189.82" y2="545.09"/>
+    <line class="tick-minor" x1="159.40" y1="527.03" x2="182.69" y2="533.88"/>
+    <line class="tick-minor" x1="162.55" y1="517.83" x2="185.68" y2="525.10"/>
+    <line class="tick-minor" x1="165.87" y1="508.69" x2="188.83" y2="516.39"/>
+    <line class="tick-minor" x1="169.35" y1="499.61" x2="192.13" y2="507.74"/>
+    <line class="tick-major" x1="172.99" y1="490.60" x2="205.26" y2="502.22"/>
+    <line class="tick-minor" x1="176.79" y1="481.66" x2="199.17" y2="490.60"/>
+    <line class="tick-minor" x1="180.75" y1="472.79" x2="202.94" y2="482.14"/>
+    <line class="tick-minor" x1="184.87" y1="463.99" x2="206.84" y2="473.74"/>
+    <line class="tick-minor" x1="189.14" y1="455.28" x2="210.90" y2="465.41"/>
+    <line class="tick-major" x1="193.57" y1="446.64" x2="224.35" y2="460.92"/>
+    <line class="tick-minor" x1="198.15" y1="438.09" x2="219.48" y2="448.99"/>
+    <line class="tick-minor" x1="202.88" y1="429.62" x2="223.98" y2="440.89"/>
+    <line class="tick-minor" x1="207.77" y1="421.24" x2="228.63" y2="432.86"/>
+    <line class="tick-minor" x1="212.80" y1="412.95" x2="233.40" y2="424.93"/>
+    <line class="tick-sign" x1="420.00" y1="215.03" x2="447.50" y2="262.66"/>
+    <line class="tick-minor" x1="223.30" y1="396.72" x2="243.37" y2="409.39"/>
+    <line class="tick-minor" x1="228.75" y1="388.78" x2="248.54" y2="401.78"/>
+    <line class="tick-minor" x1="234.34" y1="380.93" x2="253.85" y2="394.30"/>
+    <line class="tick-minor" x1="240.07" y1="373.17" x2="259.28" y2="386.91"/>
+    <line class="tick-major" x1="245.94" y1="365.52" x2="273.01" y2="384.83"/>
+    <line class="tick-minor" x1="251.94" y1="357.97" x2="270.55" y2="372.44"/>
+    <line class="tick-minor" x1="258.08" y1="350.52" x2="276.37" y2="365.34"/>
+    <line class="tick-minor" x1="264.35" y1="343.18" x2="282.32" y2="358.36"/>
+    <line class="tick-minor" x1="270.75" y1="335.95" x2="288.40" y2="351.50"/>
+    <line class="tick-major" x1="277.28" y1="328.84" x2="302.14" y2="350.81"/>
+    <line class="tick-minor" x1="283.94" y1="321.85" x2="300.93" y2="338.09"/>
+    <line class="tick-minor" x1="290.71" y1="314.98" x2="307.37" y2="331.56"/>
+    <line class="tick-minor" x1="297.61" y1="308.23" x2="313.92" y2="325.17"/>
+    <line class="tick-minor" x1="304.62" y1="301.60" x2="320.58" y2="318.90"/>
+    <line class="tick-major" x1="311.75" y1="295.11" x2="334.18" y2="319.63"/>
+    <line class="tick-minor" x1="318.99" y1="288.74" x2="334.25" y2="306.73"/>
+    <line class="tick-minor" x1="326.35" y1="282.51" x2="341.25" y2="300.83"/>
+    <line class="tick-minor" x1="333.81" y1="276.41" x2="348.34" y2="295.06"/>
+    <line class="tick-minor" x1="341.38" y1="270.44" x2="355.53" y2="289.41"/>
+    <line class="tick-major" x1="349.06" y1="264.62" x2="368.72" y2="291.58"/>
+    <line class="tick-minor" x1="356.84" y1="258.93" x2="370.23" y2="278.51"/>
+    <line class="tick-minor" x1="364.72" y1="253.38" x2="377.72" y2="273.28"/>
+    <line class="tick-minor" x1="372.69" y1="247.98" x2="385.32" y2="268.18"/>
+    <line class="tick-minor" x1="380.76" y1="242.72" x2="392.99" y2="263.21"/>
+    <line class="tick-sign" x1="700.00" y1="140.00" x2="700.00" y2="195.00"/>
+    <line class="tick-minor" x1="397.18" y1="232.67" x2="408.63" y2="253.76"/>
+    <line class="tick-minor" x1="405.54" y1="227.88" x2="416.58" y2="249.17"/>
+    <line class="tick-minor" x1="413.98" y1="223.24" x2="424.62" y2="244.73"/>
+    <line class="tick-minor" x1="422.50" y1="218.76" x2="432.72" y2="240.44"/>
+    <line class="tick-major" x1="431.10" y1="214.42" x2="445.11" y2="244.74"/>
+    <line class="tick-minor" x1="439.78" y1="210.24" x2="449.18" y2="232.29"/>
+    <line class="tick-minor" x1="448.54" y1="206.21" x2="457.52" y2="228.43"/>
+    <line class="tick-minor" x1="457.36" y1="202.34" x2="465.93" y2="224.71"/>
+    <line class="tick-minor" x1="466.26" y1="198.62" x2="474.40" y2="221.15"/>
+    <line class="tick-major" x1="475.22" y1="195.06" x2="486.39" y2="226.65"/>
+    <line class="tick-minor" x1="484.25" y1="191.66" x2="491.56" y2="214.47"/>
+    <line class="tick-minor" x1="493.34" y1="188.42" x2="500.22" y2="211.36"/>
+    <line class="tick-minor" x1="502.49" y1="185.34" x2="508.94" y2="208.41"/>
+    <line class="tick-minor" x1="511.70" y1="182.42" x2="517.71" y2="205.62"/>
+    <line class="tick-major" x1="520.96" y1="179.66" x2="529.22" y2="212.12"/>
+    <line class="tick-minor" x1="530.27" y1="177.07" x2="535.40" y2="200.48"/>
+    <line class="tick-minor" x1="539.63" y1="174.64" x2="544.31" y2="198.15"/>
+    <line class="tick-minor" x1="549.04" y1="172.38" x2="553.26" y2="195.98"/>
+    <line class="tick-minor" x1="558.49" y1="170.28" x2="562.25" y2="193.96"/>
+    <line class="tick-major" x1="567.98" y1="168.36" x2="573.08" y2="202.04"/>
+    <line class="tick-minor" x1="577.51" y1="166.60" x2="580.34" y2="190.42"/>
+    <line class="tick-minor" x1="587.07" y1="165.01" x2="589.43" y2="188.89"/>
+    <line class="tick-minor" x1="596.65" y1="163.59" x2="598.57" y2="187.51"/>
+    <line class="tick-minor" x1="606.26" y1="162.35" x2="607.73" y2="186.29"/>
+    <line class="tick-major" x1="615.90" y1="161.28" x2="617.84" y2="195.52"/>
+    <line class="tick-minor" x1="625.55" y1="160.38" x2="626.12" y2="184.34"/>
+    <line class="tick-minor" x1="635.22" y1="159.65" x2="635.33" y2="183.61"/>
+    <line class="tick-minor" x1="644.91" y1="159.10" x2="644.56" y2="183.04"/>
+    <line class="tick-minor" x1="654.61" y1="158.72" x2="653.82" y2="182.62"/>
+  </g>
+
+  <!-- Zodiac symbols ordered counterclockwise, color-coded by element -->
+  <g id="zodiac-symbols">
+    <text class="zodiac fire" x="828.20" y="221.87">♈</text>
+    <text class="zodiac earth" x="1049.41" y="349.41">♉</text>
+    <text class="zodiac air" x="1176.95" y="570.60">♊</text>
+    <text class="zodiac water" x="1176.95" y="825.40">♋</text>
+    <text class="zodiac fire" x="1049.41" y="1046.59">♌</text>
+    <text class="zodiac earth" x="828.20" y="1174.13">♍</text>
+    <text class="zodiac air" x="571.80" y="1174.13">♎</text>
+    <text class="zodiac water" x="350.59" y="1046.59">♏</text>
+    <text class="zodiac fire" x="223.05" y="825.40">♐</text>
+    <text class="zodiac earth" x="223.05" y="570.60">♑</text>
+    <text class="zodiac air" x="350.59" y="349.41">♒</text>
+    <text class="zodiac water" x="571.80" y="221.87">♓</text>
+  </g>
+
+  <!-- House division system: 12 equal sectors with four heavy axes -->
+  <g id="houses">
+    <line class="thin" x1="700.00" y1="385.00" x2="700.00" y2="195.00"/>
+    <line class="thin" x1="857.50" y1="427.20" x2="952.50" y2="262.66"/>
+    <line class="heavy" x1="972.80" y1="542.50" x2="1137.34" y2="447.50"/>
+    <line class="thin" x1="1015.00" y1="700.00" x2="1205.00" y2="700.00"/>
+    <line class="thin" x1="972.80" y1="857.50" x2="1137.34" y2="952.50"/>
+    <line class="heavy" x1="857.50" y1="972.80" x2="952.50" y2="1137.34"/>
+    <line class="thin" x1="700.00" y1="1015.00" x2="700.00" y2="1205.00"/>
+    <line class="thin" x1="542.50" y1="972.80" x2="447.50" y2="1137.34"/>
+    <line class="heavy" x1="427.20" y1="857.50" x2="262.66" y2="952.50"/>
+    <line class="thin" x1="385.00" y1="700.00" x2="195.00" y2="700.00"/>
+    <line class="thin" x1="427.20" y1="542.50" x2="262.66" y2="447.50"/>
+    <line class="heavy" x1="542.50" y1="427.20" x2="447.50" y2="262.66"/>
+    <line class="heavy" x1="140.00" y1="700.00" x2="1260.00" y2="700.00"/>
+    <line class="heavy" x1="700.00" y1="140.00" x2="700.00" y2="1260.00"/>
+  </g>
+
+  <g id="house-numbers">
+    <text class="house-num" x="841.00" y="455.78">1</text>
+    <text class="house-num" x="944.22" y="559.00">2</text>
+    <text class="house-num" x="982.00" y="700.00">3</text>
+    <text class="house-num" x="944.22" y="841.00">4</text>
+    <text class="house-num" x="841.00" y="944.22">5</text>
+    <text class="house-num" x="700.00" y="982.00">6</text>
+    <text class="house-num" x="559.00" y="944.22">7</text>
+    <text class="house-num" x="455.78" y="841.00">8</text>
+    <text class="house-num" x="418.00" y="700.00">9</text>
+    <text class="house-num" x="455.78" y="559.00">10</text>
+    <text class="house-num" x="559.00" y="455.78">11</text>
+    <text class="house-num" x="700.00" y="418.00">12</text>
+  </g>
+
+  <!-- Axis labels -->
+  <text class="axis-label" x="169" y="700">ASC</text>
+  <text class="axis-label" x="1231" y="700">DSC</text>
+  <text class="axis-label" x="700" y="169">MC</text>
+  <text class="axis-label" x="700" y="1231">IC</text>
+
+  <!-- Aspect lines: straight chords between planetary landing points only -->
+  <g id="aspect-lines">
+    <!-- Red square and opposition pattern: 90/180 degrees -->
+    <polygon class="aspect-red" points="700.00,410.00 990.00,700.00 700.00,990.00 410.00,700.00"/>
+    <line class="aspect-red" x1="700.00" y1="410.00" x2="700.00" y2="990.00"/>
+    <line class="aspect-red" x1="410.00" y1="700.00" x2="990.00" y2="700.00"/>
+    <!-- Blue grand trine and sextile chords: 120/60 degrees -->
+    <polygon class="aspect-blue" points="789.62,424.20 894.04,915.52 416.35,760.26"/>
+    <line class="aspect-blue" x1="906.49" y1="496.35" x2="789.62" y2="424.20"/>
+    <line class="aspect-blue" x1="906.49" y1="496.35" x2="994.04" y2="661.78"/>
+    <line class="aspect-blue" x1="416.35" y1="760.26" x2="410.00" y2="700.00"/>
+    <!-- Green quincunx-based irregular polygon: 150 degrees -->
+    <polygon class="aspect-green" points="547.70,453.15 994.04,661.78 566.40,956.03 789.62,424.20 882.05,925.68"/>
+    <line class="aspect-green" x1="547.70" y1="453.15" x2="882.05" y2="925.68"/>
+    <line class="aspect-green" x1="994.04" y1="661.78" x2="566.40" y2="956.03"/>
+  </g>
+
+  <!-- Planetary data layer: symbols and exact degree/minute labels in the middle ring -->
+  <g id="planets">
+    <text class="planet" x="700.00" y="348.00">☉</text>
+    <text class="deg" x="700.00" y="376.00">00° 00'</text>
+    <line class="thin" x1="700.00" y1="390.00" x2="700.00" y2="410.00"/>
+
+    <text class="planet" x="1052.00" y="700.00">☽</text>
+    <text class="deg" x="1052.00" y="728.00">00° 00'</text>
+    <line class="thin" x1="1015.00" y1="700.00" x2="990.00" y2="700.00"/>
+
+    <text class="planet" x="700.00" y="1052.00">☿</text>
+    <text class="deg" x="700.00" y="1080.00">00° 00'</text>
+    <line class="thin" x1="700.00" y1="1015.00" x2="700.00" y2="990.00"/>
+
+    <text class="planet" x="348.00" y="700.00">♀</text>
+    <text class="deg" x="348.00" y="728.00">00° 00'</text>
+    <line class="thin" x1="385.00" y1="700.00" x2="410.00" y2="700.00"/>
+
+    <text class="planet" x="808.77" y="365.23">♂</text>
+    <text class="deg" x="820.73" y="392.56">12° 00'</text>
+    <line class="thin" x1="808.88" y1="365.57" x2="789.62" y2="424.20"/>
+
+    <text class="planet" x="935.42" y="438.20">♃</text>
+    <text class="deg" x="955.20" y="459.53">39° 00'</text>
+    <line class="thin" x1="935.09" y1="438.57" x2="906.49" y2="496.35"/>
+
+    <text class="planet" x="1058.39" y="653.70">♄</text>
+    <text class="deg" x="1083.22" y="668.19">82° 35'</text>
+    <line class="thin" x1="1051.40" y1="654.60" x2="994.04" y2="661.78"/>
+
+    <text class="planet" x="935.42" y="961.80">♅</text>
+    <text class="deg" x="955.20" y="983.13">141° 00'</text>
+    <line class="thin" x1="935.09" y1="961.43" x2="894.04" y2="915.52"/>
+
+    <text class="planet" x="572.62" y="1028.09">♆</text>
+    <text class="deg" x="560.15" y="1055.37">201° 12'</text>
+    <line class="thin" x1="572.75" y1="1027.75" x2="566.40" y2="956.03"/>
+
+    <text class="planet" x="355.15" y="773.00">♇</text>
+    <text class="deg" x="326.95" y="781.24">255° 20'</text>
+    <line class="thin" x1="356.30" y1="772.76" x2="416.35" y2="760.26"/>
+
+    <text class="planet" x="515.11" y="400.45">Ω</text>
+    <text class="deg" x="494.59" y="420.79">327° 15'</text>
+    <line class="thin" x1="515.36" y1="400.85" x2="547.70" y2="453.15"/>
+
+    <text class="planet" x="923.33" y="972.04">⚷</text>
+    <text class="deg" x="946.79" y="988.82">144° 04'</text>
+    <line class="thin" x1="923.01" y1="971.66" x2="882.05" y2="925.68"/>
+  </g>
+</svg>

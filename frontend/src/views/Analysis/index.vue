@@ -309,7 +309,7 @@ import {
   splitCoordinateParts,
 } from "@/utils/coordinates";
 import { ANALYSIS_CATEGORY_LABELS, FALLBACK_ANALYSIS_TYPES } from "@/utils/analysis";
-import type { AnalysisDefinition, AnalysisResponse, AnalysisStatus, LifeReport } from "@/utils/types";
+import type { AnalysisDefinition, AnalysisResponse, AnalysisStatus } from "@/utils/types";
 
 const route = useRoute();
 const router = useRouter();
@@ -608,7 +608,7 @@ async function onSubmit() {
 
   loading.value = true;
   try {
-    const response = await apiClient.post<AnalysisResponse<LifeReport>>("/analyses", {
+    const response = await apiClient.post<AnalysisResponse<Record<string, any>>>("/analyses", {
       analysis_type: analysis.value.key,
       subjects: [
         {
@@ -623,8 +623,9 @@ async function onSubmit() {
     });
 
     if (response.data.status === "success" && response.data.report_id) {
+      const routeName = analysis.value.key === "monthly_lunar_return" ? "monthly-return" : "report";
       router.push({
-        name: "report",
+        name: routeName,
         params: { id: response.data.report_id },
       });
       return;

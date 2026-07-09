@@ -3,10 +3,10 @@
     <article class="panel casePanel">
       <div class="panelHeader">
         <div>
-          <div class="panelEyebrow">Case Deep Dive</div>
-          <h2 class="panelTitle">黄金荣样例深拆</h2>
+          <div class="panelEyebrow">现实落点</div>
+          <h2 class="panelTitle">这张盘会怎么在现实里活出来</h2>
           <p class="panelSummary">
-            {{ advancedPatterns.summary || "先看规则链路，再看这张盘如何在现实里落成具体命运。" }}
+            {{ advancedPatterns.summary || "先看结构，再看这些结构会怎样落到名声、关系、资源和人生选择上。" }}
           </p>
         </div>
       </div>

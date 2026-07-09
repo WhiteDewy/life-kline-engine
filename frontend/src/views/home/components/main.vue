@@ -30,7 +30,7 @@
           </div>
           <div class="metricCard">
             <span>当前解读方式</span>
-            <strong>本命结构 + 阶段节奏</strong>
+            <strong>用户问题 + 占星结构</strong>
           </div>
           <div class="metricCard" v-if="transitData">
             <span>实时天象焦点</span>
@@ -68,9 +68,9 @@
         <div class="panelEyebrow">Reading Logic</div>
         <h2 class="panelTitle">这套解读，会先回答你真正关心的问题</h2>
         <ul class="list">
-          <li>先看你天生的底层结构，不用短期波动覆盖你的本命节奏。</li>
-          <li>再看你正处在哪个阶段，分清现在更适合扩张、沉淀还是重组。</li>
-          <li>最后给出可执行的提醒，让占星不是“看热闹”，而是能指导现实选择。</li>
+          <li>本命蓝图会先回答你是谁、适合做什么、事业财富感情会怎么展开。</li>
+          <li>阶段导航会接着告诉你现在正走到哪一段，更适合扩张、沉淀还是重组。</li>
+          <li>最后再把这些结论落回方法和证据，让占星真正能指导现实选择。</li>
         </ul>
       </aside>
     </section>
@@ -138,7 +138,7 @@
         <div class="featureIndex">01</div>
         <h3>先回答问题，再展开方法</h3>
         <p>
-          用户不需要先理解复杂技法，只需要从“我是谁”“我正处于什么阶段”“这段关系为什么会这样”这些真实问题出发。
+          用户不需要先理解复杂技法，只需要先看“我是谁、适合做什么、事业财富感情怎么样”这些真实问题。
         </p>
       </article>
 

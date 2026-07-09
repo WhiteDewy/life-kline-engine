@@ -14,7 +14,8 @@ ANALYSIS_TYPES: List[Dict[str, Any]] = [
         "title": "本命蓝图",
         "tagline": "先看你是什么样的人，再看你适合把自己活成什么职业路径。",
         "description": (
-            "围绕星体、星座、宫位、相位与互溶接纳，先定人格基调与用户角色，再分析结构、杠杆、发光点和可发展的职业路线。"
+            "围绕星体、星座、宫位、相位与互溶接纳，先定人格基调与用户角色，"
+            "再分析结构、杠杆、发光点和可发展的职业路线。"
         ),
         "category": "structure",
         "status": "active",
@@ -28,9 +29,10 @@ ANALYSIS_TYPES: List[Dict[str, Any]] = [
     {
         "key": "phase_navigation",
         "title": "阶段导航",
-        "tagline": "用本命结构 + 法达阶段理解你当下的人生旋律。",
+        "tagline": "用本命结构加法达阶段，理解你当下的人生旋律。",
         "description": (
-            "当前版本的核心可用分析。先用本命结构定义底盘，再用法达主运与子运识别人生命题、机会窗口和风险点。"
+            "当前版本的核心可用分析。先用本命结构定义底盘，再用法达主运与子运识别"
+            "人生命题、机会窗口和风险点。"
         ),
         "category": "timing",
         "status": "active",
@@ -53,6 +55,23 @@ ANALYSIS_TYPES: List[Dict[str, Any]] = [
         "output_route": "/reports/:id",
     },
     {
+        "key": "monthly_lunar_return",
+        "title": "月返盘",
+        "tagline": "查看当前月返周期的月返盘，以及所有月亮主相位前后 3° 的触发窗口。",
+        "description": (
+            "以本命月亮为基准计算当前月返时刻，展示本次月返盘，并列出本月所有行星与月亮"
+            "主相位前后 3° 的区间。每个区间都会展开到每天，显示当天的相位度数。"
+        ),
+        "category": "timing",
+        "status": "active",
+        "subjects_count": 1,
+        "required_inputs": ["birth_time", "lat", "lon", "timezone"],
+        "engines": ["natal_core", "lunar_return"],
+        "modules": ["月返盘", "月返周期", "月亮引动相位", "每日相位度数"],
+        "primary_cta": "进入月返",
+        "output_route": "/monthly-return/:id",
+    },
+    {
         "key": "annual_profection",
         "title": "年度节奏",
         "tagline": "把每一个年龄年的主轴和重点议题拆出来。",
@@ -73,7 +92,8 @@ ANALYSIS_TYPES: List[Dict[str, Any]] = [
         "title": "次限演化",
         "tagline": "看一个人内部心理节奏如何慢慢变化。",
         "description": (
-            "后续会把次限月亮、次限太阳和重要次限相位纳入，专门处理心理成熟与生命阶段演化。"
+            "后续会把次限月亮、次限太阳和重要次限相位纳入，专门处理心理成熟与"
+            "生命阶段演化。"
         ),
         "category": "timing",
         "status": "planned",
@@ -89,7 +109,8 @@ ANALYSIS_TYPES: List[Dict[str, Any]] = [
         "title": "关系合盘",
         "tagline": "分析两个人的吸引、摩擦与长期结构。",
         "description": (
-            "后续会支持双人出生资料输入，从吸引机制、冲突模式、关系边界和长期协同来解释关系。"
+            "后续会支持双人出生资料输入，从吸引机制、冲突模式、关系边界和长期协同"
+            "来解释关系。"
         ),
         "category": "relationship",
         "status": "planned",

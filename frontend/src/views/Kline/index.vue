@@ -54,14 +54,14 @@
         </div>
 
         <div class="heroAside" v-else-if="showBlueprintAside && natalBlueprint">
-          <div class="scoreLabel">本命角色</div>
-          <div class="historyTitle">{{ natalBlueprint.role_title || analysis?.title || "本命蓝图" }}</div>
+          <div class="scoreLabel">用户六问</div>
+          <div class="historyTitle">{{ blueprintHeroTitle }}</div>
           <div class="scoreRange">{{ blueprintMetaLine }}</div>
           <p class="scoreSummary">
-            {{ natalBlueprint.signature || natalBlueprint.summary || natalChart?.signature || heroSummary }}
+            {{ blueprintHeroSummary }}
           </p>
           <div class="keywordRow">
-            <span v-for="keyword in natalBlueprint.keywords || []" :key="keyword" class="keyword">
+            <span v-for="keyword in blueprintHeroKeywords" :key="keyword" class="keyword">
               {{ keyword }}
             </span>
           </div>
@@ -81,10 +81,10 @@
       <template v-else-if="report">
         <section v-if="showBlueprintGuide" class="focusGuide">
           <article class="guideIntro">
-            <div class="panelEyebrow">Reading Path</div>
+            <div class="panelEyebrow">阅读路径</div>
             <h2 class="panelTitle">先看什么，再看什么</h2>
             <p class="panelSummary">
-              本命蓝图不是让用户一次吞下所有模块，而是先回答角色、结构、杠杆、代价四个问题，再回头看星盘和高级规则里的证据。
+              本命蓝图先直接回答六个用户问题，再把星盘、相位、飞宫和接纳这些底层依据留到后面核对。
             </p>
           </article>
 
@@ -105,8 +105,8 @@
 
         <section v-if="profileValidationAnchors.length" class="insightGrid secondary">
           <article class="panel panelWide">
-            <div class="panelEyebrow">Reality Check</div>
-            <h2 class="panelTitle">{{ activeTestProfile?.name || "测试用户" }}的现实经历锚点</h2>
+            <div class="panelEyebrow">现实对照</div>
+            <h2 class="panelTitle">{{ activeTestProfile?.name || "测试用户" }}的现实经历对照</h2>
             <p class="panelSummary">
               这些信息不是参与排盘计算的输入，而是用来回看这张盘有没有打中真实的人生路径。
               对夏天这类跨领域样例，尤其适合拿来校验职业路线、长期主轴和后续兴趣转向。
@@ -121,7 +121,7 @@
             :key="item.title"
             class="panel"
           >
-            <div class="panelEyebrow">Anchor</div>
+            <div class="panelEyebrow">关键经历</div>
             <h2 class="panelTitle">{{ item.title }}</h2>
             <p class="panelSummary">{{ item.summary }}</p>
             <div v-if="item.tags?.length" class="tagGrid">
@@ -163,7 +163,7 @@
 
         <section v-if="showLifeModelSummary" class="insightGrid">
           <article class="panel panelWide">
-            <div class="panelEyebrow">Core Model</div>
+            <div class="panelEyebrow">人生主轴</div>
             <h2 class="panelTitle">你的人生主轴</h2>
             <p class="panelSummary">{{ lifeModel?.summary || natalChart?.signature || "-" }}</p>
             <div class="tagGrid">
@@ -174,7 +174,7 @@
           </article>
 
           <article class="panel">
-            <div class="panelEyebrow">Strengths</div>
+            <div class="panelEyebrow">优势入口</div>
             <h2 class="panelTitle">你更容易发挥的优势</h2>
             <ul class="list">
               <li v-for="item in lifeModel?.strengths || []" :key="item">{{ item }}</li>
@@ -182,7 +182,7 @@
           </article>
 
           <article class="panel">
-            <div class="panelEyebrow">Challenges</div>
+            <div class="panelEyebrow">关键课题</div>
             <h2 class="panelTitle">容易反复遇到的课题</h2>
             <ul class="list">
               <li v-for="item in lifeModel?.challenges || []" :key="item">{{ item }}</li>
@@ -192,7 +192,7 @@
 
         <section v-if="showNatalReferenceGrid" class="insightGrid secondary">
           <article class="panel">
-            <div class="panelEyebrow">Dominant Planets</div>
+            <div class="panelEyebrow">主导星体</div>
             <h2 class="panelTitle">主导星体</h2>
             <div class="stack">
               <div
@@ -210,7 +210,7 @@
           </article>
 
           <article class="panel">
-            <div class="panelEyebrow">House Focus</div>
+            <div class="panelEyebrow">重点宫位</div>
             <h2 class="panelTitle">重点宫位</h2>
             <div class="stack">
               <div
@@ -228,7 +228,7 @@
           </article>
 
           <article class="panel">
-            <div class="panelEyebrow">Aspect Field</div>
+            <div class="panelEyebrow">关键相位</div>
             <h2 class="panelTitle">关键相位</h2>
             <div class="stack">
               <div
@@ -248,7 +248,7 @@
 
         <section class="phaseBoard" v-if="showPhaseBoard && currentPhase">
           <article class="phaseHero">
-            <div class="panelEyebrow">Current Phase</div>
+            <div class="panelEyebrow">当前阶段</div>
             <h2 class="panelTitle">你现在正走到人生的哪一段</h2>
             <p class="panelSummary">{{ currentPhase.summary || currentPhase.feeling }}</p>
             <p v-if="currentPhaseMeaningLine" class="phaseMeaning">{{ currentPhaseMeaningLine }}</p>
@@ -274,7 +274,7 @@
           </article>
 
           <article class="panel">
-            <div class="panelEyebrow">Opportunities</div>
+            <div class="panelEyebrow">顺势方向</div>
             <h2 class="panelTitle">适合顺势推进的方向</h2>
             <ul class="list">
               <li v-for="item in currentPhase.opportunities || []" :key="item">{{ item }}</li>
@@ -282,7 +282,7 @@
           </article>
 
           <article class="panel">
-            <div class="panelEyebrow">Cautions</div>
+            <div class="panelEyebrow">风险提醒</div>
             <h2 class="panelTitle">当前最需要留意的地方</h2>
             <ul class="list">
               <li v-for="item in currentPhase.cautions || []" :key="item">{{ item }}</li>
@@ -290,7 +290,7 @@
           </article>
 
           <article class="panel">
-            <div class="panelEyebrow">Action Focus</div>
+            <div class="panelEyebrow">行动重点</div>
             <h2 class="panelTitle">更适合你的行动方式</h2>
             <ul class="list">
               <li v-for="item in currentPhase.action_focus || []" :key="item">{{ item }}</li>
@@ -300,7 +300,7 @@
 
         <section v-if="showTimingWindows" class="timelineGrid">
           <article class="panel">
-            <div class="panelEyebrow">Peak Windows</div>
+            <div class="panelEyebrow">发力窗口</div>
             <h2 class="panelTitle">更容易发力的阶段</h2>
             <div class="stack">
               <div
@@ -318,7 +318,7 @@
           </article>
 
           <article class="panel">
-            <div class="panelEyebrow">Reset Windows</div>
+            <div class="panelEyebrow">调整窗口</div>
             <h2 class="panelTitle">适合调整与重建的阶段</h2>
             <div class="stack">
               <div
@@ -336,7 +336,7 @@
           </article>
 
           <article class="panel">
-            <div class="panelEyebrow">Growth Path</div>
+            <div class="panelEyebrow">长期走法</div>
             <h2 class="panelTitle">长期走法</h2>
             <ul class="list">
               <li v-for="item in lifeModel?.growth_path || []" :key="item">{{ item }}</li>
@@ -360,7 +360,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { apiClient } from "@/config/api";
 import { DEFAULT_TEST_SUBJECT, FEATURED_NATAL_EXAMPLE } from "@/config/examples";
 import {
@@ -394,6 +394,12 @@ interface GuideCardItem {
   summary: string;
   hint: string;
   badge: string;
+}
+
+interface BlueprintQuestionSection {
+  key: string;
+  question: string;
+  answer: string;
 }
 
 const REPORT_LAYOUTS = {
@@ -450,6 +456,7 @@ const PLANET_LABELS: Record<string, string> = {
 };
 
 const route = useRoute();
+const router = useRouter();
 
 const loading = ref(true);
 const error = ref("");
@@ -463,6 +470,10 @@ const lifeModel = computed(() => report.value?.life_model ?? null);
 const natalBlueprint = computed(() => report.value?.natal_blueprint ?? null);
 const advancedPatterns = computed(() => report.value?.advanced_patterns ?? null);
 const timelineValidation = computed(() => report.value?.timeline_validation ?? null);
+const blueprintQuestionSections = computed<BlueprintQuestionSection[]>(() => {
+  const source = natalBlueprint.value?.question_sections;
+  return Array.isArray(source) ? (source as BlueprintQuestionSection[]) : [];
+});
 const analysisKey = computed(() => analysis.value?.key || currentAnalysisKey());
 const activeTestProfile = computed<TestUserProfile | undefined>(() => {
   const profileKey = currentProfileKey();
@@ -487,6 +498,9 @@ const heroTitle = computed(() => {
 
 const heroSummary = computed(() => {
   if (analysisKey.value === "natal_blueprint") {
+    if (blueprintQuestionSections.value.length) {
+      return "这份本命蓝图会先直接回答你是谁、适合做什么、学业、事业、财富和感情，再把底层占星依据放到后面。";
+    }
     return (
       natalBlueprint.value?.summary ||
       natalBlueprint.value?.signature ||
@@ -503,7 +517,30 @@ const heroSummary = computed(() => {
   );
 });
 
+const blueprintHeroTitle = computed(() => {
+  if (blueprintQuestionSections.value.length) {
+    return "你最关心的六个答案";
+  }
+  return natalBlueprint.value?.role_title || analysis.value?.title || "本命蓝图";
+});
+
+const blueprintHeroSummary = computed(() => {
+  const firstQuestion = blueprintQuestionSections.value[0];
+  if (firstQuestion?.answer) return firstQuestion.answer;
+  return natalBlueprint.value?.signature || natalBlueprint.value?.summary || natalChart.value?.signature || heroSummary.value;
+});
+
+const blueprintHeroKeywords = computed(() => {
+  if (blueprintQuestionSections.value.length) {
+    return blueprintQuestionSections.value.slice(0, 6).map((item) => item.question);
+  }
+  return natalBlueprint.value?.keywords || [];
+});
+
 const blueprintMetaLine = computed(() => {
+  if (blueprintQuestionSections.value.length) {
+    return `${blueprintQuestionSections.value.length} 个核心问题 · 先给答案后看证据`;
+  }
   const ruler = natalChart.value?.chart_ruler_label || natalChart.value?.chart_ruler;
   const house = natalChart.value?.house_emphasis?.[0];
   if (ruler && house?.title) {
@@ -608,8 +645,41 @@ const showTimingWindows = computed(
 const showTimingVisuals = computed(() => activeLayout.value.showTimingVisuals);
 const showBlueprintGuide = computed(() => false);
 
-/*
 const blueprintGuideCards = computed<GuideCardItem[]>(() => {
+  const questions = blueprintQuestionSections.value;
+  if (questions.length >= 4) {
+    return [
+      {
+        step: "01",
+        title: "先看你是谁",
+        summary: questions[0]?.answer || questions[0]?.question || "先确认你的底层角色",
+        hint: "先确认这张盘最核心的自我定位，不要一上来就掉进术语和细节。",
+        badge: "看第 1 问",
+      },
+      {
+        step: "02",
+        title: "再看适配方向",
+        summary: questions[1]?.answer || questions[1]?.question || "再看你适合把哪条路做成主轴",
+        hint: "把适合做什么和能长期承担什么分开看，职业判断才会稳。",
+        badge: "看第 2 问",
+      },
+      {
+        step: "03",
+        title: "抓事业与财富",
+        summary: questions[3]?.answer || questions[4]?.answer || "看事业和财富怎么落地",
+        hint: "先确认职业主轴，再看钱从哪里来、怎么放大、哪里会漏。",
+        badge: "看第 4 / 5 问",
+      },
+      {
+        step: "04",
+        title: "最后看关系",
+        summary: questions[5]?.answer || questions[5]?.question || "看感情和伴侣怎么参与人生结构",
+        hint: "感情不是孤立题，它往往和合作、资源、现实结构绑在一起。",
+        badge: "看第 6 问",
+      },
+    ];
+  }
+
   const layers = Array.isArray(natalBlueprint.value?.layers) ? natalBlueprint.value?.layers : [];
   const roleLayer = layers.find((item: Record<string, any>) => item?.key === "role") || layers[2];
   const structureLayer =
@@ -620,88 +690,45 @@ const blueprintGuideCards = computed<GuideCardItem[]>(() => {
   return [
     {
       step: "01",
-      title: "先定角色",
-      summary: natalBlueprint.value?.role_title || roleLayer?.headline || "你在社会中更像什么人",
-      hint: "先确认这张盘最像哪一种社会角色，不要一开始就掉进细节。",
+      title: "先看你是谁",
+      summary:
+        natalBlueprint.value?.role_title ||
+        roleLayer?.headline ||
+        "你在社会中更像什么人",
+      hint:
+        "先确认这张盘最像哪一种社会角色，不要一开始就掉进细节。",
       badge: "先看本命蓝图顶部",
     },
     {
       step: "02",
-      title: "再看主轴",
+      title: "再看你适合什么",
       summary:
         structureLayer?.headline ||
         natalChart.value?.signature ||
-        "这张盘最长期、最反复的人生主线是什么",
-      hint: "结构层回答的是：你的人生为什么总会反复回到这些议题。",
-      badge: "看结构层",
+        "这张盘最适合把什么方向做成长期主轴",
+      hint:
+        "先把长期主轴看清，再决定什么事情值得你长期投入。",
+      badge: "看主轴",
     },
     {
       step: "03",
-      title: "识别杠杆",
-      summary: powerLayer?.headline || "你通过什么入口拿资源、进系统、形成影响力",
-      hint: "杠杆层决定你真正该经营哪里，而不是哪里看起来热闹。",
-      badge: "看权力层",
-    },
-    {
-      step: "04",
-      title: "最后看代价",
-      summary: costLayer?.headline || "你的强项会从哪里反噬回来",
-      hint: "代价层决定你怎么守住能力，不让优势变负担。",
-      badge: "看代价层",
-    },
-  ];
-});
-*/
-const blueprintGuideCards = computed<GuideCardItem[]>(() => {
-  const layers = Array.isArray(natalBlueprint.value?.layers) ? natalBlueprint.value?.layers : [];
-  const roleLayer = layers.find((item: Record<string, any>) => item?.key === "role") || layers[2];
-  const structureLayer =
-    layers.find((item: Record<string, any>) => item?.key === "structure") || layers[0];
-  const powerLayer = layers.find((item: Record<string, any>) => item?.key === "power") || layers[1];
-  const costLayer = layers.find((item: Record<string, any>) => item?.key === "cost") || layers[3];
-
-  return [
-    {
-      step: "01",
-      title: "\u5148\u5b9a\u89d2\u8272",
-      summary:
-        natalBlueprint.value?.role_title ||
-        roleLayer?.headline ||
-        "\u4f60\u5728\u793e\u4f1a\u4e2d\u66f4\u50cf\u4ec0\u4e48\u4eba",
-      hint:
-        "\u5148\u786e\u8ba4\u8fd9\u5f20\u76d8\u6700\u50cf\u54ea\u4e00\u79cd\u793e\u4f1a\u89d2\u8272\uff0c\u4e0d\u8981\u4e00\u5f00\u59cb\u5c31\u6389\u8fdb\u7ec6\u8282\u3002",
-      badge: "\u5148\u770b\u672c\u547d\u84dd\u56fe\u9876\u90e8",
-    },
-    {
-      step: "02",
-      title: "\u518d\u770b\u4e3b\u8f74",
-      summary:
-        structureLayer?.headline ||
-        natalChart.value?.signature ||
-        "\u8fd9\u5f20\u76d8\u6700\u957f\u671f\u3001\u6700\u53cd\u590d\u7684\u4eba\u751f\u4e3b\u7ebf\u662f\u4ec0\u4e48",
-      hint:
-        "\u7ed3\u6784\u5c42\u56de\u7b54\u7684\u662f\uff1a\u4f60\u7684\u4eba\u751f\u4e3a\u4ec0\u4e48\u603b\u4f1a\u53cd\u590d\u56de\u5230\u8fd9\u4e9b\u8bae\u9898\u3002",
-      badge: "\u770b\u7ed3\u6784\u5c42",
-    },
-    {
-      step: "03",
-      title: "\u8bc6\u522b\u6760\u6746",
+      title: "再看事业和资源",
       summary:
         powerLayer?.headline ||
-        "\u4f60\u901a\u8fc7\u4ec0\u4e48\u5165\u53e3\u62ff\u8d44\u6e90\u3001\u8fdb\u7cfb\u7edf\u3001\u5f62\u6210\u5f71\u54cd\u529b",
+        "你通过什么入口做事业、拿资源、形成影响力",
       hint:
-        "\u6760\u6746\u5c42\u51b3\u5b9a\u4f60\u771f\u6b63\u8be5\u7ecf\u8425\u54ea\u91cc\uff0c\u800c\u4e0d\u662f\u54ea\u91cc\u770b\u8d77\u6765\u70ed\u95f9\u3002",
-      badge: "\u770b\u6743\u529b\u5c42",
+        "事业和财富不是分开的，要一起看你通过什么场景拿结果。",
+      badge: "看事业/财富",
     },
     {
       step: "04",
-      title: "\u6700\u540e\u770b\u4ee3\u4ef7",
+      title: "最后看风险和关系",
       summary:
         costLayer?.headline ||
-        "\u4f60\u7684\u5f3a\u9879\u4f1a\u4ece\u54ea\u91cc\u53cd\u566c\u56de\u6765",
+        "你的强项会从哪里反噬，关系又会怎么参与人生结构",
       hint:
-        "\u4ee3\u4ef7\u5c42\u51b3\u5b9a\u4f60\u600e\u4e48\u5b88\u4f4f\u80fd\u529b\uff0c\u4e0d\u8ba9\u4f18\u52bf\u53d8\u8d1f\u62c5\u3002",
-      badge: "\u770b\u4ee3\u4ef7\u5c42",
+        "最后再看风险点和关系牵动，判断怎么守住优势、不让能力变负担。",
+      badge: "看风险/关系",
     },
   ];
 });
@@ -789,6 +816,13 @@ async function loadReport() {
     if (reportId) {
       const response = await apiClient.get<AnalysisResponse<LifeReport>>(`/analyses/${reportId}`);
       if (response.data?.status === "success") {
+        if (response.data.analysis?.key === "monthly_lunar_return") {
+          router.replace({
+            name: "monthly-return",
+            params: { id: reportId },
+          });
+          return;
+        }
         report.value = response.data.data;
         analysis.value = response.data.analysis || getAnalysisByKey(currentAnalysisKey());
         return;

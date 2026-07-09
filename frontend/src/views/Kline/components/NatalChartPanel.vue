@@ -17,180 +17,7 @@
         </div>
       </header>
 
-      <div class="chart-layout">
-        <section class="wheel-card">
-          <div class="wheel-frame">
-            <svg
-              class="wheel-svg"
-              viewBox="0 0 640 640"
-              role="img"
-              :aria-label="copy.title"
-            >
-              <circle :cx="CENTER" :cy="CENTER" :r="OUTER_RADIUS + 8" class="wheel-shadow" />
-              <circle :cx="CENTER" :cy="CENTER" :r="OUTER_RADIUS" class="wheel-base" />
-
-              <path
-                v-for="segment in zodiacSegments"
-                :key="segment.sign"
-                :d="segment.path"
-                class="zodiac-segment"
-                :style="{ '--segment-fill': segment.color }"
-              />
-
-              <line
-                v-for="segment in zodiacSegments"
-                :key="`${segment.sign}-divider`"
-                :x1="segment.divider.start.x"
-                :y1="segment.divider.start.y"
-                :x2="segment.divider.end.x"
-                :y2="segment.divider.end.y"
-                class="zodiac-divider"
-              />
-
-              <circle :cx="CENTER" :cy="CENTER" :r="ZODIAC_INNER_RADIUS" class="ring-line" />
-              <circle :cx="CENTER" :cy="CENTER" :r="PLANET_TRACK_RADIUS + 20" class="ring-line soft" />
-              <circle :cx="CENTER" :cy="CENTER" :r="PLANET_TRACK_RADIUS" class="ring-line" />
-              <circle :cx="CENTER" :cy="CENTER" :r="HOUSE_LABEL_RADIUS + 18" class="ring-line soft" />
-              <circle :cx="CENTER" :cy="CENTER" :r="ASPECT_RADIUS" class="aspect-boundary" />
-
-              <line
-                v-for="line in wheelAspectLines"
-                :key="`${line.from}-${line.to}-${line.kind}`"
-                :x1="line.start.x"
-                :y1="line.start.y"
-                :x2="line.end.x"
-                :y2="line.end.y"
-                :class="['aspect-line', line.kind]"
-              />
-
-              <line
-                v-for="house in houseLines"
-                :key="`house-${house.house}`"
-                :x1="house.start.x"
-                :y1="house.start.y"
-                :x2="house.end.x"
-                :y2="house.end.y"
-                :class="['house-line', { axis: house.isAxis }]"
-              />
-
-              <text
-                v-for="house in houseLabels"
-                :key="`house-label-${house.house}`"
-                :x="house.position.x"
-                :y="house.position.y"
-                class="house-number"
-              >
-                {{ house.house }}
-              </text>
-
-              <g v-for="axis in axisLabels" :key="axis.label">
-                <text :x="axis.position.x" :y="axis.position.y" class="axis-label">
-                  {{ axis.label }}
-                </text>
-              </g>
-
-              <g v-for="cusp in cuspMarkers" :key="`cusp-${cusp.house}`" class="cusp-marker">
-                <text :x="cusp.icon.x" :y="cusp.icon.y - 1" class="cusp-glyph astro-symbol">
-                  {{ cusp.glyph }}
-                </text>
-                <text :x="cusp.degree.x" :y="cusp.degree.y" class="cusp-degree">
-                  {{ cusp.degreeLabel }}
-                </text>
-              </g>
-
-              <g v-for="planet in planetMarkers" :key="planet.key" class="planet-marker">
-                <line
-                  :x1="planet.tickStart.x"
-                  :y1="planet.tickStart.y"
-                  :x2="planet.tickEnd.x"
-                  :y2="planet.tickEnd.y"
-                  class="planet-tick"
-                />
-                <text
-                  :x="planet.position.x"
-                  :y="planet.position.y - 1"
-                  class="planet-glyph astro-symbol"
-                  :style="{ '--planet-accent': planet.color }"
-                >
-                  {{ planet.glyph }}
-                </text>
-                <text
-                  v-if="planet.retrograde"
-                  :x="planet.retro.x"
-                  :y="planet.retro.y"
-                  class="retro-flag"
-                >
-                  R
-                </text>
-              </g>
-
-              <circle :cx="CENTER" :cy="CENTER" :r="INNER_DISC_RADIUS" class="center-disc" />
-              <text :x="CENTER" :y="CENTER - 18" class="center-kicker">{{ copy.centerAsc }}</text>
-              <text :x="CENTER" :y="CENTER + 6" class="center-main">{{ ascendantSignLabel }}</text>
-              <text :x="CENTER" :y="CENTER + 28" class="center-sub">{{ chartRulerLabel }}</text>
-            </svg>
-          </div>
-
-          <div class="wheel-footer">
-            <span class="footer-chip">{{ copy.houseSystem }}</span>
-            <span class="footer-text">{{ copy.cuspHint }}</span>
-          </div>
-        </section>
-
-        <aside class="detail-card">
-          <section class="detail-section">
-            <div class="section-title">{{ copy.planetTable }}</div>
-            <div class="planet-list">
-              <article
-                v-for="planet in orderedPlanets"
-                :key="planet.key"
-                class="planet-row"
-                :style="{ '--planet-accent': planet.color }"
-              >
-                <svg viewBox="0 0 42 42" class="list-icon" aria-hidden="true">
-                  <text x="21" y="17" class="list-icon-glyph astro-symbol">{{ planet.glyph }}</text>
-                  <text x="21" y="30" class="list-icon-code">{{ planet.shortLabel }}</text>
-                </svg>
-
-                <div class="planet-copy">
-                  <div class="planet-topline">
-                    <strong>{{ planet.label }}</strong>
-                    <span :class="['state-chip', planet.dignity || 'peregrine']">
-                      {{ planet.dignityLabel }}
-                    </span>
-                  </div>
-                  <p class="planet-meta">{{ planet.positionLine }}</p>
-                  <p v-if="planet.meaningLine" class="planet-meaning">{{ planet.meaningLine }}</p>
-                  <p v-if="planet.descriptionLine" class="planet-note">{{ planet.descriptionLine }}</p>
-                </div>
-              </article>
-            </div>
-          </section>
-
-          <section class="detail-section">
-            <div class="section-title">{{ copy.cuspTable }}</div>
-            <div class="cusp-grid">
-              <article v-for="house in houseCuspDetails" :key="house.house" class="cusp-card">
-                <div class="cusp-head">
-                  <span class="cusp-index">H{{ house.house }}</span>
-                  <span class="cusp-line">{{ house.degreeLabel }}</span>
-                </div>
-                <div class="cusp-sign">
-                  <svg viewBox="0 0 38 38" class="cusp-icon" aria-hidden="true">
-                    <text x="19" y="19" class="cusp-icon-glyph astro-symbol">{{ house.glyph }}</text>
-                  </svg>
-                  <div>
-                    <strong>{{ house.signLabel }}</strong>
-                    <p>{{ house.title }}</p>
-                  </div>
-                </div>
-              </article>
-            </div>
-          </section>
-        </aside>
-      </div>
-
-      <section class="reader-section">
+      <section class="reader-section primaryReaderSection">
         <div class="section-header">
           <div>
             <div class="panel-kicker">{{ copy.readerKicker }}</div>
@@ -258,6 +85,268 @@
         </div>
       </section>
 
+      <details class="chartEvidenceFold" open>
+        <summary class="technical-toggle chartEvidenceSummary">
+          <div class="technical-toggle-copy">
+            <div class="panel-kicker">{{ copy.chartEvidenceKicker }}</div>
+            <h3 class="section-heading">{{ copy.chartEvidenceTitle }}</h3>
+            <p class="section-note">{{ copy.chartEvidenceNote }}</p>
+          </div>
+          <span class="header-chip">{{ copy.chartEvidenceAction }}</span>
+        </summary>
+
+        <div class="chart-layout">
+          <section class="wheel-card">
+            <div class="wheel-frame">
+              <svg
+                class="wheel-svg"
+                viewBox="0 0 640 640"
+                role="img"
+                :aria-label="copy.title"
+              >
+                <defs>
+                  <clipPath :id="aspectClipId">
+                    <circle :cx="CENTER" :cy="CENTER" :r="ASPECT_CLIP_RADIUS" />
+                  </clipPath>
+                </defs>
+
+                <circle :cx="CENTER" :cy="CENTER" :r="OUTER_RADIUS" class="wheel-base" />
+
+                <path
+                  v-for="segment in zodiacSegments"
+                  :key="segment.sign"
+                  :d="segment.path"
+                  class="zodiac-segment"
+                />
+
+                <line
+                  v-for="segment in zodiacSegments"
+                  :key="`${segment.sign}-divider`"
+                  :x1="segment.divider.start.x"
+                  :y1="segment.divider.start.y"
+                  :x2="segment.divider.end.x"
+                  :y2="segment.divider.end.y"
+                  class="zodiac-divider"
+                />
+
+                <circle :cx="CENTER" :cy="CENTER" :r="ZODIAC_INNER_RADIUS" class="ring-line" />
+                <circle :cx="CENTER" :cy="CENTER" :r="PLANET_TRACK_RADIUS + 20" class="ring-line soft planet-outer-ring" />
+                <circle :cx="CENTER" :cy="CENTER" :r="PLANET_TRACK_RADIUS" class="ring-line" />
+                <circle :cx="CENTER" :cy="CENTER" :r="HOUSE_LABEL_RADIUS + 18" class="ring-line soft house-label-ring" />
+                <circle :cx="CENTER" :cy="CENTER" :r="ASPECT_RADIUS" class="aspect-boundary" />
+                <circle :cx="CENTER" :cy="CENTER" :r="HOUSE_INNER_RADIUS" class="inner-core-ring" />
+
+                <g class="aspect-layer" :clip-path="`url(#${aspectClipId})`">
+                  <line
+                    v-for="line in wheelAspectLines"
+                    :key="`${line.from}-${line.to}-${line.kind}`"
+                    :x1="line.start.x"
+                    :y1="line.start.y"
+                    :x2="line.end.x"
+                    :y2="line.end.y"
+                    :class="['aspect-line', line.kind]"
+                  />
+                </g>
+
+                <g v-for="tick in zodiacDegreeTicks" :key="`tick-${tick.key}`">
+                  <line
+                    :x1="tick.start.x"
+                    :y1="tick.start.y"
+                    :x2="tick.end.x"
+                    :y2="tick.end.y"
+                    :class="['degree-tick', { major: tick.major, sign: tick.signBoundary }]"
+                  />
+                  <text
+                    v-if="tick.label"
+                    :x="tick.labelPosition.x"
+                    :y="tick.labelPosition.y"
+                    class="degree-label"
+                    :transform="tick.labelTransform"
+                  >
+                    {{ tick.label }}
+                  </text>
+                </g>
+
+                <g v-for="label in zodiacSignLabels" :key="`zodiac-label-${label.sign}`">
+                  <text
+                    :x="label.position.x"
+                    :y="label.position.y"
+                    class="zodiac-glyph astro-symbol"
+                    :style="{ '--zodiac-accent': label.color }"
+                  >
+                    {{ label.glyph }}
+                  </text>
+                </g>
+
+                <line
+                  v-for="house in houseLines"
+                  :key="`house-${house.house}`"
+                  :x1="house.start.x"
+                  :y1="house.start.y"
+                  :x2="house.end.x"
+                  :y2="house.end.y"
+                  :class="['house-line', { axis: house.isAxis }]"
+                />
+
+                <text
+                  v-for="house in houseLabels"
+                  :key="`house-label-${house.house}`"
+                  :x="house.position.x"
+                  :y="house.position.y"
+                  class="house-number"
+                >
+                  {{ house.house }}
+                </text>
+
+                <g v-for="axis in axisLabels" :key="axis.label">
+                  <text
+                    :x="axis.position.x"
+                    :y="axis.position.y"
+                    :text-anchor="axis.anchor"
+                    class="axis-label"
+                  >
+                    {{ axis.label }}
+                  </text>
+                </g>
+
+                <g v-for="cusp in cuspMarkers" :key="`cusp-${cusp.house}`" class="cusp-marker">
+                  <text
+                    :x="cusp.icon.x"
+                    :y="cusp.icon.y - 1"
+                    class="cusp-glyph astro-symbol"
+                    :style="{ '--cusp-accent': cusp.color }"
+                  >
+                    {{ cusp.glyph }}
+                  </text>
+                  <text :x="cusp.degree.x" :y="cusp.degree.y" class="cusp-degree">
+                    {{ cusp.degreeLabel }}
+                  </text>
+                </g>
+
+                <g v-for="planet in planetMarkers" :key="planet.key" class="planet-marker">
+                  <line
+                    :x1="planet.tickStart.x"
+                    :y1="planet.tickStart.y"
+                    :x2="planet.tickEnd.x"
+                    :y2="planet.tickEnd.y"
+                    class="planet-tick"
+                  />
+                  <text
+                    :x="planet.position.x"
+                    :y="planet.position.y - 1"
+                    class="planet-glyph astro-symbol"
+                    :style="{ '--planet-accent': planet.color }"
+                  >
+                    {{ planet.glyph }}
+                  </text>
+                  <text
+                    v-if="planet.retrograde"
+                    :x="planet.retro.x"
+                    :y="planet.retro.y"
+                    class="retro-flag"
+                  >
+                    R
+                  </text>
+                  <text
+                    :x="planet.degreePosition.x"
+                    :y="planet.degreePosition.y"
+                    :text-anchor="planet.degreeAnchor"
+                    class="planet-degree planet-degree-main"
+                  >
+                    {{ degreeParts(planet.degree).degrees }}
+                  </text>
+                  <text
+                    :x="planet.minutePosition.x"
+                    :y="planet.minutePosition.y"
+                    :text-anchor="planet.degreeAnchor"
+                    class="planet-degree planet-degree-minute"
+                  >
+                    {{ degreeParts(planet.degree).minutes }}
+                  </text>
+                </g>
+
+              </svg>
+            </div>
+          </section>
+
+          <aside class="detail-card classic-sidebar">
+            <section class="detail-section">
+              <div class="classic-table-title">{{ copy.planetStatusTable }}</div>
+              <div class="classic-table-scroll">
+                <table class="classic-table planet-status-table">
+                  <thead>
+                    <tr>
+                      <th>{{ copy.planet }}</th>
+                      <th>{{ copy.zodiacPosition }}</th>
+                      <th>{{ copy.house }}</th>
+                      <th>{{ copy.condition }}</th>
+                      <th>{{ copy.motion }}</th>
+                      <th>{{ copy.note }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="planet in orderedPlanets" :key="planet.key">
+                      <td class="symbol-cell">
+                        <div class="classic-symbol-wrap">
+                          <span class="classic-symbol astro-symbol">{{ planet.glyph }}</span>
+                          <span class="classic-symbol-label">{{ planet.label }}</span>
+                        </div>
+                      </td>
+                      <td class="position-cell">
+                        <strong>{{ planet.degreeLabel }}</strong>
+                        <span>{{ planet.signLabel }}</span>
+                      </td>
+                      <td class="center-cell">
+                        <strong>H{{ planet.house }}</strong>
+                        <span class="cell-sub">{{ planet.houseTitle }}</span>
+                      </td>
+                      <td class="center-cell">
+                        <span :class="['classic-state', planet.dignity || 'peregrine']">
+                          {{ planet.dignityLabel }}
+                        </span>
+                      </td>
+                      <td class="center-cell">{{ planet.retrograde ? copy.retrograde : copy.direct }}</td>
+                      <td>
+                        {{ planet.descriptionLine || planet.meaningLine || copy.unknown }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="detail-section">
+              <div class="classic-table-title">{{ copy.houseStatusTable }}</div>
+              <div class="classic-table-scroll">
+                <table class="classic-table house-status-table">
+                  <thead>
+                    <tr>
+                      <th>{{ copy.house }}</th>
+                      <th>{{ copy.zodiacPosition }}</th>
+                      <th>{{ copy.sign }}</th>
+                      <th>{{ copy.theme }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="house in houseCuspDetails" :key="house.house">
+                      <td class="center-cell"><strong>H{{ house.house }}</strong></td>
+                      <td class="center-cell">{{ house.degreeLabel }}</td>
+                      <td class="symbol-cell">
+                        <div class="classic-symbol-wrap">
+                          <span class="classic-symbol astro-symbol">{{ house.glyph }}</span>
+                          <span class="classic-symbol-label">{{ house.signLabel }}</span>
+                        </div>
+                      </td>
+                      <td>{{ house.title }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </details>
+
       <details v-if="hasTechnicalArea" class="technical-fold">
         <summary class="technical-toggle">
           <div class="technical-toggle-copy">
@@ -277,12 +366,10 @@
             <span class="header-chip">{{ copy.houseSystem }}</span>
           </div>
 
-          <article v-if="aspectMatrixRows.length" class="table-card">
-            <div class="table-title-row">
-              <div class="section-title">{{ copy.aspectMatrix }}</div>
-            </div>
-            <div class="table-scroll">
-              <table class="aspect-matrix">
+          <article v-if="aspectMatrixRows.length" class="table-card classic-table-card">
+            <div class="classic-table-title">{{ copy.aspectMatrix }}</div>
+            <div class="classic-table-scroll">
+              <table class="aspect-matrix classic-matrix">
                 <thead>
                   <tr>
                     <th class="matrix-corner"></th>
@@ -290,7 +377,6 @@
                       <div class="matrix-planet">
                         <svg viewBox="0 0 34 34" class="matrix-icon" aria-hidden="true">
                           <text x="17" y="15" class="matrix-icon-glyph astro-symbol">{{ planet.glyph }}</text>
-                          <text x="17" y="25" class="matrix-icon-code">{{ planet.shortLabel }}</text>
                         </svg>
                       </div>
                     </th>
@@ -302,14 +388,14 @@
                       <div class="matrix-planet">
                         <svg viewBox="0 0 34 34" class="matrix-icon" aria-hidden="true">
                           <text x="17" y="15" class="matrix-icon-glyph astro-symbol">{{ row.planet.glyph }}</text>
-                          <text x="17" y="25" class="matrix-icon-code">{{ row.planet.shortLabel }}</text>
                         </svg>
                       </div>
                     </th>
                     <td
                       v-for="cell in row.cells"
                       :key="cell.key"
-                      :class="['matrix-cell', cell.state, cell.nature]"
+                      :class="['matrix-cell', cell.state, cell.nature, cell.kindClass]"
+                      :title="cell.tooltip"
                     >
                       <template v-if="cell.symbol">
                         <div class="matrix-symbol astro-symbol">{{ cell.symbol }}</div>
@@ -322,55 +408,29 @@
             </div>
           </article>
 
-          <div class="relation-grid">
-            <article v-if="receptionRows.length" class="table-card">
-              <div class="table-title-row">
-                <div class="section-title">{{ copy.receptionTable }}</div>
-              </div>
-              <div class="table-scroll">
-                <table class="data-table">
-                  <thead>
-                    <tr>
-                      <th>{{ copy.receiver }}</th>
-                      <th>{{ copy.position }}</th>
-                      <th>{{ copy.guests }}</th>
-                      <th>{{ copy.chain }}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="row in receptionRows" :key="row.line">
-                      <td>{{ row.receiver }}</td>
-                      <td>{{ row.position }}</td>
-                      <td>{{ row.guests }}</td>
-                      <td>{{ row.line }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </article>
-
-            <article v-if="mutualReceptionRows.length" class="table-card">
-              <div class="table-title-row">
-                <div class="section-title">{{ copy.mutualReceptionTable }}</div>
-              </div>
-              <div class="table-scroll">
-                <table class="data-table">
-                  <thead>
-                    <tr>
-                      <th>{{ copy.combination }}</th>
-                      <th>{{ copy.chain }}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="row in mutualReceptionRows" :key="row.line">
-                      <td>{{ row.pair }}</td>
-                      <td>{{ row.line }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </article>
-          </div>
+          <article v-if="relationFeatureRows.length" class="table-card classic-table-card">
+            <div class="classic-table-title">{{ copy.relationTable }}</div>
+            <div class="classic-table-scroll">
+              <table class="classic-table relation-table">
+                <thead>
+                  <tr>
+                    <th>{{ copy.type }}</th>
+                    <th>{{ copy.combination }}</th>
+                    <th>{{ copy.position }}</th>
+                    <th>{{ copy.chain }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in relationFeatureRows" :key="`${row.type}-${row.line}`">
+                    <td class="center-cell">{{ row.type }}</td>
+                    <td>{{ row.combination }}</td>
+                    <td>{{ row.position }}</td>
+                    <td>{{ row.line }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
         </section>
       </details>
     </article>
@@ -392,6 +452,7 @@ interface NatalPlanetRecord {
   dignity_label?: string;
   gift?: string;
   reason?: string;
+  speed?: number;
   longitude?: number;
   [key: string]: any;
 }
@@ -419,10 +480,23 @@ interface PlanetView {
   dignity?: string;
   dignityLabel: string;
   retrograde: boolean;
+  speed: number;
   longitude: number;
   positionLine: string;
   meaningLine: string;
   descriptionLine: string;
+}
+
+interface PlanetMarkerView extends PlanetView {
+  position: { x: number; y: number };
+  degreePosition: { x: number; y: number };
+  minutePosition: { x: number; y: number };
+  degreeAnchor: "start" | "middle" | "end";
+  tickStart: { x: number; y: number };
+  tickEnd: { x: number; y: number };
+  retro: { x: number; y: number };
+  relativeLongitude: number;
+  lane: number;
 }
 
 interface ReaderPlanetRow {
@@ -462,11 +536,13 @@ interface AspectRecord {
   to: string;
   kind: string;
   symbol: string;
+  exactAngle: number;
   title: string;
   nature: "supportive" | "challenging" | "neutral";
   summary: string;
   delta: number;
   closeness: number;
+  direction: "applying" | "separating" | "exact";
   start: { x: number; y: number };
   end: { x: number; y: number };
 }
@@ -485,23 +561,42 @@ const copy = {
   zodiacMode: "\u56de\u5f52\u9ec4\u9053",
   ascendant: "\u4e0a\u5347",
   chartRuler: "\u547d\u4e3b\u661f",
-  centerAsc: "ASC",
   cuspHint: "\u5bab\u5934\u5ea6\u6570\u5747\u4ee5\u201cxx\u00b0xx\u2032\u201d\u663e\u793a",
   planetTable: "\u661f\u4f53\u843d\u70b9",
   cuspTable: "\u5bab\u5934\u5ea6\u6570",
+  planetStatusTable: "\u661f\u76d8\u8868",
+  houseStatusTable: "\u5bab\u4f4d\u8868",
   professionalKicker: "\u0050rofessional\u0020\u0052eading",
   professionalTitle: "\u4e13\u4e1a\u5224\u8bfb\u533a",
   professionalNote:
     "\u76f8\u4f4d\u8868\u3001\u63a5\u7eb3\u8868\u3001\u4e92\u6eb6\u8868\u66f4\u9002\u5408\u4e13\u4e1a\u5360\u661f\u5e08\u76f4\u8bfb\uff0c\u6216\u8005\u4f60\u9700\u8981\u56de\u5934\u6821\u5bf9\u8bc1\u636e\u65f6\u518d\u5c55\u5f00\u3002",
   professionalAction: "\u5c55\u5f00\u4e13\u4e1a\u533a",
+  chartEvidenceKicker: "\u0043hart\u0020\u0045vidence",
+  chartEvidenceTitle: "\u672c\u547d\u76d8\u9762\u4e0e\u843d\u70b9\u8bc1\u636e",
+  chartEvidenceNote:
+    "\u5982\u679c\u4f60\u60f3\u56de\u5934\u770b\u661f\u76d8\u672c\u8eab\uff0c\u8fd9\u91cc\u4f1a\u5c55\u793a\u8f6e\u76d8\u3001\u884c\u661f\u843d\u70b9\u548c\u5bab\u4f4d\u8868\u3002",
+  chartEvidenceAction: "\u5c55\u5f00\u76d8\u9762\u8bc1\u636e",
   aspectMatrix: "\u76f8\u4f4d\u8868",
   receptionTable: "\u63a5\u7eb3\u8868",
   mutualReceptionTable: "\u4e92\u6eb6\u8868",
+  relationTable: "\u4e92\u6eb6\u63a5\u7eb3\u8868",
+  planet: "\u661f\u4f53",
+  zodiacPosition: "\u9ec4\u7ecf\u5ea6\u6570",
+  house: "\u843d\u5bab",
+  sign: "\u661f\u5ea7",
+  theme: "\u4e3b\u9898",
+  condition: "\u72b6\u6001",
+  motion: "\u987a\u9006",
+  note: "\u5907\u6ce8",
   receiver: "\u63a5\u7eb3\u661f",
   position: "\u843d\u70b9",
   guests: "\u88ab\u63a5\u7eb3\u661f",
   chain: "\u94fe\u8def",
   combination: "\u661f\u4f53\u7ec4\u5408",
+  type: "\u7c7b\u578b",
+  applying: "A",
+  separating: "S",
+  exact: "E",
   readerKicker: "\u0052eader\u0020\u0056iew",
   readerTitle: "\u7528\u6237\u9605\u8bfb\u533a",
   readerNote:
@@ -516,17 +611,23 @@ const copy = {
 } as const;
 
 const CENTER = 320;
-const OUTER_RADIUS = 286;
-const ZODIAC_INNER_RADIUS = 236;
-const PLANET_TRACK_RADIUS = 202;
-const PLANET_BASE_RADIUS = 184;
-const HOUSE_LABEL_RADIUS = 142;
-const HOUSE_INNER_RADIUS = 84;
-const ASPECT_RADIUS = 120;
-const INNER_DISC_RADIUS = 64;
-const CUSP_ICON_RADIUS = 298;
-const CUSP_TEXT_RADIUS = 274;
-const AXIS_LABEL_RADIUS = 96;
+const OUTER_RADIUS = 292;
+const ZODIAC_INNER_RADIUS = 258;
+const PLANET_TRACK_RADIUS = 222;
+const PLANET_BASE_RADIUS = 218;
+const HOUSE_LABEL_RADIUS = 136;
+const HOUSE_INNER_RADIUS = 112;
+const ASPECT_RADIUS = 136;
+const ASPECT_POINT_RADIUS = ASPECT_RADIUS - 6;
+const ASPECT_CLIP_RADIUS = ASPECT_RADIUS - 1;
+const CUSP_ICON_RADIUS = 274;
+const CUSP_TEXT_RADIUS = 288;
+const AXIS_LABEL_RADIUS = 282;
+const DEGREE_TICK_OUTER_RADIUS = 292;
+const DEGREE_TICK_MINOR_RADIUS = 286;
+const DEGREE_TICK_MAJOR_RADIUS = 281;
+const DEGREE_LABEL_RADIUS = 282;
+const ZODIAC_LABEL_RADIUS = 278;
 
 const SIGN_SEQUENCE = [
   "ARIES",
@@ -547,41 +648,41 @@ const SIGN_META: Record<
   string,
   { label: string; glyph: string; shortLabel: string; color: string }
 > = {
-  ARIES: { label: "\u767d\u7f8a", glyph: "\u2648", shortLabel: "Ar", color: "#d7b48a" },
-  TAURUS: { label: "\u91d1\u725b", glyph: "\u2649", shortLabel: "Ta", color: "#c4b07d" },
-  GEMINI: { label: "\u53cc\u5b50", glyph: "\u264a", shortLabel: "Ge", color: "#9ea9b8" },
-  CANCER: { label: "\u5de8\u87f9", glyph: "\u264b", shortLabel: "Cn", color: "#8ea7b7" },
-  LEO: { label: "\u72ee\u5b50", glyph: "\u264c", shortLabel: "Le", color: "#c5915a" },
-  VIRGO: { label: "\u5904\u5973", glyph: "\u264d", shortLabel: "Vi", color: "#94a17b" },
-  LIBRA: { label: "\u5929\u79e4", glyph: "\u264e", shortLabel: "Li", color: "#8fa8b9" },
-  SCORPIO: { label: "\u5929\u874e", glyph: "\u264f", shortLabel: "Sc", color: "#a88485" },
-  SAGITTARIUS: { label: "\u5c04\u624b", glyph: "\u2650", shortLabel: "Sg", color: "#c38b66" },
-  CAPRICORN: { label: "\u6469\u7faf", glyph: "\u2651", shortLabel: "Cp", color: "#8e8f93" },
-  AQUARIUS: { label: "\u6c34\u74f6", glyph: "\u2652", shortLabel: "Aq", color: "#7f9cab" },
-  PISCES: { label: "\u53cc\u9c7c", glyph: "\u2653", shortLabel: "Pi", color: "#95a0bf" },
+  ARIES: { label: "\u767d\u7f8a", glyph: "\u2648", shortLabel: "Ar", color: "#C7352F" },
+  TAURUS: { label: "\u91d1\u725b", glyph: "\u2649", shortLabel: "Ta", color: "#2F8F55" },
+  GEMINI: { label: "\u53cc\u5b50", glyph: "\u264a", shortLabel: "Ge", color: "#2F55C7" },
+  CANCER: { label: "\u5de8\u87f9", glyph: "\u264b", shortLabel: "Cn", color: "#356AC3" },
+  LEO: { label: "\u72ee\u5b50", glyph: "\u264c", shortLabel: "Le", color: "#C7352F" },
+  VIRGO: { label: "\u5904\u5973", glyph: "\u264d", shortLabel: "Vi", color: "#2F8F55" },
+  LIBRA: { label: "\u5929\u79e4", glyph: "\u264e", shortLabel: "Li", color: "#2F55C7" },
+  SCORPIO: { label: "\u5929\u874e", glyph: "\u264f", shortLabel: "Sc", color: "#356AC3" },
+  SAGITTARIUS: { label: "\u5c04\u624b", glyph: "\u2650", shortLabel: "Sg", color: "#C7352F" },
+  CAPRICORN: { label: "\u6469\u7faf", glyph: "\u2651", shortLabel: "Cp", color: "#2F8F55" },
+  AQUARIUS: { label: "\u6c34\u74f6", glyph: "\u2652", shortLabel: "Aq", color: "#2F55C7" },
+  PISCES: { label: "\u53cc\u9c7c", glyph: "\u2653", shortLabel: "Pi", color: "#356AC3" },
 };
 
 const PLANET_META: Record<
   string,
   { label: string; glyph: string; shortLabel: string; color: string }
 > = {
-  SUN: { label: "\u592a\u9633", glyph: "\u2609", shortLabel: "Su", color: "#b7772a" },
-  MOON: { label: "\u6708\u4eae", glyph: "\u263d", shortLabel: "Mo", color: "#607087" },
-  MERCURY: { label: "\u6c34\u661f", glyph: "\u263f", shortLabel: "Me", color: "#3e6b86" },
-  VENUS: { label: "\u91d1\u661f", glyph: "\u2640", shortLabel: "Ve", color: "#b15f66" },
-  MARS: { label: "\u706b\u661f", glyph: "\u2642", shortLabel: "Ma", color: "#9f4a36" },
-  JUPITER: { label: "\u6728\u661f", glyph: "\u2643", shortLabel: "Ju", color: "#8b5f2d" },
-  SATURN: { label: "\u571f\u661f", glyph: "\u2644", shortLabel: "Sa", color: "#5d6776" },
-  URANUS: { label: "\u5929\u738b\u661f", glyph: "\u2645", shortLabel: "Ur", color: "#537a88" },
-  NEPTUNE: { label: "\u6d77\u738b\u661f", glyph: "\u2646", shortLabel: "Ne", color: "#4e6586" },
-  PLUTO: { label: "\u51a5\u738b\u661f", glyph: "\u2647", shortLabel: "Pl", color: "#89594b" },
-  NORTH_NODE: { label: "\u5317\u4ea4\u70b9", glyph: "\u260a", shortLabel: "NN", color: "#6d7682" },
-  SOUTH_NODE: { label: "\u5357\u4ea4\u70b9", glyph: "\u260b", shortLabel: "SN", color: "#6d7682" },
-  CHIRON: { label: "\u51ef\u9f99\u661f", glyph: "\u26b7", shortLabel: "Ch", color: "#6b7b7c" },
-  JUNO: { label: "\u5a5a\u795e\u661f", glyph: "\u26b5", shortLabel: "Jn", color: "#9b6953" },
-  CERES: { label: "\u8c37\u795e\u661f", glyph: "\u26b3", shortLabel: "Ce", color: "#647b56" },
-  PALLAS: { label: "\u667a\u795e\u661f", glyph: "\u26b4", shortLabel: "Pa", color: "#5f7083" },
-  VESTA: { label: "\u7076\u795e\u661f", glyph: "\u26b6", shortLabel: "Vs", color: "#8e5f55" },
+  SUN: { label: "\u592a\u9633", glyph: "\u2609", shortLabel: "Su", color: "#E38B22" },
+  MOON: { label: "\u6708\u4eae", glyph: "\u263d", shortLabel: "Mo", color: "#4F6E91" },
+  MERCURY: { label: "\u6c34\u661f", glyph: "\u263f", shortLabel: "Me", color: "#2A6E8F" },
+  VENUS: { label: "\u91d1\u661f", glyph: "\u2640", shortLabel: "Ve", color: "#B25A72" },
+  MARS: { label: "\u706b\u661f", glyph: "\u2642", shortLabel: "Ma", color: "#C7352F" },
+  JUPITER: { label: "\u6728\u661f", glyph: "\u2643", shortLabel: "Ju", color: "#2F8F55" },
+  SATURN: { label: "\u571f\u661f", glyph: "\u2644", shortLabel: "Sa", color: "#5D6879" },
+  URANUS: { label: "\u5929\u738b\u661f", glyph: "\u2645", shortLabel: "Ur", color: "#23819A" },
+  NEPTUNE: { label: "\u6d77\u738b\u661f", glyph: "\u2646", shortLabel: "Ne", color: "#405EA8" },
+  PLUTO: { label: "\u51a5\u738b\u661f", glyph: "\u2647", shortLabel: "Pl", color: "#8C1D46" },
+  NORTH_NODE: { label: "\u5317\u4ea4\u70b9", glyph: "\u260a", shortLabel: "NN", color: "#6D3E9E" },
+  SOUTH_NODE: { label: "\u5357\u4ea4\u70b9", glyph: "\u260b", shortLabel: "SN", color: "#6D3E9E" },
+  CHIRON: { label: "\u51ef\u9f99\u661f", glyph: "\u26b7", shortLabel: "Ch", color: "#6A6F3D" },
+  JUNO: { label: "\u5a5a\u795e\u661f", glyph: "\u26b5", shortLabel: "Jn", color: "#8B4F62" },
+  CERES: { label: "\u8c37\u795e\u661f", glyph: "\u26b3", shortLabel: "Ce", color: "#4F7D45" },
+  PALLAS: { label: "\u667a\u795e\u661f", glyph: "\u26b4", shortLabel: "Pa", color: "#516C8E" },
+  VESTA: { label: "\u7076\u795e\u661f", glyph: "\u26b6", shortLabel: "Vs", color: "#8B5A3A" },
 };
 
 const PLANET_ORDER = [
@@ -668,7 +769,25 @@ const ASPECTS: AspectLine[] = [
     nature: "challenging",
     summary: "\u5916\u90e8\u5f20\u529b\u4e0e\u955c\u50cf\u8bfe\u9898",
   },
+  {
+    key: "quincunx",
+    symbol: "\u26bb",
+    title: "\u6885\u82b1",
+    kind: "quincunx",
+    angle: 150,
+    orb: 3,
+    nature: "challenging",
+    summary: "\u8c03\u6574\u4e0e\u4ee3\u4ef7",
+  },
 ];
+
+const legendItems = [
+  { label: "\u5211/\u51b2", kind: "challenging", y: 12 },
+  { label: "\u62f1/\u516d\u5408", kind: "supportive", y: 28 },
+  { label: "\u6885\u82b1\u76f8", kind: "special", y: 44 },
+];
+
+const aspectClipId = `aspect-clip-${Math.random().toString(36).slice(2, 8)}`;
 
 const houseCusps = computed<NatalHouse[]>(() => {
   const source = Array.isArray(props.natalChart?.houses) ? props.natalChart?.houses : [];
@@ -767,7 +886,7 @@ const orderedPlanets = computed<PlanetView[]>(() => {
         label: meta.label,
         shortLabel: meta.shortLabel,
         glyph: meta.glyph,
-        color: meta.color,
+        color: signMeta?.color || meta.color,
         sign: record.sign || "",
         signLabel,
         degree,
@@ -777,6 +896,7 @@ const orderedPlanets = computed<PlanetView[]>(() => {
         dignity: record.dignity,
         dignityLabel: record.dignity_label || dignityLabel(record.dignity),
         retrograde: Boolean(record.retrograde),
+        speed: toNumber(record.speed),
         longitude,
         positionLine: `${signLabel} ${formatDegree(degree)} · ${houseLine(house, houseTitle)} · ${motion}`,
         meaningLine: meaning ? `${meaning.groupTitle}主题：${meaning.essence}` : "",
@@ -820,9 +940,6 @@ const zodiacSegments = computed(() =>
     const innerBoundary = pointOnCircle(startLongitude, ZODIAC_INNER_RADIUS);
     return {
       sign,
-      glyph: SIGN_META[sign].glyph,
-      shortLabel: SIGN_META[sign].shortLabel,
-      color: SIGN_META[sign].color,
       path: ringSegmentPath(startLongitude, endLongitude, OUTER_RADIUS, ZODIAC_INNER_RADIUS),
       divider: {
         start: boundary,
@@ -832,13 +949,52 @@ const zodiacSegments = computed(() =>
   })
 );
 
+const zodiacDegreeTicks = computed(() =>
+  SIGN_SEQUENCE.flatMap((sign, signIndex) =>
+    Array.from({ length: 30 }, (_, degreeIndex) => {
+      const longitude = signIndex * 30 + degreeIndex;
+      const signBoundary = degreeIndex === 0;
+      const major = signBoundary || degreeIndex % 5 === 0;
+      const label = degreeIndex % 10 === 0 ? `${degreeIndex}\u00b0` : "";
+      const labelPosition = pointOnCircle(longitude + 5, DEGREE_LABEL_RADIUS);
+      const labelAngle = angleFromLongitude(longitude + 5);
+      return {
+        key: `${sign}-${degreeIndex}`,
+        major,
+        signBoundary,
+        label,
+        start: pointOnCircle(longitude, DEGREE_TICK_OUTER_RADIUS),
+        end: pointOnCircle(longitude, major ? DEGREE_TICK_MAJOR_RADIUS : DEGREE_TICK_MINOR_RADIUS),
+        labelPosition,
+        labelTransform: readableTextTransform(labelAngle, labelPosition),
+      };
+    })
+  )
+);
+
+const zodiacSignLabels = computed(() =>
+  SIGN_SEQUENCE.map((sign, index) => {
+    const longitude = index * 30 + 15;
+    return {
+      sign,
+      glyph: SIGN_META[sign].glyph,
+      color: SIGN_META[sign].color,
+      position: pointOnCircle(longitude, ZODIAC_LABEL_RADIUS),
+    };
+  })
+);
+
 const houseLines = computed(() =>
-  houseCusps.value.map((cusp) => ({
-    house: cusp.house,
-    start: pointOnCircle(longitudeFromSign(cusp.sign, cusp.degree) ?? 0, ZODIAC_INNER_RADIUS),
-    end: pointOnCircle(longitudeFromSign(cusp.sign, cusp.degree) ?? 0, HOUSE_INNER_RADIUS),
-    isAxis: [1, 4, 7, 10].includes(cusp.house),
-  }))
+  houseCusps.value.map((cusp) => {
+    const longitude = longitudeFromSign(cusp.sign, cusp.degree) ?? 0;
+    const isAxis = [1, 4, 7, 10].includes(cusp.house);
+    return {
+      house: cusp.house,
+      start: isAxis ? { x: CENTER, y: CENTER } : pointOnCircle(longitude, HOUSE_INNER_RADIUS),
+      end: pointOnCircle(longitude, OUTER_RADIUS),
+      isAxis,
+    };
+  })
 );
 
 const houseLabels = computed(() =>
@@ -855,6 +1011,15 @@ const houseLabels = computed(() =>
 );
 
 const axisLabels = computed(() => {
+  const axisMeta: Record<
+    string,
+    { offset: { x: number; y: number }; anchor: "start" | "middle" | "end" }
+  > = {
+    ASC: { offset: { x: -18, y: 0 }, anchor: "end" },
+    DSC: { offset: { x: 18, y: 0 }, anchor: "start" },
+    MC: { offset: { x: 0, y: -12 }, anchor: "middle" },
+    IC: { offset: { x: 0, y: 12 }, anchor: "middle" },
+  };
   const map: Array<{ house: number; label: string }> = [
     { house: 1, label: "ASC" },
     { house: 4, label: "IC" },
@@ -866,12 +1031,22 @@ const axisLabels = computed(() => {
       const cusp = houseCusps.value.find((entry) => entry.house === item.house);
       if (!cusp) return null;
       const longitude = longitudeFromSign(cusp.sign, cusp.degree) ?? 0;
+      const meta = axisMeta[item.label] || axisMeta.ASC;
+      const basePosition = pointOnCircle(longitude, AXIS_LABEL_RADIUS);
       return {
         label: item.label,
-        position: pointOnCircle(longitude, AXIS_LABEL_RADIUS),
+        anchor: meta.anchor,
+        position: {
+          x: basePosition.x + meta.offset.x,
+          y: basePosition.y + meta.offset.y,
+        },
       };
     })
-    .filter(Boolean) as Array<{ label: string; position: { x: number; y: number } }>;
+    .filter(Boolean) as Array<{
+      label: string;
+      anchor: "start" | "middle" | "end";
+      position: { x: number; y: number };
+    }>;
 });
 
 const cuspMarkers = computed(() =>
@@ -881,6 +1056,7 @@ const cuspMarkers = computed(() =>
     return {
       house: cusp.house,
       glyph: signMeta.glyph,
+      color: signMeta.color,
       degreeLabel: formatDegree(cusp.degree),
       icon: pointOnCircle(longitude, CUSP_ICON_RADIUS),
       degree: pointOnCircle(longitude, CUSP_TEXT_RADIUS),
@@ -901,9 +1077,9 @@ const houseCuspDetails = computed(() =>
   })
 );
 
-const planetMarkers = computed(() => {
-  const minimumGap = 7;
-  const laneStep = 16;
+const planetMarkers = computed<PlanetMarkerView[]>(() => {
+  const minimumGap = 6;
+  const laneStep = 13;
   const sorted = orderedPlanets.value
     .map((planet) => ({
       ...planet,
@@ -925,13 +1101,28 @@ const planetMarkers = computed(() => {
     planet.lane = lane;
     const radius = PLANET_BASE_RADIUS - lane * laneStep;
     const angle = angleFromLongitude(planet.longitude);
+    const angleRadians = (angle * Math.PI) / 180;
+    const onRightSide = Math.cos(angleRadians) >= 0;
+    const position = pointFromAngle(angle, radius);
+    const degreeOffsetX = onRightSide ? 12 : -12;
+    const degreeOffsetY = Math.sin(angleRadians) > 0.64 ? -2 : 2;
+    const degreeAnchor: "start" | "end" = onRightSide ? "start" : "end";
 
     return {
       ...planet,
-      position: pointFromAngle(angle, radius),
-      tickStart: pointFromAngle(angle, PLANET_TRACK_RADIUS + 6),
-      tickEnd: pointFromAngle(angle, radius + 18),
-      retro: pointFromAngle(angle + 11, radius - 18),
+      position,
+      degreePosition: {
+        x: position.x + degreeOffsetX,
+        y: position.y + degreeOffsetY - 3,
+      },
+      minutePosition: {
+        x: position.x + degreeOffsetX,
+        y: position.y + degreeOffsetY + 6,
+      },
+      degreeAnchor,
+      tickStart: pointFromAngle(angle, PLANET_TRACK_RADIUS + 3),
+      tickEnd: pointFromAngle(angle, radius + 8),
+      retro: pointFromAngle(angle + 9, radius - 13),
     };
   });
 
@@ -942,14 +1133,33 @@ const planetMarkers = computed(() => {
       const lane = last.lane + 1;
       const radius = PLANET_BASE_RADIUS - lane * laneStep;
       const angle = angleFromLongitude(first.longitude);
-      first.position = pointFromAngle(angle, radius);
-      first.tickEnd = pointFromAngle(angle, radius + 18);
-      first.retro = pointFromAngle(angle + 11, radius - 18);
+      const angleRadians = (angle * Math.PI) / 180;
+      const onRightSide = Math.cos(angleRadians) >= 0;
+      const position = pointFromAngle(angle, radius);
+      const degreeOffsetX = onRightSide ? 12 : -12;
+      const degreeOffsetY = Math.sin(angleRadians) > 0.64 ? -2 : 2;
+      const degreeAnchor: "start" | "end" = onRightSide ? "start" : "end";
+      first.position = position;
+      first.degreePosition = {
+        x: position.x + degreeOffsetX,
+        y: position.y + degreeOffsetY - 3,
+      };
+      first.minutePosition = {
+        x: position.x + degreeOffsetX,
+        y: position.y + degreeOffsetY + 6,
+      };
+      first.degreeAnchor = degreeAnchor;
+      first.tickEnd = pointFromAngle(angle, radius + 8);
+      first.retro = pointFromAngle(angle + 9, radius - 13);
     }
   }
 
   return placed;
 });
+
+const aspectWheelPlanets = computed(() =>
+  orderedPlanets.value.filter((planet) => Number.isFinite(planet.longitude))
+);
 
 const aspectMatrixPlanets = computed(() =>
   orderedPlanets.value.filter((planet) => MATRIX_PLANETS.includes(planet.key))
@@ -957,7 +1167,7 @@ const aspectMatrixPlanets = computed(() =>
 
 const aspectRecords = computed<AspectRecord[]>(() => {
   const result: AspectRecord[] = [];
-  const planets = aspectMatrixPlanets.value;
+  const planets = aspectWheelPlanets.value;
 
   for (let index = 0; index < planets.length; index += 1) {
     for (let cursor = index + 1; cursor < planets.length; cursor += 1) {
@@ -979,13 +1189,15 @@ const aspectRecords = computed<AspectRecord[]>(() => {
         to: right.key,
         kind: matched.kind,
         symbol: matched.symbol,
+        exactAngle: matched.angle,
         title: `${left.label} ${matched.title} ${right.label}`,
         nature: matched.nature,
         summary: matched.summary,
         delta: matched.delta,
         closeness: matched.orb - matched.delta,
-        start: pointOnCircle(left.longitude, ASPECT_RADIUS),
-        end: pointOnCircle(right.longitude, ASPECT_RADIUS),
+        direction: aspectDirection(left, right, matched.angle, matched.delta),
+        start: pointOnCircle(left.longitude, ASPECT_POINT_RADIUS),
+        end: pointOnCircle(right.longitude, ASPECT_POINT_RADIUS),
       });
     }
   }
@@ -993,7 +1205,20 @@ const aspectRecords = computed<AspectRecord[]>(() => {
   return result.sort((left, right) => right.closeness - left.closeness);
 });
 
-const wheelAspectLines = computed(() => aspectRecords.value.slice(0, 16));
+const wheelAspectLines = computed(() =>
+  aspectRecords.value
+    .filter((aspect) => aspect.kind !== "conjunction")
+    .sort((left, right) => {
+      const weight: Record<string, number> = {
+        square: 0,
+        opposition: 0,
+        trine: 1,
+        sextile: 1,
+        quincunx: 2,
+      };
+      return (weight[left.kind] ?? 3) - (weight[right.kind] ?? 3);
+    })
+);
 
 const aspectLookup = computed(() => {
   const map = new Map<string, AspectRecord>();
@@ -1024,6 +1249,8 @@ const aspectMatrixRows = computed(() =>
           nature: "",
           symbol: "",
           orbLabel: "",
+          tooltip: "",
+          kindClass: "",
         };
       }
 
@@ -1034,6 +1261,8 @@ const aspectMatrixRows = computed(() =>
           nature: "",
           symbol: "",
           orbLabel: "",
+          tooltip: "",
+          kindClass: "",
         };
       }
 
@@ -1045,6 +1274,8 @@ const aspectMatrixRows = computed(() =>
           nature: "",
           symbol: "",
           orbLabel: "",
+          tooltip: "",
+          kindClass: "",
         };
       }
 
@@ -1053,7 +1284,12 @@ const aspectMatrixRows = computed(() =>
         state: "filled",
         nature: aspect.nature,
         symbol: aspect.symbol,
-        orbLabel: formatDegree(aspect.delta),
+        orbLabel: formatAspectOrb(aspect.delta, aspect.direction),
+        tooltip: `${aspect.title} | ${Math.round(aspect.exactAngle)}° | ${formatAspectOrb(
+          aspect.delta,
+          aspect.direction
+        )}`,
+        kindClass: `aspect-${aspect.kind}`,
       };
     }),
   }))
@@ -1104,11 +1340,28 @@ const mutualReceptionRows = computed(() =>
   }))
 );
 
+const relationFeatureRows = computed(() => {
+  const receptionFeatures = receptionRows.value.map((row) => ({
+    type: copy.receptionTable,
+    combination: `${row.receiver} / ${row.guests}`,
+    position: row.position,
+    line: row.line,
+  }));
+
+  const mutualFeatures = mutualReceptionRows.value.map((row) => ({
+    type: copy.mutualReceptionTable,
+    combination: row.pair,
+    position: copy.unknown,
+    line: row.line,
+  }));
+
+  return [...receptionFeatures, ...mutualFeatures];
+});
+
 const hasTechnicalArea = computed(
   () =>
     aspectMatrixRows.value.length > 0 ||
-    receptionRows.value.length > 0 ||
-    mutualReceptionRows.value.length > 0
+    relationFeatureRows.value.length > 0
 );
 
 const aspectHighlights = computed<AspectHighlightRow[]>(() => {
@@ -1189,6 +1442,11 @@ function pointOnCircle(longitude: number, radius: number) {
   return pointFromAngle(angleFromLongitude(longitude), radius);
 }
 
+function readableTextTransform(angle: number, position: { x: number; y: number }) {
+  const rotation = angle > 90 && angle < 270 ? angle + 180 : angle;
+  return `rotate(${rotation.toFixed(2)} ${position.x.toFixed(2)} ${position.y.toFixed(2)})`;
+}
+
 function ringSegmentPath(
   startLongitude: number,
   endLongitude: number,
@@ -1261,6 +1519,50 @@ function formatDegree(value?: number) {
   const degrees = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
   return `${degrees}\u00b0${String(minutes).padStart(2, "0")}\u2032`;
+}
+
+function degreeParts(value?: number) {
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return { degrees: copy.unknown, minutes: "" };
+  }
+  const totalMinutes = Math.min(Math.round(Math.abs(value) * 60), 29 * 60 + 59);
+  const degrees = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return {
+    degrees: `${degrees}\u00b0`,
+    minutes: `${String(minutes).padStart(2, "0")}\u2032`,
+  };
+}
+
+function formatAspectOrb(value?: number, direction?: "applying" | "separating" | "exact") {
+  if (typeof value !== "number" || Number.isNaN(value)) return copy.unknown;
+  const totalMinutes = Math.round(Math.abs(value) * 60);
+  const degrees = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  const phase =
+    direction === "applying"
+      ? copy.applying
+      : direction === "separating"
+        ? copy.separating
+        : copy.exact;
+  return `${degrees}\u00b0${String(minutes).padStart(2, "0")}' ${phase}`;
+}
+
+function aspectDirection(
+  left: PlanetView,
+  right: PlanetView,
+  exactAngle: number,
+  delta: number
+): "applying" | "separating" | "exact" {
+  if (delta < 0.2) return "exact";
+
+  const currentDiff = angularDistance(left.longitude, right.longitude);
+  const nextLeft = normalizeLongitude(left.longitude + left.speed);
+  const nextRight = normalizeLongitude(right.longitude + right.speed);
+  const nextDiff = angularDistance(nextLeft, nextRight);
+  const nextDelta = Math.abs(nextDiff - exactAngle);
+
+  return nextDelta < delta ? "applying" : "separating";
 }
 
 function houseLabel(house: number) {
@@ -1375,9 +1677,10 @@ function houseLine(house: unknown, title?: string) {
 }
 
 .chart-layout {
+  margin-top: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(360px, 0.9fr);
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
 }
 
 .wheel-card,
@@ -1391,14 +1694,19 @@ function houseLine(house: unknown, title?: string) {
 }
 
 .wheel-card {
-  padding: 14px;
+  width: min(100%, 560px);
+  margin: 0 auto;
+  padding: 0;
+  background: #ffffff;
+  border: 0;
+  border-radius: 0;
 }
 
 .wheel-frame {
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  background: #fffdf8;
-  padding: 10px;
+  border-radius: 2px;
+  border: 0;
+  background: #ffffff;
+  padding: 0;
 }
 
 .wheel-svg {
@@ -1406,86 +1714,132 @@ function houseLine(house: unknown, title?: string) {
   height: auto;
   display: block;
   overflow: visible;
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+  background: #ffffff;
 }
 
-.wheel-shadow {
-  fill: rgba(31, 41, 55, 0.03);
+.wheel-svg text:not(.astro-symbol) {
+  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans", sans-serif;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 .wheel-base {
-  fill: #fffefb;
-  stroke: var(--line-strong);
-  stroke-width: 1.1;
+  fill: #ffffff;
+  stroke: #9a9a9a;
+  stroke-width: 1.5;
 }
 
 .zodiac-segment {
-  fill: var(--segment-fill);
-  opacity: 0.16;
-  stroke: rgba(29, 36, 48, 0.06);
-  stroke-width: 0.7;
+  fill: #ffffff;
+  opacity: 1;
+  stroke: none;
+  stroke-width: 0;
 }
 
 .zodiac-divider,
 .ring-line,
 .aspect-boundary {
   fill: none;
-  stroke: rgba(29, 36, 48, 0.18);
+  stroke: #9f9f9f;
 }
 
 .ring-line {
-  stroke-width: 1;
+  stroke-width: 1.25;
 }
 
 .ring-line.soft,
 .aspect-boundary {
-  stroke-dasharray: 4 6;
-  stroke: rgba(29, 36, 48, 0.12);
+  stroke-dasharray: none;
+  stroke: #a6a6a6;
+}
+
+.planet-outer-ring,
+.house-label-ring {
+  display: none;
 }
 
 .zodiac-divider {
-  stroke-width: 1;
+  stroke: #a0a0a0;
+  stroke-width: 1.1;
+}
+
+.degree-tick {
+  stroke: #5f5f5f;
+  stroke-width: 0.5;
+}
+
+.degree-tick.major {
+  stroke: #555555;
+  stroke-width: 0.55;
+}
+
+.degree-tick.sign {
+  stroke: #555555;
+  stroke-width: 0.8;
+}
+
+.degree-label {
+  display: none;
+}
+
+.zodiac-glyph {
+  fill: var(--zodiac-accent, #111111);
+  font-size: 16px;
+  font-weight: 800;
 }
 
 .house-line {
-  stroke: rgba(31, 41, 55, 0.28);
+  stroke: #adadad;
   stroke-width: 1;
 }
 
 .house-line.axis {
-  stroke: rgba(123, 92, 36, 0.82);
-  stroke-width: 1.5;
+  stroke: #000000;
+  stroke-width: 1.45;
 }
 
 .aspect-line {
   fill: none;
-  stroke-width: 1;
-  opacity: 0.42;
+  stroke-linecap: square;
+  stroke-width: 1.15;
+  opacity: 0.72;
 }
 
 .aspect-line.conjunction {
-  stroke: rgba(92, 104, 120, 0.44);
+  stroke: #263238;
 }
 
 .aspect-line.sextile {
-  stroke: rgba(46, 125, 50, 0.62);
+  stroke: #3848ff;
+  stroke-dasharray: none;
 }
 
 .aspect-line.square {
-  stroke: rgba(198, 40, 40, 0.62);
+  stroke: #ef6a73;
 }
 
 .aspect-line.trine {
-  stroke: rgba(46, 125, 50, 0.62);
+  stroke: #3848ff;
 }
 
 .aspect-line.opposition {
-  stroke: rgba(123, 31, 162, 0.62);
+  stroke: #ef6a73;
 }
 
-.center-disc {
-  fill: #ffffff;
-  stroke: rgba(29, 36, 48, 0.2);
-  stroke-width: 1;
+.aspect-line.quincunx {
+  stroke: #2a9b3f;
+  stroke-dasharray: none;
+}
+
+.aspect-layer {
+  pointer-events: none;
+}
+
+.inner-core-ring {
+  fill: none;
+  stroke: #9f9f9f;
+  stroke-width: 1.25;
 }
 
 .astro-symbol {
@@ -1495,74 +1849,92 @@ function houseLine(house: unknown, title?: string) {
 }
 
 .cusp-glyph {
-  fill: #243041;
-  font-size: 19px;
+  fill: var(--cusp-accent, #111111);
+  font-size: 11px;
   font-weight: 700;
 }
 
 .planet-glyph {
   fill: var(--planet-accent, #1f2937);
-  font-size: 21px;
+  font-size: 15.5px;
   font-weight: 700;
 }
 
 .house-number,
-.axis-label,
-.center-kicker,
-.center-main,
-.center-sub,
 .retro-flag,
-.cusp-degree {
+.cusp-degree,
+.planet-degree {
   text-anchor: middle;
   dominant-baseline: middle;
 }
 
 .house-number {
-  fill: rgba(31, 41, 55, 0.84);
-  font-size: 13px;
+  fill: #000000;
+  font-size: 8px;
   font-weight: 700;
 }
 
 .axis-label {
-  fill: rgba(75, 85, 99, 0.92);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  display: none;
 }
 
 .cusp-degree {
-  fill: rgba(31, 41, 55, 0.7);
-  font-size: 9px;
+  fill: #000000;
+  font-size: 7.5px;
   font-weight: 700;
 }
 
 .planet-tick {
-  stroke: rgba(31, 41, 55, 0.28);
-  stroke-width: 1;
+  display: none;
+}
+
+.planet-degree {
+  fill: #111111;
+  font-size: 7.5px;
+  font-weight: 700;
+}
+
+.planet-degree-main {
+  font-size: 7.5px;
+}
+
+.planet-degree-minute {
+  font-size: 7.5px;
+}
+
+.legend-box {
+  fill: #ffffff;
+  stroke: rgba(17, 17, 17, 0.72);
+  stroke-width: 0.8;
+}
+
+.legend-line {
+  stroke-width: 1.6;
+}
+
+.legend-line.challenging {
+  stroke: rgba(198, 40, 40, 0.92);
+}
+
+.legend-line.supportive {
+  stroke: rgba(30, 96, 178, 0.86);
+}
+
+.legend-line.special {
+  stroke: rgba(37, 132, 88, 0.82);
+  stroke-dasharray: 3 3;
+}
+
+.legend-text {
+  fill: rgba(17, 17, 17, 0.78);
+  font-size: 8px;
+  dominant-baseline: middle;
 }
 
 .retro-flag {
   fill: rgba(123, 92, 36, 0.9);
   font-size: 8px;
   font-weight: 700;
-}
-
-.center-kicker {
-  fill: rgba(71, 84, 103, 0.92);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-}
-
-.center-main {
-  fill: var(--ink);
-  font-size: 21px;
-  font-weight: 700;
-}
-
-.center-sub {
-  fill: rgba(31, 41, 55, 0.58);
-  font-size: 12px;
 }
 
 .wheel-footer {
@@ -1580,6 +1952,13 @@ function houseLine(house: unknown, title?: string) {
   padding: 14px;
   display: grid;
   gap: 14px;
+  max-width: 980px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.classic-sidebar {
+  gap: 10px;
 }
 
 .detail-section,
@@ -1626,8 +2005,8 @@ function houseLine(house: unknown, title?: string) {
 }
 
 .matrix-icon {
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
 }
 
 .list-icon-glyph,
@@ -1641,7 +2020,8 @@ function houseLine(house: unknown, title?: string) {
 }
 
 .matrix-icon-glyph {
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .cusp-icon-glyph {
@@ -1776,6 +2156,28 @@ function houseLine(house: unknown, title?: string) {
   margin-top: 18px;
 }
 
+.chartEvidenceFold {
+  display: block;
+  margin-top: 18px;
+  border: 0;
+  border-radius: 0;
+  background: #ffffff;
+}
+
+.chartEvidenceFold[open] {
+  background: #ffffff;
+}
+
+.chartEvidenceSummary,
+.chartEvidenceFold > .technical-toggle,
+.chartEvidenceFold .detail-card {
+  display: none;
+}
+
+.primaryReaderSection {
+  margin-top: 0;
+}
+
 .section-note {
   margin: 8px 0 0;
   color: var(--muted);
@@ -1816,49 +2218,89 @@ function houseLine(house: unknown, title?: string) {
   overflow: hidden;
 }
 
-.table-title-row {
-  padding: 14px 14px 0;
+.classic-table-card {
+  border-radius: 6px;
+  border: 1px solid rgba(145, 179, 191, 0.6);
+  background: #ffffff;
 }
 
-.table-scroll {
+.classic-table-title {
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(145, 179, 191, 0.45);
+  background: #d6f7ff;
+  color: #36505c;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.classic-table-scroll {
   overflow-x: auto;
-  padding: 10px 14px 14px;
 }
 
-.aspect-matrix,
-.data-table {
+.classic-table,
+.aspect-matrix {
   width: 100%;
   border-collapse: collapse;
 }
 
 .aspect-matrix {
-  min-width: 760px;
+  min-width: 650px;
   table-layout: fixed;
+  border: 1px solid rgba(145, 179, 191, 0.45);
 }
 
-.data-table {
+.classic-table {
   min-width: 520px;
+  background: #ffffff;
 }
 
+.classic-table th,
+.classic-table td,
 .aspect-matrix th,
-.aspect-matrix td,
-.data-table th,
-.data-table td {
-  border: 1px solid var(--line);
+.aspect-matrix td {
+  border: 1px solid #b8d7e2;
   vertical-align: middle;
 }
 
-.aspect-matrix th,
-.data-table th {
-  background: rgba(31, 41, 55, 0.035);
+.classic-table th,
+.aspect-matrix th {
+  background: #dff2f8;
+  color: #46606b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.classic-table th {
+  padding: 9px 10px;
+  text-align: center;
+}
+
+.classic-table td {
+  padding: 8px 10px;
+  color: #344054;
+  font-size: 12px;
+  line-height: 1.55;
+  background: #ffffff;
+}
+
+.classic-table tbody tr:nth-child(even) td {
+  background: #fbfeff;
+}
+
+.classic-table tbody tr:hover td,
+.aspect-matrix tbody tr:hover td,
+.aspect-matrix tbody tr:hover th {
+  background: #f5fbfd;
 }
 
 .aspect-matrix th {
-  padding: 8px 6px;
+  padding: 5px 2px;
+  background: #dff2f8;
 }
 
 .matrix-corner {
-  width: 66px;
+  width: 52px;
 }
 
 .matrix-planet {
@@ -1868,69 +2310,138 @@ function houseLine(house: unknown, title?: string) {
 }
 
 .matrix-cell {
-  width: 66px;
-  height: 58px;
-  padding: 0;
+  width: 56px;
+  height: 48px;
+  padding: 1px 2px 0;
   text-align: center;
   background: #ffffff;
 }
 
 .matrix-cell.diagonal,
 .matrix-cell.upper {
-  background: rgba(29, 36, 48, 0.03);
+  background: #edf8fc;
 }
 
 .matrix-cell.empty {
-  background: rgba(31, 41, 55, 0.015);
+  background: #ffffff;
 }
 
+.matrix-cell.filled,
 .matrix-cell.supportive {
-  background: rgba(87, 131, 95, 0.14);
+  background: #ffffff;
 }
 
 .matrix-cell.challenging {
-  background: rgba(167, 95, 73, 0.14);
+  background: #ffffff;
 }
 
 .matrix-cell.neutral {
-  background: rgba(108, 118, 131, 0.14);
+  background: #ffffff;
 }
 
 .matrix-symbol {
-  color: var(--ink);
-  font-size: 16px;
+  color: #243141;
+  font-size: 17px;
   line-height: 1;
+  font-weight: 700;
 }
 
 .matrix-orb {
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 9px;
+  margin-top: 3px;
+  color: #4f6470;
+  font-size: 10px;
   font-weight: 700;
+  line-height: 1.05;
 }
 
-.data-table th,
-.data-table td {
-  padding: 9px 10px;
-  text-align: left;
+.matrix-cell.aspect-conjunction .matrix-symbol,
+.matrix-cell.aspect-conjunction .matrix-orb {
+  color: #7a5b3a;
 }
 
-.data-table th {
+.matrix-cell.aspect-sextile .matrix-symbol,
+.matrix-cell.aspect-sextile .matrix-orb {
+  color: #1f63c1;
+}
+
+.matrix-cell.aspect-square .matrix-symbol,
+.matrix-cell.aspect-square .matrix-orb {
+  color: #bf2f1b;
+}
+
+.matrix-cell.aspect-trine .matrix-symbol,
+.matrix-cell.aspect-trine .matrix-orb {
+  color: #16733c;
+}
+
+.matrix-cell.aspect-opposition .matrix-symbol,
+.matrix-cell.aspect-opposition .matrix-orb {
+  color: #8f2d24;
+}
+
+.symbol-cell,
+.center-cell,
+.position-cell {
+  text-align: center;
+}
+
+.position-cell strong,
+.center-cell strong {
+  display: block;
+  color: #1f2937;
+}
+
+.position-cell span,
+.cell-sub {
+  display: block;
+  margin-top: 3px;
   color: #667085;
   font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
-.data-table td {
-  color: #344054;
-  font-size: 12px;
-  line-height: 1.6;
+.classic-symbol-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 
-.data-table tbody tr:hover td {
-  background: rgba(29, 36, 48, 0.02);
+.classic-symbol {
+  color: #243141;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.classic-symbol-label {
+  color: #667085;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.classic-state {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(145, 179, 191, 0.45);
+  background: #f9fdfe;
+  color: #375564;
+  font-size: 11px;
+}
+
+.classic-state.domicile,
+.classic-state.exaltation {
+  background: rgba(88, 147, 103, 0.12);
+  color: #345844;
+}
+
+.classic-state.detriment,
+.classic-state.fall {
+  background: rgba(194, 104, 80, 0.12);
+  color: #7a4539;
 }
 
 .reader-grid {
@@ -2017,6 +2528,10 @@ function houseLine(house: unknown, title?: string) {
 
   .aspect-matrix {
     min-width: 680px;
+  }
+
+  .classic-table {
+    min-width: 640px;
   }
 }
 </style>

@@ -3,13 +3,13 @@
     <article class="methodPanel">
       <div class="introGrid">
         <div>
-          <div class="panelEyebrow">Reading Method</div>
+          <div class="panelEyebrow">怎么读这份报告</div>
           <h2 class="panelTitle">{{ guide.title }}</h2>
           <p class="panelSummary">{{ guide.summary }}</p>
         </div>
 
         <div class="beliefCard">
-          <div class="beliefEyebrow">Core Belief</div>
+          <div class="beliefEyebrow">核心判断</div>
           <p>{{ coreBelief }}</p>
         </div>
       </div>
@@ -25,7 +25,7 @@
       <details class="methodFold">
         <summary class="foldSummary">
           <div>
-            <div class="foldEyebrow">Methodology</div>
+            <div class="foldEyebrow">为什么先看这些</div>
             <div class="foldTitle">阅读原则与三组星体框架</div>
           </div>
           <span class="foldBadge">默认折叠 / 点击展开</span>
@@ -53,7 +53,7 @@
           </div>
 
           <div class="caseBlock">
-            <div class="foldEyebrow">Career & Wealth Rules</div>
+            <div class="foldEyebrow">事业和财富怎么判断</div>
             <div class="caseIntro">
               先把职业和财富的基础判断框架立住，再回头看真实案例，就不会被个别标签带偏。
             </div>
@@ -70,7 +70,7 @@
           </div>
 
           <div class="caseBlock">
-            <div class="foldEyebrow">Case Reference</div>
+            <div class="foldEyebrow">现实样例参考</div>
             <div class="caseIntro">
               用真实案例校正“事业格局”和“财富格局”的判断，不只看某一颗星，而是一起看四财宫、事业轴线、社交合作与相位支持。
             </div>
@@ -145,22 +145,22 @@ const GUIDE_BY_ANALYSIS: Record<
   natal_blueprint: {
     title: "这份本命蓝图先看什么",
     summary:
-      "先用本命蓝图定角色，再看结构和杠杆，最后回到星盘、相位和接纳表核对证据，不要一开始就陷进细节。",
+      "先直接回答你最关心的六个问题，再回头看星盘、相位、飞宫和接纳这些底层依据，不要一开始就陷进细节。",
     steps: [
       {
         step: "01",
-        title: "先定角色",
-        summary: "先回答你在社会里更像什么样的人，再决定后面的解读重点。",
+        title: "先看你是谁",
+        summary: "先确认你的底层角色、核心气质和现实里的主要发力方式。",
       },
       {
         step: "02",
-        title: "再看结构与杠杆",
-        summary: "把长期主轴、资源入口和放大结果的方式连起来看，才知道盘的核心运作。",
+        title: "再看你适合什么",
+        summary: "把适合做什么、怎么成事、怎么拿结果连起来看，才知道主轴在哪里。",
       },
       {
         step: "03",
-        title: "最后看代价与证据",
-        summary: "再回头看星盘、相位表、互溶和接纳表，校对优势会从哪里反噬。",
+        title: "最后看风险与证据",
+        summary: "再回头核对事业、财富、感情里的代价点，以及星盘和规则层的证据。",
       },
     ],
   },

@@ -302,20 +302,11 @@ class KlineDataModel(FlexibleModel):
     periods: list[PeriodModel]
 
 
-class LifeKlineReport(FlexibleModel):
-    meta: ReportMeta
-    user_info: UserInfo
-    kline_data: KlineDataModel
-    natal_chart: Optional[NatalChartModel] = None
-    current_phase: Optional[CurrentPhaseModel] = None
-    life_model: Optional[Dict[str, Any]] = None
-
-
 class ServiceResponse(FlexibleModel):
     status: str
     report_id: Optional[str] = None
     analysis: Optional[AnalysisDefinitionModel] = None
-    data: LifeKlineReport
+    data: Dict[str, Any]
 
 
 class AnalysisTypesResponse(FlexibleModel):
@@ -405,6 +396,15 @@ def run_analysis(input_data: AnalysisRequest) -> Dict[str, Any]:
         if input_data.analysis_type in {"phase_navigation", "natal_blueprint"}:
             subject = subjects[0]
             report = service.generate_report(
+                birth_time_iso=subject.birth_time,
+                lat=subject.lat,
+                lon=subject.lon,
+                timezone_offset=subject.timezone,
+                gender=subject.gender,
+            )
+        elif input_data.analysis_type == "monthly_lunar_return":
+            subject = subjects[0]
+            report = service.generate_monthly_lunar_return(
                 birth_time_iso=subject.birth_time,
                 lat=subject.lat,
                 lon=subject.lon,

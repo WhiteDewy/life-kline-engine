@@ -2,7 +2,7 @@
   <section class="card">
     <div class="head">
       <div>
-        <div class="eyebrow">Domain Projection</div>
+        <div class="eyebrow">领域分布</div>
         <h3 class="title">人生重点分布</h3>
         <p class="hint">
           把同一阶段拆成事业、财富、关系、健康、家庭五条线，帮助你看清哪一部分最值得你分配精力。

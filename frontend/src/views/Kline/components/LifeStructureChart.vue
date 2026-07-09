@@ -2,7 +2,7 @@
   <section class="sectionCard">
     <div class="sectionHead">
       <div>
-        <div class="eyebrow">Life Rhythm</div>
+        <div class="eyebrow">阶段节奏</div>
         <h2 class="title">人生阶段曲线</h2>
         <p class="hint">
           把人生拆成一个个阶段来看。你可以更直观地看到，什么时候适合推进，什么时候更适合沉淀、调整或重组。

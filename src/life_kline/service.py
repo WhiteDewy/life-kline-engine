@@ -19,6 +19,7 @@ from .constants import (
     ASPECT_CONFIG,
     CADENT_HOUSES,
     DOMICILE_SIGNS,
+    deg_diff,
     DETRIMENT_SIGNS,
     EXALTATION_SIGNS,
     FALL_SIGNS,
@@ -500,6 +501,28 @@ PLANET_ORBS: Dict[Planet, float] = {
     Planet.SATURN: 6.0,
 }
 
+SIDEREAL_MONTH_DAYS = 27.321661
+LUNAR_RETURN_ORB_DEGREES = 3.0
+LUNAR_RETURN_MOON_ASPECTS = [
+    {"key": "CONJUNCTION", "label": "合相", "angle": 0.0},
+    {"key": "SEXTILE", "label": "六合", "angle": 60.0},
+    {"key": "SQUARE", "label": "刑相", "angle": 90.0},
+    {"key": "TRINE", "label": "拱相", "angle": 120.0},
+    {"key": "QUINCUNX", "label": "梅花", "angle": 150.0},
+    {"key": "OPPOSITION", "label": "冲相", "angle": 180.0},
+]
+LUNAR_RETURN_WINDOW_PLANETS = [
+    Planet.SUN,
+    Planet.MERCURY,
+    Planet.VENUS,
+    Planet.MARS,
+    Planet.JUPITER,
+    Planet.SATURN,
+    Planet.URANUS,
+    Planet.NEPTUNE,
+    Planet.PLUTO,
+]
+
 
 def clamp(value: float, minimum: float, maximum: float) -> float:
     return max(minimum, min(maximum, value))
@@ -633,6 +656,126 @@ class LifeKlineService:
             birth_time_local = parsed_birth_time
             birth_time_utc = birth_time_local - timedelta(hours=timezone_offset)
         return birth_time_local, birth_time_utc
+
+    def _find_current_lunar_return(
+        self,
+        natal_chart: Any,
+        birth_time_utc: datetime,
+        reference_time_utc: datetime,
+    ) -> datetime:
+        natal_moon = natal_chart.get_planet_info(Planet.MOON)
+        if not natal_moon:
+            raise ValueError("Natal moon position is unavailable.")
+
+        natal_moon_longitude = self._absolute_longitude(natal_moon)
+        days_since_birth = max((reference_time_utc - birth_time_utc).total_seconds() / 86400.0, 0.0)
+        cycles_elapsed = max(int(days_since_birth // SIDEREAL_MONTH_DAYS), 0)
+
+        search_start = birth_time_utc + timedelta(days=max(cycles_elapsed - 1, 0) * SIDEREAL_MONTH_DAYS)
+        last_match: Optional[datetime] = None
+
+        for cycle_index in range(max(cycles_elapsed + 3, 4)):
+            target = self._find_lunar_return_near(
+                start_utc=search_start + timedelta(days=cycle_index * SIDEREAL_MONTH_DAYS),
+                natal_moon_longitude=natal_moon_longitude,
+                lat=natal_chart.location["lat"] if getattr(natal_chart, "location", None) else 0.0,
+                lon=natal_chart.location["lon"] if getattr(natal_chart, "location", None) else 0.0,
+            )
+            if target <= reference_time_utc:
+                last_match = target
+                continue
+            if last_match is not None:
+                return last_match
+            return target
+
+        if last_match is None:
+            raise ValueError("Failed to locate current lunar return.")
+        return last_match
+
+    def _find_nth_lunar_return_after(
+        self,
+        natal_chart: Any,
+        birth_time_utc: datetime,
+        start_time_utc: datetime,
+        count: int,
+    ) -> datetime:
+        natal_moon = natal_chart.get_planet_info(Planet.MOON)
+        if not natal_moon:
+            raise ValueError("Natal moon position is unavailable.")
+
+        natal_moon_longitude = self._absolute_longitude(natal_moon)
+        current = start_time_utc
+        found = 0
+
+        while found < count:
+            guess_days = max((current - birth_time_utc).total_seconds() / 86400.0, 0.0)
+            cycle_index = max(int(round(guess_days / SIDEREAL_MONTH_DAYS)), 0)
+            candidate = self._find_lunar_return_near(
+                start_utc=birth_time_utc + timedelta(days=cycle_index * SIDEREAL_MONTH_DAYS),
+                natal_moon_longitude=natal_moon_longitude,
+                lat=natal_chart.location["lat"] if getattr(natal_chart, "location", None) else 0.0,
+                lon=natal_chart.location["lon"] if getattr(natal_chart, "location", None) else 0.0,
+            )
+            if candidate <= current:
+                candidate = self._find_lunar_return_near(
+                    start_utc=birth_time_utc + timedelta(days=(cycle_index + 1) * SIDEREAL_MONTH_DAYS),
+                    natal_moon_longitude=natal_moon_longitude,
+                    lat=natal_chart.location["lat"] if getattr(natal_chart, "location", None) else 0.0,
+                    lon=natal_chart.location["lon"] if getattr(natal_chart, "location", None) else 0.0,
+                )
+            current = candidate + timedelta(minutes=1)
+            found += 1
+        return current - timedelta(minutes=1)
+
+    def _find_lunar_return_near(
+        self,
+        start_utc: datetime,
+        natal_moon_longitude: float,
+        lat: float,
+        lon: float,
+    ) -> datetime:
+        coarse_start = start_utc - timedelta(days=2)
+        coarse_end = start_utc + timedelta(days=2)
+        step = timedelta(hours=6)
+        best_time = coarse_start
+        best_value = 999.0
+
+        cursor = coarse_start
+        while cursor <= coarse_end:
+            moon_longitude = self._moon_longitude_at(cursor, lat, lon)
+            distance = deg_diff(moon_longitude, natal_moon_longitude)
+            if distance < best_value:
+                best_value = distance
+                best_time = cursor
+            cursor += step
+
+        left = best_time - timedelta(hours=6)
+        right = best_time + timedelta(hours=6)
+
+        for delta_seconds in (3600, 300, 60, 1):
+            current = left
+            local_best_time = current
+            local_best_value = 999.0
+            local_step = timedelta(seconds=delta_seconds)
+            while current <= right:
+                moon_longitude = self._moon_longitude_at(current, lat, lon)
+                distance = deg_diff(moon_longitude, natal_moon_longitude)
+                if distance < local_best_value:
+                    local_best_value = distance
+                    local_best_time = current
+                current += local_step
+            left = local_best_time - local_step
+            right = local_best_time + local_step
+            best_time = local_best_time
+
+        return best_time
+
+    def _moon_longitude_at(self, dt_utc: datetime, lat: float, lon: float) -> float:
+        chart = self.engine.calculate_chart(dt_utc, lat, lon)
+        moon = chart.get_planet_info(Planet.MOON)
+        if not moon:
+            raise ValueError("Moon position is unavailable.")
+        return self._absolute_longitude(moon)
 
     def _build_aspect_cache(self, chart: Any) -> Dict[Planet, list[Dict[str, Any]]]:
         cache: Dict[Planet, list[Dict[str, Any]]] = {planet: [] for planet in TRADITIONAL_PLANETS}
@@ -1165,6 +1308,7 @@ class LifeKlineService:
                     "strategy": profile["strategy"],
                     "aspect_signature": profile["aspect_signature"],
                     "reason": profile["reason"],
+                    "speed": round(float(getattr(info, "speed", 0.0)), 6),
                     "longitude": longitude,
                 }
                 continue
@@ -1180,6 +1324,7 @@ class LifeKlineService:
                 "degree": round(info.degree, 6),
                 "retrograde": bool(getattr(info, "is_retrograde", False)),
                 "reason": f"{planet_label(planet)}落在{house_title}，用于补充本命盘的完整轮盘视图。",
+                "speed": round(float(getattr(info, "speed", 0.0)), 6),
                 "longitude": longitude,
             }
 
@@ -1705,6 +1850,45 @@ class LifeKlineService:
                 "12宫火星不是简单的内耗，而是幕后冲突、清算与晚年回收机制。",
             ]
 
+        self_profile = self._build_self_profile(
+            natal_chart=natal_chart,
+            planet_profiles=planet_profiles,
+            role_title=role_title,
+            chart_ruler_line=chart_ruler_line,
+            chart_ruler_profile=chart_ruler_profile,
+            house_map=house_map,
+            pattern_readings=pattern_readings,
+            pressure_points=pressure_points,
+        )
+        career_blueprint = self._build_career_blueprint(
+            natal_chart=natal_chart,
+            planet_profiles=planet_profiles,
+            role_title=role_title,
+            house_map=house_map,
+            ruler_groups=group_map,
+            reception_groups=reception_groups,
+            mutual_receptions=mutual_receptions,
+        )
+        theory_basis = self._build_blueprint_theory_basis(
+            natal_chart=natal_chart,
+            chart_ruler_line=chart_ruler_line,
+            house_map=house_map,
+            pattern_readings=pattern_readings,
+            reception_groups=reception_groups,
+            mutual_receptions=mutual_receptions,
+        )
+        question_sections = self._build_blueprint_question_sections(
+            natal_chart=natal_chart,
+            planet_profiles=planet_profiles,
+            role_title=role_title,
+            chart_ruler_line=chart_ruler_line,
+            chart_ruler_profile=chart_ruler_profile,
+            house_map=house_map,
+            pattern_readings=pattern_readings,
+            pressure_points=pressure_points,
+            career_blueprint=career_blueprint,
+        )
+
         return {
             "role_title": role_title,
             "summary": self._build_blueprint_summary(
@@ -1726,33 +1910,10 @@ class LifeKlineService:
                 pressure_points=pressure_points,
                 hidden_line=line_12["line"] if line_12 else None,
             ),
-            "self_profile": self._build_self_profile(
-                natal_chart=natal_chart,
-                planet_profiles=planet_profiles,
-                role_title=role_title,
-                chart_ruler_line=chart_ruler_line,
-                chart_ruler_profile=chart_ruler_profile,
-                house_map=house_map,
-                pattern_readings=pattern_readings,
-                pressure_points=pressure_points,
-            ),
-            "career_blueprint": self._build_career_blueprint(
-                natal_chart=natal_chart,
-                planet_profiles=planet_profiles,
-                role_title=role_title,
-                house_map=house_map,
-                ruler_groups=group_map,
-                reception_groups=reception_groups,
-                mutual_receptions=mutual_receptions,
-            ),
-            "theory_basis": self._build_blueprint_theory_basis(
-                natal_chart=natal_chart,
-                chart_ruler_line=chart_ruler_line,
-                house_map=house_map,
-                pattern_readings=pattern_readings,
-                reception_groups=reception_groups,
-                mutual_receptions=mutual_receptions,
-            ),
+            "self_profile": self_profile,
+            "career_blueprint": career_blueprint,
+            "theory_basis": theory_basis,
+            "question_sections": question_sections,
             "layers": [
                 {
                     "key": "structure",
@@ -2613,6 +2774,679 @@ class LifeKlineService:
             "chips": ["星体", "星座", "宫位", "宫主星飞宫", "末5°飞宫", "相位", "互溶接纳", "转宫"],
             "points": points,
         }
+
+    def _build_blueprint_question_sections(
+        self,
+        natal_chart: Dict[str, Any],
+        planet_profiles: Dict[Planet, Dict[str, Any]],
+        role_title: str,
+        chart_ruler_line: str,
+        chart_ruler_profile: Optional[Dict[str, Any]],
+        house_map: Dict[int, Dict[str, Any]],
+        pattern_readings: list[Dict[str, Any]],
+        pressure_points: list[Dict[str, Any]],
+        career_blueprint: Dict[str, Any],
+    ) -> list[Dict[str, Any]]:
+        sections: list[Dict[str, Any]] = []
+        houses = natal_chart.get("house_emphasis", [])
+        aspects = natal_chart.get("major_aspects", [])
+        top_aspect = aspects[0]["title"] if aspects else None
+        line_2 = house_map.get(2)
+        line_3 = house_map.get(3)
+        line_5 = house_map.get(5)
+        line_7 = house_map.get(7)
+        line_8 = house_map.get(8)
+        line_9 = house_map.get(9)
+        line_10 = house_map.get(10)
+        line_11 = house_map.get(11)
+        line_12 = house_map.get(12)
+
+        sun_profile = planet_profiles.get(Planet.SUN)
+        moon_profile = planet_profiles.get(Planet.MOON)
+        mercury_profile = planet_profiles.get(Planet.MERCURY)
+        venus_profile = planet_profiles.get(Planet.VENUS)
+        jupiter_profile = planet_profiles.get(Planet.JUPITER)
+
+        wealth_pattern = next(
+            (item for item in pattern_readings if item.get("key") == "wealth_pattern"),
+            None,
+        )
+        career_pattern = next(
+            (item for item in pattern_readings if item.get("key") == "career_pattern"),
+            None,
+        )
+        alliance_pattern = next(
+            (item for item in pattern_readings if item.get("key") in {"alliance_axis", "partner_profile"}),
+            None,
+        )
+
+        sections.append(
+            self._blueprint_question_section(
+                key="identity",
+                question="我是什么样的人",
+                answer=self._identity_answer(
+                    role_title=role_title,
+                    chart_ruler_profile=chart_ruler_profile,
+                    houses=houses,
+                    sun_profile=sun_profile,
+                    moon_profile=moon_profile,
+                    top_aspect=top_aspect,
+                ),
+                takeaways=self._unique_strings(
+                    [
+                        self._identity_takeaway(chart_ruler_profile, chart_ruler_line),
+                        self._sun_takeaway(sun_profile),
+                        self._moon_takeaway(moon_profile),
+                    ]
+                )[:3],
+                risks=self._question_risks(
+                    [
+                        self._pain_focus_line(pressure_points[0]) if pressure_points else None,
+                        f"显眼相位“{top_aspect}”说明你的人生不会只走单线，几股力量很容易互相牵动。" if top_aspect else None,
+                    ]
+                ),
+                actions=self._unique_strings(
+                    [
+                        chart_ruler_profile.get("strategy") if chart_ruler_profile else None,
+                        self._identity_action(chart_ruler_profile, houses),
+                    ]
+                )[:2],
+                evidence=self._unique_strings(
+                    [
+                        role_title,
+                        chart_ruler_line,
+                        top_aspect,
+                        f"重点宫位 {self._format_house_titles(houses[:3])}" if houses else None,
+                    ]
+                )[:5],
+            )
+        )
+
+        career_paths = list(career_blueprint.get("paths", []))
+        top_career = career_paths[0] if career_paths else None
+        sections.append(
+            self._blueprint_question_section(
+                key="fit",
+                question="我适合做什么事情",
+                answer=self._fit_answer(top_career, chart_ruler_profile, line_10, line_11),
+                takeaways=self._unique_strings(
+                    [
+                        self._fit_takeaway(top_career),
+                        top_career.get("track_reason") if top_career else None,
+                        self._second_path_takeaway(career_paths[1]) if len(career_paths) > 1 else None,
+                    ]
+                )[:3],
+                risks=self._question_risks(
+                    [
+                        top_career.get("risk_summary") if top_career else None,
+                        "不要只看自己会不会做，更要看这条路的节奏、压力和收尾成本你能不能长期扛住。",
+                    ]
+                ),
+                actions=self._unique_strings(
+                    [
+                        self._fit_action(top_career, line_10, line_11),
+                        self._line_action(line_11, "资源放大"),
+                    ]
+                )[:2],
+                evidence=self._unique_strings(
+                    [
+                        top_career["title"] if top_career else None,
+                        top_career["track_label"] if top_career else None,
+                        line_10["line"] if line_10 else None,
+                        line_11["line"] if line_11 else None,
+                    ]
+                )[:5],
+            )
+        )
+
+        sections.append(
+            self._blueprint_question_section(
+                key="study",
+                question="我的学业怎么样",
+                answer=self._study_answer(mercury_profile, line_3, line_9),
+                takeaways=self._unique_strings(
+                    [
+                        self._study_takeaway(mercury_profile),
+                        self._house_line_takeaway(line_3, "学习和表达"),
+                        self._house_line_takeaway(line_9, "高阶学习和认知升级"),
+                    ]
+                )[:3],
+                risks=self._question_risks(
+                    [
+                        self._study_risk(mercury_profile),
+                        "这类盘最怕的不是学不会，而是前期吸收很快、后期沉淀不够，最后变成知道很多、留下很少。",
+                    ]
+                ),
+                actions=self._unique_strings(
+                    [
+                        mercury_profile.get("strategy") if mercury_profile else None,
+                        self._study_action(mercury_profile, line_3, line_9),
+                    ]
+                )[:2],
+                evidence=self._unique_strings(
+                    [
+                        line_3["line"] if line_3 else None,
+                        line_9["line"] if line_9 else None,
+                        mercury_profile["aspect_signature"][0] if mercury_profile and mercury_profile.get("aspect_signature") else None,
+                    ]
+                )[:5],
+            )
+        )
+
+        sections.append(
+            self._blueprint_question_section(
+                key="career",
+                question="我的事业怎么样",
+                answer=self._career_answer(career_pattern, line_10, line_11),
+                takeaways=self._unique_strings(
+                    [
+                        self._career_takeaway(career_pattern, 0),
+                        self._career_takeaway(career_pattern, 1),
+                        self._house_line_takeaway(line_3, "表达、传播和信息处理"),
+                    ]
+                )[:3],
+                risks=self._question_risks(
+                    [
+                        career_pattern.get("risk_summary") if career_pattern else None,
+                        f"12宫主链路是“{line_12['line']}”，说明事业里还夹带幕后消耗、延迟回收或后期清算成本。" if line_12 else None,
+                    ]
+                ),
+                actions=self._unique_strings(
+                    [
+                        self._career_action(line_10, career_pattern),
+                        self._line_action(line_11, "事业放大"),
+                    ]
+                )[:2],
+                evidence=self._unique_strings(
+                    [
+                        line_10["line"] if line_10 else None,
+                        line_11["line"] if line_11 else None,
+                        career_pattern["evidence"][0] if career_pattern and career_pattern.get("evidence") else None,
+                    ]
+                )[:5],
+            )
+        )
+
+        sections.append(
+            self._blueprint_question_section(
+                key="wealth",
+                question="我的财富怎么样",
+                answer=self._wealth_answer(wealth_pattern, line_2, line_5, line_8, line_11),
+                takeaways=self._unique_strings(
+                    [
+                        self._wealth_takeaway(wealth_pattern, 0),
+                        self._wealth_takeaway(wealth_pattern, 3),
+                        self._house_line_takeaway(line_5, "偏财、创作和高波动收益"),
+                    ]
+                )[:3],
+                risks=self._question_risks(
+                    [
+                        wealth_pattern.get("risk_summary") if wealth_pattern else None,
+                        f"8宫主链路是“{line_8['line']}”，共享资源、分成、债务和绑定代价绝对不能忽视。" if line_8 else None,
+                    ]
+                ),
+                actions=self._unique_strings(
+                    [
+                        self._wealth_action(line_2, line_5, line_8, line_11),
+                        self._line_action(line_8, "合作、分成、投资和借力的钱"),
+                    ]
+                )[:2],
+                evidence=self._unique_strings(
+                    [
+                        wealth_pattern["evidence"][0] if wealth_pattern and wealth_pattern.get("evidence") else None,
+                        line_8["line"] if line_8 else None,
+                        line_11["line"] if line_11 else None,
+                    ]
+                )[:5],
+            )
+        )
+
+        relationship_answer = "感情和伴侣要看7宫，不只是看桃花多不多，而是看你会通过什么样的人进入更大的关系、合作和资源系统。"
+        if alliance_pattern:
+            relationship_answer = self._relationship_answer(alliance_pattern, line_7, line_12, venus_profile, line_5)
+        sections.append(
+            self._blueprint_question_section(
+                key="relationship",
+                question="我的桃花和伴侣怎么样",
+                answer=relationship_answer,
+                takeaways=self._unique_strings(
+                    [
+                        self._relationship_takeaway(alliance_pattern, 0),
+                        self._relationship_takeaway(alliance_pattern, 1),
+                        self._relationship_venus_takeaway(venus_profile),
+                    ]
+                )[:3],
+                risks=self._question_risks(
+                    [
+                        self._relationship_risk(venus_profile),
+                        f"12宫主链路是“{line_12['line']}”，关系里要防隐线、拖延、回收成本和看不见的外部变量。" if line_12 else None,
+                    ]
+                ),
+                actions=self._unique_strings(
+                    [
+                        venus_profile.get("strategy") if venus_profile else None,
+                        self._relationship_action(venus_profile, line_7, line_5),
+                    ]
+                )[:2],
+                evidence=self._unique_strings(
+                    [
+                        line_7["line"] if line_7 else None,
+                        line_12["line"] if line_12 else None,
+                        jupiter_profile["aspect_signature"][0] if jupiter_profile and jupiter_profile.get("aspect_signature") else None,
+                    ]
+                )[:5],
+            )
+        )
+
+        return sections
+
+    def _blueprint_question_section(
+        self,
+        key: str,
+        question: str,
+        answer: str,
+        takeaways: list[str],
+        risks: list[str],
+        actions: list[str],
+        evidence: list[str],
+    ) -> Dict[str, Any]:
+        return {
+            "key": key,
+            "question": question,
+            "answer": answer,
+            "takeaways": takeaways[:3],
+            "risks": risks[:2],
+            "actions": actions[:2],
+            "evidence": evidence[:6],
+        }
+
+    def _question_risks(self, values: Iterable[Optional[str]]) -> list[str]:
+        return self._unique_strings([item for item in values if item])[:2]
+
+    def _profile_placement_line(self, profile: Optional[Dict[str, Any]]) -> Optional[str]:
+        if not profile:
+            return None
+        return (
+            f"{profile['label']}落{profile['sign_label']}第{profile['house']}宫（{profile['house_title']}），"
+            f"先天状态是{profile['dignity_label']}"
+        )
+
+    def _profile_reality_field(self, profile: Optional[Dict[str, Any]]) -> Optional[str]:
+        if not profile:
+            return None
+        return HOUSE_ADULT_MEANINGS.get(profile["house"], {}).get("adult", profile["house_title"])
+
+    def _line_reality_text(self, line: Optional[Dict[str, Any]], topic: str) -> Optional[str]:
+        if not line:
+            return None
+        return (
+            f"{topic}会顺着“{line['line']}”落到第{line['ruler_house']}宫 "
+            f"{line['ruler_house_title']}，不是抽象判断。"
+        )
+
+    def _line_action(self, line: Optional[Dict[str, Any]], topic: str) -> Optional[str]:
+        if not line:
+            return None
+        house_adult = HOUSE_ADULT_MEANINGS.get(line["ruler_house"], {}).get("adult", line["ruler_house_title"])
+        return (
+            f"{topic}不要泛泛用力，优先经营第{line['ruler_house']}宫 {line['ruler_house_title']}对应的"
+            f"{house_adult}，因为“{line['line']}”说明结果会从这里打开。"
+        )
+
+    def _identity_action(
+        self,
+        chart_ruler_profile: Optional[Dict[str, Any]],
+        houses: list[Dict[str, Any]],
+    ) -> Optional[str]:
+        if chart_ruler_profile:
+            field = self._profile_reality_field(chart_ruler_profile)
+            return f"先把{field}做成稳定标签，再向外扩张；你的命主星不适合脱离这个现实场景空谈定位。"
+        if houses:
+            return f"先围绕{self._format_house_titles(houses[:2])}建立可被看见的成果，再判断自己适合什么身份。"
+        return None
+
+    def _fit_action(
+        self,
+        top_career: Optional[Dict[str, Any]],
+        line_10: Optional[Dict[str, Any]],
+        line_11: Optional[Dict[str, Any]],
+    ) -> Optional[str]:
+        if top_career:
+            track = top_career.get("track_label") or top_career.get("fit_label") or "主职业"
+            return f"先用“{top_career['title']}”作为{track}测试三到六个月，看它是否真的带来作品、位置或资源，而不是只停留在兴趣。"
+        return self._line_action(line_10 or line_11, "职业选择")
+
+    def _study_action(
+        self,
+        mercury_profile: Optional[Dict[str, Any]],
+        line_3: Optional[Dict[str, Any]],
+        line_9: Optional[Dict[str, Any]],
+    ) -> Optional[str]:
+        if mercury_profile:
+            field = self._profile_reality_field(mercury_profile)
+            return f"学习上不要只堆输入，要把{mercury_profile['gift']}落到{field}，用证书、作品、课程、论文或内容输出验证。"
+        return self._line_action(line_3 or line_9, "学习")
+
+    def _career_action(
+        self,
+        line_10: Optional[Dict[str, Any]],
+        career_pattern: Optional[Dict[str, Any]],
+    ) -> Optional[str]:
+        if line_10:
+            house_adult = HOUSE_ADULT_MEANINGS.get(line_10["ruler_house"], {}).get("adult", line_10["ruler_house_title"])
+            return f"事业上先把第{line_10['ruler_house']}宫 {line_10['ruler_house_title']}对应的{house_adult}做出结果，再去争取更大的头衔和位置。"
+        if career_pattern:
+            return career_pattern.get("points", [None])[0]
+        return None
+
+    def _wealth_action(
+        self,
+        line_2: Optional[Dict[str, Any]],
+        line_5: Optional[Dict[str, Any]],
+        line_8: Optional[Dict[str, Any]],
+        line_11: Optional[Dict[str, Any]],
+    ) -> Optional[str]:
+        if line_2:
+            return self._line_action(line_2, "正财和现金流")
+        if line_8:
+            return self._line_action(line_8, "合伙资金和风险筹码")
+        if line_11:
+            return self._line_action(line_11, "平台型财富")
+        if line_5:
+            return self._line_action(line_5, "偏财和创作收益")
+        return None
+
+    def _relationship_action(
+        self,
+        venus_profile: Optional[Dict[str, Any]],
+        line_7: Optional[Dict[str, Any]],
+        line_5: Optional[Dict[str, Any]],
+    ) -> Optional[str]:
+        if line_7:
+            return self._line_action(line_7, "伴侣、客户、合作和契约关系")
+        if venus_profile:
+            return f"关系里先看对方能不能承接{self._profile_reality_field(venus_profile)}，不要只被一时吸引力带着走。"
+        return self._line_action(line_5, "桃花和恋爱感")
+
+    def _identity_answer(
+        self,
+        role_title: str,
+        chart_ruler_profile: Optional[Dict[str, Any]],
+        houses: list[Dict[str, Any]],
+        sun_profile: Optional[Dict[str, Any]] = None,
+        moon_profile: Optional[Dict[str, Any]] = None,
+        top_aspect: Optional[str] = None,
+    ) -> str:
+        parts: list[str] = [f"你不是泛泛的“某一类人”，这张盘更像“{role_title}”。"]
+        placement = self._profile_placement_line(chart_ruler_profile)
+        if placement and chart_ruler_profile:
+            parts.append(
+                f"核心差异在命主星：{placement}，你起手靠的是{chart_ruler_profile['gift']}，"
+                f"现实里会优先在{self._profile_reality_field(chart_ruler_profile)}这类场景被看见。"
+            )
+        if sun_profile:
+            parts.append(
+                f"太阳线显示你想成为的人，重心会落在{self._profile_reality_field(sun_profile)}；"
+                f"这和别人只看太阳星座得出的结论会不一样。"
+            )
+        if moon_profile:
+            parts.append(
+                f"月亮线则说明真正让你稳定下来的，是{self._profile_reality_field(moon_profile)}，"
+                "所以你的情绪和安全感不能脱离这个现实场景去谈。"
+            )
+        if houses:
+            parts.append(f"重点宫位集中在{self._format_house_titles(houses[:3])}，这些才是你反复成事、也反复被考验的地方。")
+        if top_aspect:
+            parts.append(f"再加上显眼相位“{top_aspect}”，你的性格不会是单线条，而是几股力量同时拉扯后形成的结果。")
+        return "".join(parts[:5])
+
+    def _fit_answer(
+        self,
+        top_career: Optional[Dict[str, Any]],
+        chart_ruler_profile: Optional[Dict[str, Any]],
+        line_10: Optional[Dict[str, Any]],
+        line_11: Optional[Dict[str, Any]],
+    ) -> str:
+        if top_career:
+            track = top_career.get("track_label") or top_career.get("fit_label") or "优先路径"
+            score = top_career.get("fit_score")
+            score_text = f"，匹配度约{score:.1f}" if isinstance(score, (int, float)) else ""
+            reasons = self._unique_strings(
+                [
+                    f"命主星落点给你的起手能力是{chart_ruler_profile['gift']}" if chart_ruler_profile else None,
+                    self._line_reality_text(line_10, "事业线"),
+                    self._line_reality_text(line_11, "平台与人脉线"),
+                    top_career.get("track_reason"),
+                ]
+            )
+            return (
+                f"更适合优先经营“{top_career['title']}”这条线，属于“{track}”{score_text}。"
+                f"原因不是模板推荐，而是{'；'.join(reasons[:3])}。"
+            )
+        if chart_ruler_profile and line_10:
+            return (
+                f"你适合做那些能把{chart_ruler_profile['gift']}真正落到{line_10['ruler_house_title']}这类现实场景里的事，"
+                "而不是只追一阵子的热度。"
+            )
+        if line_11:
+            return f"你适合做那些能借平台、社群、合作或网络被持续放大的事。"
+        return "你适合做那些能让命主线、事业线和资源线一起发力的事，而不是只追短期热度。"
+
+    def _study_answer(
+        self,
+        mercury_profile: Optional[Dict[str, Any]],
+        line_3: Optional[Dict[str, Any]],
+        line_9: Optional[Dict[str, Any]],
+    ) -> str:
+        if mercury_profile:
+            parts = [
+                f"学业首先看水星：{self._profile_placement_line(mercury_profile)}，"
+                f"所以你的学习方式不是通用模板，而是要把{mercury_profile['gift']}练成稳定输出。"
+            ]
+            if line_3:
+                parts.append(self._line_reality_text(line_3, "基础学习、表达和技能线") or "")
+            if line_9:
+                parts.append(self._line_reality_text(line_9, "高阶学习、学历和认知升级线") or "")
+            parts.append("成绩好不好，关键不只在努力，而在于能不能把理解、表达和作品沉淀接起来。")
+            return "".join(item for item in parts if item)
+        return "你的学业不能只看考试那一下，更要看学习力、理解力和表达力，能不能被长期做成结果。"
+
+    def _career_answer(
+        self,
+        career_pattern: Optional[Dict[str, Any]],
+        line_10: Optional[Dict[str, Any]],
+        line_11: Optional[Dict[str, Any]],
+    ) -> str:
+        parts: list[str] = []
+        if career_pattern:
+            parts.append(career_pattern.get("summary") or "你的事业不是做不出来，关键不在蛮冲，而在于方法是不是走对了路。")
+        if line_10:
+            parts.append(self._line_reality_text(line_10, "事业、头衔和公开位置") or "")
+        if line_11:
+            parts.append(self._line_reality_text(line_11, "平台、团队和资源网络") or "")
+        if parts:
+            return "".join(item for item in parts if item)
+        if line_10 and line_11:
+            return (
+                f"你的事业不是没有格局，关键在于能不能沿着“{line_10['line']}”把位置先做出来，"
+                f"再通过“{line_11['line']}”把影响力和结果放大。"
+            )
+        return "事业能不能做出来，关键看10宫主怎么落地，以及你愿不愿意长期经营这条职业主轴。"
+
+    def _wealth_answer(
+        self,
+        wealth_pattern: Optional[Dict[str, Any]],
+        line_2: Optional[Dict[str, Any]],
+        line_5: Optional[Dict[str, Any]],
+        line_8: Optional[Dict[str, Any]],
+        line_11: Optional[Dict[str, Any]],
+    ) -> str:
+        parts: list[str] = []
+        if wealth_pattern:
+            parts.append(wealth_pattern.get("summary") or "你有挣钱能力，但钱能不能留下，和钱从哪里来同样重要。")
+        if line_2:
+            parts.append(self._line_reality_text(line_2, "正财、现金流和可支配资源") or "")
+        if line_5:
+            parts.append(self._line_reality_text(line_5, "偏财、创作和高波动收益") or "")
+        if line_8:
+            parts.append(self._line_reality_text(line_8, "合伙资金、分成和风险筹码") or "")
+        if line_11:
+            parts.append(self._line_reality_text(line_11, "平台、人脉和众财池") or "")
+        if parts:
+            return "".join(item for item in parts[:4] if item)
+        if line_8 and line_11:
+            return (
+                "你的财路不太像单靠一份固定收入慢慢累积，更像会被平台资源、合作关系和共享利益一起牵动。"
+            )
+        return "财运不能只看会不会挣钱，还要一起看钱从哪里来、靠什么放大、又会从哪里漏掉。"
+
+    def _relationship_answer(
+        self,
+        alliance_pattern: Dict[str, Any],
+        line_7: Optional[Dict[str, Any]],
+        line_12: Optional[Dict[str, Any]],
+        venus_profile: Optional[Dict[str, Any]] = None,
+        line_5: Optional[Dict[str, Any]] = None,
+    ) -> str:
+        parts: list[str] = []
+        summary = alliance_pattern.get("summary")
+        if summary:
+            parts.append(summary)
+        if line_7:
+            parts.append(self._line_reality_text(line_7, "伴侣、客户、合作和契约关系") or "")
+        if venus_profile:
+            parts.append(
+                f"金星这条吸引力线是{self._profile_placement_line(venus_profile)}，"
+                f"你在关系里真正会被触动的，是{self._profile_reality_field(venus_profile)}。"
+            )
+        if line_5:
+            parts.append(self._line_reality_text(line_5, "桃花、恋爱感和短期心动") or "")
+        if line_12:
+            parts.append("同时要看12宫隐线，关系里有没有拖延、暗线、消耗和回收成本，不能只看当下甜不甜。")
+        if parts:
+            return "".join(parts[:4])
+        return "感情和伴侣要看7宫，不只是看桃花多不多，而是看你会通过什么样的人进入更大的关系、合作和资源系统。"
+
+    def _identity_takeaway(
+        self,
+        chart_ruler_profile: Optional[Dict[str, Any]],
+        chart_ruler_line: str,
+    ) -> Optional[str]:
+        if not chart_ruler_profile:
+            return chart_ruler_line
+        return (
+            f"你的命主线是“{chart_ruler_line}”，说明你的人生起手真正靠的是"
+            f"{chart_ruler_profile['gift']}，不是靠空泛概念。"
+        )
+
+    def _sun_takeaway(self, sun_profile: Optional[Dict[str, Any]]) -> Optional[str]:
+        if not sun_profile:
+            return None
+        return (
+            f"太阳落在第{sun_profile['house']}宫 {sun_profile['house_title']}，"
+            f"你真正想成的人，会把重心放在{HOUSE_ADULT_MEANINGS.get(sun_profile['house'], {}).get('adult', sun_profile['house_title'])}。"
+        )
+
+    def _moon_takeaway(self, moon_profile: Optional[Dict[str, Any]]) -> Optional[str]:
+        if not moon_profile:
+            return None
+        return (
+            f"月亮落在第{moon_profile['house']}宫 {moon_profile['house_title']}，"
+            f"你的安全感不是抽象的，而是要在{HOUSE_ADULT_MEANINGS.get(moon_profile['house'], {}).get('adult', moon_profile['house_title'])}里被安放。"
+        )
+
+    def _fit_takeaway(self, top_career: Optional[Dict[str, Any]]) -> Optional[str]:
+        if not top_career:
+            return None
+        return (
+            f"眼下最值得优先经营的职业方向，是“{top_career['track_label'] or top_career['fit_label']}”里的"
+            f"“{top_career['title']}”。"
+        )
+
+    def _second_path_takeaway(self, path: Optional[Dict[str, Any]]) -> Optional[str]:
+        if not path:
+            return None
+        return f"第二顺位可以看“{path['title']}”，它更像补充线或放大线，不一定要一开始就当成第一主轴。"
+
+    def _study_takeaway(self, mercury_profile: Optional[Dict[str, Any]]) -> Optional[str]:
+        if not mercury_profile:
+            return None
+        return (
+            f"水星落在第{mercury_profile['house']}宫 {mercury_profile['house_title']}，"
+            f"说明你最该练的不是死记，而是把{mercury_profile['gift']}变成稳定输出。"
+        )
+
+    def _study_risk(self, mercury_profile: Optional[Dict[str, Any]]) -> Optional[str]:
+        if not mercury_profile:
+            return None
+        return (
+            f"学业上真正要防的不是不聪明，而是{mercury_profile['shadow']}，"
+            f"尤其在{HOUSE_ADULT_MEANINGS.get(mercury_profile['house'], {}).get('adult', mercury_profile['house_title'])}这类场景里最容易失手。"
+        )
+
+    def _career_takeaway(
+        self,
+        career_pattern: Optional[Dict[str, Any]],
+        index: int,
+    ) -> Optional[str]:
+        if not career_pattern:
+            return None
+        points = career_pattern.get("points", [])
+        if len(points) <= index:
+            return None
+        return points[index]
+
+    def _wealth_takeaway(
+        self,
+        wealth_pattern: Optional[Dict[str, Any]],
+        index: int,
+    ) -> Optional[str]:
+        if not wealth_pattern:
+            return None
+        points = wealth_pattern.get("points", [])
+        if len(points) <= index:
+            return None
+        return points[index]
+
+    def _relationship_takeaway(
+        self,
+        alliance_pattern: Optional[Dict[str, Any]],
+        index: int,
+    ) -> Optional[str]:
+        if not alliance_pattern:
+            return None
+        points = alliance_pattern.get("points", [])
+        if len(points) <= index:
+            return None
+        return points[index]
+
+    def _relationship_venus_takeaway(self, venus_profile: Optional[Dict[str, Any]]) -> Optional[str]:
+        if not venus_profile:
+            return None
+        return (
+            f"金星落在第{venus_profile['house']}宫 {venus_profile['house_title']}，"
+            f"你在感情里真正在意的，不只是心动，而是这段关系有没有现实承接力。"
+        )
+
+    def _relationship_risk(self, venus_profile: Optional[Dict[str, Any]]) -> Optional[str]:
+        if not venus_profile:
+            return None
+        return (
+            f"感情里最要防的是{venus_profile['shadow']}，"
+            f"一失衡就容易把关系做成彼此消耗，而不是互相托举。"
+        )
+
+    def _house_line_takeaway(self, line: Optional[Dict[str, Any]], topic: str) -> Optional[str]:
+        if not line:
+            return None
+        return f"{line['line']}说明你的{topic}，最后会通过第{line['ruler_house']}宫 {line['ruler_house_title']}这种场景落地。"
+
+    def _pain_focus_line(self, point: Dict[str, Any]) -> Optional[str]:
+        label = point.get("label")
+        reason = point.get("reason")
+        if label and reason:
+            return f"你最容易卡住的点在{label}：{reason}"
+        return reason or label
 
     def _classify_career_track(
         self,
@@ -4133,21 +4967,22 @@ class LifeKlineService:
             house_stem = HOUSE_ROLE_STEMS.get(chart_ruler_profile["house"], "核心")
             planet_stem = PLANET_ROLE_STEMS.get(chart_ruler_planet, natal_chart.get("chart_ruler_label", "命主"))
             ending = PLANET_ROLE_ENDINGS.get(chart_ruler_planet, "组织者")
+            sign_prefix = str(chart_ruler_profile.get("sign_label", "")).replace("座", "")
 
             if chart_ruler_planet == Planet.MERCURY and chart_ruler_profile["house"] == 11:
-                return "社群信息型组织者"
+                return f"{sign_prefix}社群信息型组织者"
             if chart_ruler_planet == Planet.MERCURY and chart_ruler_profile["house"] in {3, 10}:
-                return "传播信息型推进者"
+                return f"{sign_prefix}传播信息型推进者"
             if chart_ruler_planet == Planet.JUPITER and 7 in top_houses:
-                return "联盟扩张型整合者"
+                return f"{sign_prefix}联盟扩张型整合者"
             if chart_ruler_planet == Planet.SATURN and chart_ruler_profile["house"] in {9, 10}:
-                return "理念结构型架构者"
+                return f"{sign_prefix}理念结构型架构者"
             if chart_ruler_planet == Planet.VENUS and chart_ruler_profile["house"] in {7, 10}:
-                return "关系经营型整合者"
+                return f"{sign_prefix}关系经营型整合者"
             if chart_ruler_planet == Planet.MARS and chart_ruler_profile["house"] in {1, 10}:
-                return "行动攻坚型推进者"
+                return f"{sign_prefix}行动攻坚型推进者"
 
-            return f"{house_stem}{planet_stem}型{ending}"
+            return f"{sign_prefix}{house_stem}{planet_stem}型{ending}"
 
         if 3 in top_houses and chart_ruler == Planet.MERCURY.value:
             if 7 in top_houses or any(profile["house"] == 7 for profile in planet_profiles.values()):
@@ -4283,3 +5118,391 @@ class LifeKlineService:
         degree = getattr(info, "degree", 0.0)
         sign_index = list(Sign).index(sign)
         return sign_index * 30.0 + degree
+
+    def generate_monthly_lunar_return(
+        self,
+        birth_time_iso: str,
+        lat: float,
+        lon: float,
+        timezone_offset: float = 8.0,
+        gender: Optional[str] = None,
+        reference_time_utc: Optional[datetime] = None,
+    ) -> Dict[str, Any]:
+        birth_time_local, birth_time_utc = self._parse_birth_time(birth_time_iso, timezone_offset)
+        natal_chart = self.engine.calculate_chart(birth_time_utc, lat, lon)
+        natal_aspect_cache = self._build_aspect_cache(natal_chart)
+        natal_profiles = self._build_planet_profiles(natal_chart, natal_aspect_cache)
+        natal_chart_payload = self._build_natal_chart(
+            natal_chart,
+            natal_profiles,
+            natal_aspect_cache,
+            birth_time_utc=birth_time_utc,
+            lat=lat,
+            lon=lon,
+        )
+
+        if reference_time_utc is None:
+            reference_time_utc = datetime.utcnow()
+
+        natal_moon = natal_chart.get_planet_info(Planet.MOON)
+        if not natal_moon:
+            raise ValueError("Natal moon position is unavailable.")
+
+        natal_moon_longitude = self._absolute_longitude(natal_moon)
+        lunar_return_exact_utc = self._find_current_lunar_return(
+            natal_moon_longitude=natal_moon_longitude,
+            birth_time_utc=birth_time_utc,
+            reference_time_utc=reference_time_utc,
+            lat=lat,
+            lon=lon,
+        )
+        next_lunar_return_exact_utc = self._find_nth_lunar_return_after(
+            natal_moon_longitude=natal_moon_longitude,
+            birth_time_utc=birth_time_utc,
+            start_time_utc=lunar_return_exact_utc + timedelta(minutes=30),
+            count=1,
+            lat=lat,
+            lon=lon,
+        )
+
+        lunar_return_exact_local = lunar_return_exact_utc + timedelta(hours=timezone_offset)
+        next_lunar_return_exact_local = next_lunar_return_exact_utc + timedelta(hours=timezone_offset)
+
+        lunar_return_chart = self.engine.calculate_chart(lunar_return_exact_utc, lat, lon)
+        lunar_return_aspect_cache = self._build_aspect_cache(lunar_return_chart)
+        lunar_return_profiles = self._build_planet_profiles(lunar_return_chart, lunar_return_aspect_cache)
+        lunar_return_chart_payload = self._build_natal_chart(
+            lunar_return_chart,
+            lunar_return_profiles,
+            lunar_return_aspect_cache,
+            birth_time_utc=lunar_return_exact_utc,
+            lat=lat,
+            lon=lon,
+        )
+
+        moon_windows = self._build_lunar_return_moon_windows(
+            start_utc=lunar_return_exact_utc,
+            end_utc=next_lunar_return_exact_utc,
+            lat=lat,
+            lon=lon,
+            timezone_offset=timezone_offset,
+        )
+
+        return {
+            "meta": {
+                "generated_at": datetime.now().isoformat(),
+                "engine_version": "2.5.0",
+            },
+            "user_info": {
+                "gender": gender,
+                "birth_time_local": birth_time_local.isoformat(),
+                "birth_time_utc": birth_time_utc.isoformat(),
+                "lat": lat,
+                "lon": lon,
+                "timezone": f"GMT {timezone_offset:+.2f}",
+                "is_day_chart": natal_chart.is_day_chart,
+            },
+            "reference": {
+                "current_date_utc": reference_time_utc.isoformat(),
+                "current_date_local": (reference_time_utc + timedelta(hours=timezone_offset)).isoformat(),
+                "timezone_offset": timezone_offset,
+            },
+            "natal_chart": natal_chart_payload,
+            "lunar_return": {
+                "cycle_label": lunar_return_exact_local.strftime("%Y-%m 月返"),
+                "return_time_local": lunar_return_exact_local.isoformat(),
+                "return_time_utc": lunar_return_exact_utc.isoformat(),
+                "next_return_time_local": next_lunar_return_exact_local.isoformat(),
+                "next_return_time_utc": next_lunar_return_exact_utc.isoformat(),
+                "cycle_start_local": lunar_return_exact_local.isoformat(),
+                "cycle_end_local": next_lunar_return_exact_local.isoformat(),
+                "cycle_start_utc": lunar_return_exact_utc.isoformat(),
+                "cycle_end_utc": next_lunar_return_exact_utc.isoformat(),
+                "moon_windows": moon_windows,
+                "chart": lunar_return_chart_payload,
+            },
+        }
+
+    def _find_current_lunar_return(
+        self,
+        natal_moon_longitude: float,
+        birth_time_utc: datetime,
+        reference_time_utc: datetime,
+        lat: float,
+        lon: float,
+    ) -> datetime:
+        days_since_birth = max((reference_time_utc - birth_time_utc).total_seconds() / 86400.0, 0.0)
+        cycles_elapsed = max(int(days_since_birth // SIDEREAL_MONTH_DAYS), 0)
+        search_start = birth_time_utc + timedelta(days=max(cycles_elapsed - 1, 0) * SIDEREAL_MONTH_DAYS)
+        last_match: Optional[datetime] = None
+
+        for cycle_index in range(max(cycles_elapsed + 3, 4)):
+            target = self._find_lunar_return_near(
+                start_utc=search_start + timedelta(days=cycle_index * SIDEREAL_MONTH_DAYS),
+                natal_moon_longitude=natal_moon_longitude,
+                lat=lat,
+                lon=lon,
+            )
+            if target <= reference_time_utc:
+                last_match = target
+                continue
+            return last_match or target
+
+        if last_match is None:
+            raise ValueError("Failed to locate current lunar return.")
+        return last_match
+
+    def _find_nth_lunar_return_after(
+        self,
+        natal_moon_longitude: float,
+        birth_time_utc: datetime,
+        start_time_utc: datetime,
+        count: int,
+        lat: float,
+        lon: float,
+    ) -> datetime:
+        current = start_time_utc
+        found = 0
+
+        while found < count:
+            guess_days = max((current - birth_time_utc).total_seconds() / 86400.0, 0.0)
+            cycle_index = max(int(round(guess_days / SIDEREAL_MONTH_DAYS)), 0)
+            candidate = self._find_lunar_return_near(
+                start_utc=birth_time_utc + timedelta(days=cycle_index * SIDEREAL_MONTH_DAYS),
+                natal_moon_longitude=natal_moon_longitude,
+                lat=lat,
+                lon=lon,
+            )
+            if candidate <= current:
+                candidate = self._find_lunar_return_near(
+                    start_utc=birth_time_utc + timedelta(days=(cycle_index + 1) * SIDEREAL_MONTH_DAYS),
+                    natal_moon_longitude=natal_moon_longitude,
+                    lat=lat,
+                    lon=lon,
+                )
+            current = candidate + timedelta(minutes=1)
+            found += 1
+
+        return current - timedelta(minutes=1)
+
+    def _find_lunar_return_near(
+        self,
+        start_utc: datetime,
+        natal_moon_longitude: float,
+        lat: float,
+        lon: float,
+    ) -> datetime:
+        coarse_start = start_utc - timedelta(days=2)
+        coarse_end = start_utc + timedelta(days=2)
+        best_time = coarse_start
+        best_value = 999.0
+
+        cursor = coarse_start
+        while cursor <= coarse_end:
+            moon_longitude = self._moon_longitude_at(cursor, lat, lon)
+            distance = deg_diff(moon_longitude, natal_moon_longitude)
+            if distance < best_value:
+                best_value = distance
+                best_time = cursor
+            cursor += timedelta(hours=6)
+
+        left = best_time - timedelta(hours=6)
+        right = best_time + timedelta(hours=6)
+
+        for delta_seconds in (3600, 300, 60, 1):
+            current = left
+            local_best_time = current
+            local_best_value = 999.0
+            local_step = timedelta(seconds=delta_seconds)
+            while current <= right:
+                moon_longitude = self._moon_longitude_at(current, lat, lon)
+                distance = deg_diff(moon_longitude, natal_moon_longitude)
+                if distance < local_best_value:
+                    local_best_value = distance
+                    local_best_time = current
+                current += local_step
+            left = local_best_time - local_step
+            right = local_best_time + local_step
+
+        return local_best_time
+
+    def _moon_longitude_at(self, dt_utc: datetime, lat: float, lon: float) -> float:
+        chart = self.engine.calculate_chart(dt_utc, lat, lon)
+        moon = chart.get_planet_info(Planet.MOON)
+        if not moon:
+            raise ValueError("Moon position is unavailable.")
+        return self._absolute_longitude(moon)
+
+    def _build_lunar_return_moon_windows(
+        self,
+        start_utc: datetime,
+        end_utc: datetime,
+        lat: float,
+        lon: float,
+        timezone_offset: float,
+    ) -> list[Dict[str, Any]]:
+        samples = self._sample_lunar_cycle_positions(start_utc, end_utc, lat, lon)
+        windows: list[Dict[str, Any]] = []
+
+        for planet in LUNAR_RETURN_WINDOW_PLANETS:
+            for aspect in LUNAR_RETURN_MOON_ASPECTS:
+                aspect_angle = float(aspect["angle"])
+                series: list[Dict[str, Any]] = []
+                for item in samples:
+                    moon_position = item["positions"].get(Planet.MOON)
+                    target_position = item["positions"].get(planet)
+                    if moon_position is None or target_position is None:
+                        continue
+                    separation = deg_diff(moon_position, target_position)
+                    series.append(
+                        {
+                            "timestamp_utc": item["timestamp_utc"],
+                            "delta": abs(separation - aspect_angle),
+                            "separation": separation,
+                        }
+                    )
+
+                for interval in self._extract_orb_intervals(series, LUNAR_RETURN_ORB_DEGREES):
+                    exact_sample = min(interval["samples"], key=lambda item: item["delta"])
+                    windows.append(
+                        {
+                            "planet": planet.value,
+                            "planet_label": planet_label(planet),
+                            "aspect_key": aspect["key"],
+                            "aspect_angle": aspect_angle,
+                            "aspect_label": aspect["label"],
+                            "orb_limit": LUNAR_RETURN_ORB_DEGREES,
+                            "start_time_local": (interval["start_utc"] + timedelta(hours=timezone_offset)).isoformat(),
+                            "end_time_local": (interval["end_utc"] + timedelta(hours=timezone_offset)).isoformat(),
+                            "start_time_utc": interval["start_utc"].isoformat(),
+                            "end_time_utc": interval["end_utc"].isoformat(),
+                            "exact_time_local": (exact_sample["timestamp_utc"] + timedelta(hours=timezone_offset)).isoformat(),
+                            "exact_time_utc": exact_sample["timestamp_utc"].isoformat(),
+                            "exact_orb": round(exact_sample["delta"], 3),
+                            "exact_separation": round(exact_sample["separation"], 3),
+                            "daily_degrees": self._build_daily_orb_rows(
+                                planet=planet,
+                                aspect_angle=aspect_angle,
+                                start_utc=interval["start_utc"],
+                                end_utc=interval["end_utc"],
+                                lat=lat,
+                                lon=lon,
+                                timezone_offset=timezone_offset,
+                            ),
+                        }
+                    )
+
+        windows.sort(key=lambda item: item["start_time_utc"])
+        return windows
+
+    def _sample_lunar_cycle_positions(
+        self,
+        start_utc: datetime,
+        end_utc: datetime,
+        lat: float,
+        lon: float,
+    ) -> list[Dict[str, Any]]:
+        samples: list[Dict[str, Any]] = []
+        tracked_planets = set(LUNAR_RETURN_WINDOW_PLANETS)
+        tracked_planets.add(Planet.MOON)
+        cursor = start_utc
+
+        while cursor <= end_utc:
+            chart = self.engine.calculate_chart(cursor, lat, lon)
+            positions = {
+                planet: self._absolute_longitude(info)
+                for planet, info in getattr(chart, "planets", {}).items()
+                if planet in tracked_planets
+            }
+            samples.append({"timestamp_utc": cursor, "positions": positions})
+            cursor += timedelta(hours=1)
+
+        if not samples or samples[-1]["timestamp_utc"] < end_utc:
+            chart = self.engine.calculate_chart(end_utc, lat, lon)
+            positions = {
+                planet: self._absolute_longitude(info)
+                for planet, info in getattr(chart, "planets", {}).items()
+                if planet in tracked_planets
+            }
+            samples.append({"timestamp_utc": end_utc, "positions": positions})
+
+        return samples
+
+    def _extract_orb_intervals(
+        self,
+        series: list[Dict[str, Any]],
+        threshold: float,
+    ) -> list[Dict[str, Any]]:
+        intervals: list[Dict[str, Any]] = []
+        start_index: Optional[int] = None
+
+        for index, item in enumerate(series):
+            is_active = item["delta"] <= threshold
+            if is_active and start_index is None:
+                start_index = index
+                continue
+            if not is_active and start_index is not None:
+                intervals.append(
+                    {
+                        "start_utc": series[start_index]["timestamp_utc"],
+                        "end_utc": series[index - 1]["timestamp_utc"],
+                        "samples": series[start_index:index],
+                    }
+                )
+                start_index = None
+
+        if start_index is not None:
+            intervals.append(
+                {
+                    "start_utc": series[start_index]["timestamp_utc"],
+                    "end_utc": series[-1]["timestamp_utc"],
+                    "samples": series[start_index:],
+                }
+            )
+
+        return intervals
+
+    def _build_daily_orb_rows(
+        self,
+        planet: Planet,
+        aspect_angle: float,
+        start_utc: datetime,
+        end_utc: datetime,
+        lat: float,
+        lon: float,
+        timezone_offset: float,
+    ) -> list[Dict[str, Any]]:
+        rows: list[Dict[str, Any]] = []
+        local_start = start_utc + timedelta(hours=timezone_offset)
+        local_end = end_utc + timedelta(hours=timezone_offset)
+        day_cursor = local_start.date()
+        end_date = local_end.date()
+
+        while day_cursor <= end_date:
+            best: Optional[Dict[str, Any]] = None
+            for hour in range(24):
+                candidate_local = datetime.combine(day_cursor, datetime.min.time()) + timedelta(hours=hour)
+                candidate_utc = candidate_local - timedelta(hours=timezone_offset)
+                if candidate_utc < start_utc or candidate_utc > end_utc:
+                    continue
+                chart = self.engine.calculate_chart(candidate_utc, lat, lon)
+                moon = chart.get_planet_info(Planet.MOON)
+                target = chart.get_planet_info(planet)
+                if not moon or not target:
+                    continue
+                separation = deg_diff(self._absolute_longitude(moon), self._absolute_longitude(target))
+                delta = abs(separation - aspect_angle)
+                item = {
+                    "date": day_cursor.isoformat(),
+                    "time_local": candidate_local.isoformat(),
+                    "time_utc": candidate_utc.isoformat(),
+                    "orb": round(delta, 3),
+                    "separation": round(separation, 3),
+                }
+                if best is None or item["orb"] < best["orb"]:
+                    best = item
+            if best:
+                rows.append(best)
+            day_cursor += timedelta(days=1)
+
+        return rows

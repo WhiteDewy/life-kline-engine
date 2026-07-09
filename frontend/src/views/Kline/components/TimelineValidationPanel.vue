@@ -3,10 +3,10 @@
     <article class="panel timelinePanel">
       <div class="panelHeader">
         <div>
-          <div class="panelEyebrow">Historical Validation</div>
-          <h2 class="panelTitle">{{ timeline.title || "人生节点校验" }}</h2>
+          <div class="panelEyebrow">过往经历对照</div>
+          <h2 class="panelTitle">{{ timeline.title || "过往经历对照" }}</h2>
           <p class="panelSummary">
-            {{ timeline.summary || "用已知人生事件反推阶段与本命结构是否成立。" }}
+            {{ timeline.summary || "用已经发生过的关键事件，去核对这张盘的阶段节奏和本命结构是不是站得住。" }}
           </p>
         </div>
       </div>
@@ -32,13 +32,13 @@
           </div>
 
           <div class="eventBlock">
-            <strong>对应阶段</strong>
+            <strong>对应到哪段人生节奏</strong>
             <p>{{ event.phase_title }}</p>
             <p class="muted">{{ event.phase_summary }}</p>
           </div>
 
           <div class="eventBlock">
-            <strong>为什么对得上</strong>
+            <strong>为什么会在这时发生</strong>
             <p>{{ event.reading }}</p>
             <p class="muted">{{ event.validation }}</p>
           </div>

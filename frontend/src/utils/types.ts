@@ -218,6 +218,15 @@ export interface LifeReport {
       chips?: string[];
       points?: string[];
     };
+    question_sections?: Array<{
+      key: string;
+      question: string;
+      answer: string;
+      takeaways?: string[];
+      risks?: string[];
+      actions?: string[];
+      evidence?: string[];
+    }>;
     [key: string]: any;
   } | null;
   advanced_patterns?: {
@@ -343,4 +352,65 @@ export interface LifeReport {
     }>;
     [key: string]: any;
   } | null;
+}
+
+export interface LunarReturnDailyDegree {
+  date: string;
+  time_local: string;
+  time_utc: string;
+  orb: number;
+  separation: number;
+}
+
+export interface LunarReturnWindow {
+  planet: string;
+  planet_label: string;
+  aspect_key: string;
+  aspect_angle: number;
+  aspect_label: string;
+  orb_limit: number;
+  start_time_local: string;
+  end_time_local: string;
+  start_time_utc: string;
+  end_time_utc: string;
+  exact_time_local: string;
+  exact_time_utc: string;
+  exact_orb: number;
+  exact_separation: number;
+  daily_degrees: LunarReturnDailyDegree[];
+}
+
+export interface MonthlyLunarReturnReport {
+  meta: {
+    generated_at: string;
+    engine_version: string;
+  };
+  user_info: {
+    gender?: string | null;
+    birth_time_local: string;
+    birth_time_utc: string;
+    lat: number;
+    lon: number;
+    timezone: string;
+    is_day_chart: boolean;
+  };
+  reference: {
+    current_date_utc: string;
+    current_date_local: string;
+    timezone_offset: number;
+  };
+  natal_chart?: LifeReport["natal_chart"];
+  lunar_return: {
+    cycle_label: string;
+    return_time_local: string;
+    return_time_utc: string;
+    next_return_time_local: string;
+    next_return_time_utc: string;
+    cycle_start_local: string;
+    cycle_end_local: string;
+    cycle_start_utc: string;
+    cycle_end_utc: string;
+    moon_windows: LunarReturnWindow[];
+    chart: LifeReport["natal_chart"];
+  };
 }

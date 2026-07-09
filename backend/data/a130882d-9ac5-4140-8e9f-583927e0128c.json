@@ -1,0 +1,1161 @@
+{
+  "analysis": {
+    "key": "monthly_lunar_return",
+    "title": "月返盘",
+    "tagline": "查看当前月返周期的月返盘，以及所有合月亮前后 3° 的触发窗口。",
+    "description": "以本命月亮为基准计算当前月返时刻，展示本次月返盘，并列出本月所有行星与月亮合相前后 3° 的区间。每个区间都会展开到每天，显示当天的相位度数。",
+    "category": "timing",
+    "status": "active",
+    "subjects_count": 1,
+    "required_inputs": [
+      "birth_time",
+      "lat",
+      "lon",
+      "timezone"
+    ],
+    "engines": [
+      "natal_core",
+      "lunar_return"
+    ],
+    "modules": [
+      "月返盘",
+      "月返周期",
+      "合月亮窗口",
+      "每日相位度数"
+    ],
+    "primary_cta": "进入月返",
+    "output_route": "/monthly-return/:id"
+  },
+  "request": {
+    "analysis_type": "monthly_lunar_return",
+    "subjects": [
+      {
+        "name": "夏天",
+        "gender": "女",
+        "birth_time": "1991-03-21T09:25:00",
+        "lat": 35.7,
+        "lon": 113.35,
+        "timezone": 8.0
+      }
+    ]
+  },
+  "report": {
+    "meta": {
+      "generated_at": "2026-06-29T16:17:02.131683",
+      "engine_version": "2.5.0"
+    },
+    "user_info": {
+      "gender": "女",
+      "birth_time_local": "1991-03-21T09:25:00",
+      "birth_time_utc": "1991-03-21T01:25:00",
+      "lat": 35.7,
+      "lon": 113.35,
+      "timezone": "GMT +8.00",
+      "is_day_chart": true
+    },
+    "reference": {
+      "current_date_utc": "2026-06-29T08:17:01.148035",
+      "current_date_local": "2026-06-29T16:17:01.148035",
+      "timezone_offset": 8.0
+    },
+    "natal_chart": {
+      "ascendant": {
+        "sign": "GEMINI",
+        "sign_label": "双子座",
+        "degree": 0.168011
+      },
+      "houses": [
+        {
+          "house": 1,
+          "sign": "GEMINI",
+          "sign_label": "双子座",
+          "degree": 0.168011,
+          "title": "自我与身体"
+        },
+        {
+          "house": 2,
+          "sign": "GEMINI",
+          "sign_label": "双子座",
+          "degree": 23.468342,
+          "title": "收入与资源"
+        },
+        {
+          "house": 3,
+          "sign": "CANCER",
+          "sign_label": "巨蟹座",
+          "degree": 16.394413,
+          "title": "学习与表达"
+        },
+        {
+          "house": 4,
+          "sign": "LEO",
+          "sign_label": "狮子座",
+          "degree": 10.225126,
+          "title": "家庭与根基"
+        },
+        {
+          "house": 5,
+          "sign": "VIRGO",
+          "sign_label": "处女座",
+          "degree": 16.717971,
+          "title": "创造与恋爱"
+        },
+        {
+          "house": 6,
+          "sign": "LIBRA",
+          "sign_label": "天秤座",
+          "degree": 24.707864,
+          "title": "工作与健康"
+        },
+        {
+          "house": 7,
+          "sign": "SAGITTARIUS",
+          "sign_label": "射手座",
+          "degree": 0.168011,
+          "title": "伴侣与合作"
+        },
+        {
+          "house": 8,
+          "sign": "SAGITTARIUS",
+          "sign_label": "射手座",
+          "degree": 23.468342,
+          "title": "风险与转化"
+        },
+        {
+          "house": 9,
+          "sign": "CAPRICORN",
+          "sign_label": "摩羯座",
+          "degree": 16.394413,
+          "title": "远方与意义"
+        },
+        {
+          "house": 10,
+          "sign": "AQUARIUS",
+          "sign_label": "水瓶座",
+          "degree": 10.225126,
+          "title": "事业与名望"
+        },
+        {
+          "house": 11,
+          "sign": "PISCES",
+          "sign_label": "双鱼座",
+          "degree": 16.717971,
+          "title": "社群与愿景"
+        },
+        {
+          "house": 12,
+          "sign": "ARIES",
+          "sign_label": "白羊座",
+          "degree": 24.707864,
+          "title": "潜意识与退隐"
+        }
+      ],
+      "sect": "day",
+      "sect_label": "日盘",
+      "chart_ruler": "MERCURY",
+      "chart_ruler_label": "水星",
+      "signature": "这是一个以双子座上升起盘、太阳落在双鱼座、月亮落在双子座的命盘。命主星是水星，主导力量偏向土星、月亮。整体不是靠单一高光取胜，而是靠把人生关键主题做成长期结构。",
+      "planets": {
+        "SUN": {
+          "sign": "PISCES",
+          "sign_label": "双鱼座",
+          "house": 11,
+          "house_title": "社群与愿景",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "degree": 29.933117,
+          "retrograde": false,
+          "score": 1.2,
+          "keywords": [
+            "自我定义与主导能力",
+            "人脉",
+            "社群"
+          ],
+          "gift": "自我定义与主导能力",
+          "shadow": "过度自尊或只按意志推进",
+          "strategy": "把注意力放在长期目标、名望与作品沉淀上。",
+          "aspect_signature": [
+            "六合 月亮，容许度 1.13°",
+            "三合 木星，容许度 3.76°",
+            "六合 土星，容许度 4.38°"
+          ],
+          "reason": "太阳落在社群与愿景，先天状态为平常。 相位支持较多，能把天赋顺着结构用出来。",
+          "speed": 0.99363,
+          "longitude": 359.933117
+        },
+        "MOON": {
+          "sign": "GEMINI",
+          "sign_label": "双子座",
+          "house": 1,
+          "house_title": "自我与身体",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "degree": 1.067712,
+          "retrograde": false,
+          "score": 1.59,
+          "keywords": [
+            "情绪感知、照料与安全需求的把握",
+            "自我定位",
+            "身体状态"
+          ],
+          "gift": "情绪感知、照料与安全需求的把握",
+          "shadow": "情绪卷入、节奏被环境牵动",
+          "strategy": "先稳定作息与关系边界，再谈效率和决策。",
+          "aspect_signature": [
+            "六合 太阳，容许度 1.13°",
+            "三合 土星，容许度 3.25°",
+            "六合 木星，容许度 2.62°"
+          ],
+          "reason": "月亮落在自我与身体，先天状态为平常。 相位支持较多，能把天赋顺着结构用出来。",
+          "speed": 14.183288,
+          "longitude": 61.067712
+        },
+        "MERCURY": {
+          "sign": "ARIES",
+          "sign_label": "白羊座",
+          "house": 11,
+          "house_title": "社群与愿景",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "degree": 16.538989,
+          "retrograde": false,
+          "score": 0.8,
+          "keywords": [
+            "信息整合、表达、交易与学习能力",
+            "人脉",
+            "社群"
+          ],
+          "gift": "信息整合、表达、交易与学习能力",
+          "shadow": "犹疑、分心、过度比较",
+          "strategy": "把复杂问题拆成流程，建立可复用的认知框架。",
+          "aspect_signature": [],
+          "reason": "水星落在社群与愿景，先天状态为平常。 支持与压力并存，需要靠节奏管理来定胜负。 这也是整张命盘的命主星，权重更高。",
+          "speed": 1.588047,
+          "longitude": 16.538989
+        },
+        "VENUS": {
+          "sign": "TAURUS",
+          "sign_label": "金牛座",
+          "house": 12,
+          "house_title": "潜意识与退隐",
+          "dignity": "domicile",
+          "dignity_label": "入庙",
+          "degree": 2.605511,
+          "retrograde": false,
+          "score": 1.11,
+          "keywords": [
+            "关系经营、审美、合作与资源协调",
+            "隐性压力",
+            "疗愈"
+          ],
+          "gift": "关系经营、审美、合作与资源协调",
+          "shadow": "讨好、依赖外部认可、享乐分散",
+          "strategy": "通过关系与价值交换打开局面，但不要牺牲底线。",
+          "aspect_signature": [
+            "刑相 木星，容许度 1.09°",
+            "刑相 土星，容许度 1.71°"
+          ],
+          "reason": "金星落在潜意识与退隐，先天状态为入庙。 相位拉扯偏重，人生会通过摩擦逼出成熟度。",
+          "speed": 1.209005,
+          "longitude": 32.605511
+        },
+        "MARS": {
+          "sign": "GEMINI",
+          "sign_label": "双子座",
+          "house": 1,
+          "house_title": "自我与身体",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "degree": 23.286886,
+          "retrograde": false,
+          "score": 0.75,
+          "keywords": [
+            "行动力、竞争性、突破与执行",
+            "自我定位",
+            "身体状态"
+          ],
+          "gift": "行动力、竞争性、突破与执行",
+          "shadow": "急躁、对抗、提前消耗",
+          "strategy": "把火力聚焦在关键战役，而不是到处起冲突。",
+          "aspect_signature": [],
+          "reason": "火星落在自我与身体，先天状态为平常。 支持与压力并存，需要靠节奏管理来定胜负。",
+          "speed": 0.50471,
+          "longitude": 83.286886
+        },
+        "JUPITER": {
+          "sign": "LEO",
+          "sign_label": "狮子座",
+          "house": 3,
+          "house_title": "学习与表达",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "degree": 3.692582,
+          "retrograde": true,
+          "score": -0.5,
+          "keywords": [
+            "扩张、信念、机会识别与贵人运",
+            "沟通",
+            "技能"
+          ],
+          "gift": "扩张、信念、机会识别与贵人运",
+          "shadow": "过度乐观、承诺过量、理想化",
+          "strategy": "扩张时保留边界与节奏，把好运落到制度上。",
+          "aspect_signature": [
+            "对冲 土星，容许度 0.62°",
+            "刑相 金星，容许度 1.09°",
+            "三合 太阳，容许度 3.76°"
+          ],
+          "reason": "木星落在学习与表达，先天状态为平常。 相位拉扯偏重，人生会通过摩擦逼出成熟度。",
+          "speed": -0.030316,
+          "longitude": 123.692582
+        },
+        "SATURN": {
+          "sign": "AQUARIUS",
+          "sign_label": "水瓶座",
+          "house": 9,
+          "house_title": "远方与意义",
+          "dignity": "domicile",
+          "dignity_label": "入庙",
+          "degree": 4.31488,
+          "retrograde": false,
+          "score": 1.6,
+          "keywords": [
+            "结构、耐力、长期主义与责任",
+            "高阶学习",
+            "远行"
+          ],
+          "gift": "结构、耐力、长期主义与责任",
+          "shadow": "压抑、迟滞、过度保守",
+          "strategy": "用时间换确定性，先筑底盘再谈跃迁。",
+          "aspect_signature": [
+            "对冲 木星，容许度 0.62°",
+            "刑相 金星，容许度 1.71°",
+            "三合 月亮，容许度 3.25°"
+          ],
+          "reason": "土星落在远方与意义，先天状态为入庙。 相位拉扯偏重，人生会通过摩擦逼出成熟度。",
+          "speed": 0.083423,
+          "longitude": 304.31488
+        },
+        "URANUS": {
+          "sign": "CAPRICORN",
+          "sign_label": "摩羯座",
+          "house": 8,
+          "house_title": "风险与转化",
+          "dignity": "peregrine",
+          "dignity_label": "平常",
+          "degree": 13.473772,
+          "retrograde": false,
+          "reason": "天王星落在风险与转化，用于补充本命盘的完整轮盘视图。",
+          "speed": 0.023925,
+          "longitude": 283.473772
+        },
+        "NEPTUNE": {
+          "sign": "CAPRICORN",
+          "sign_label": "摩羯座",
+          "house": 9,
+          "house_title": "远方与意义",
+          "dignity": "fall",
+          "dignity_label": "落陷",
+          "degree": 16.5353,
+          "retrograde": false,
+          "reason": "海王星落在远方与意义，用于补充本命盘的完整轮盘视图。",
+          "speed": 0.015785,
+          "longitude": 286.5353
+        },
+        "PLUTO": {
+          "sign": "SCORPIO",
+          "sign_label": "天蝎座",
+          "house": 6,
+          "house_title": "工作与健康",
+          "dignity": "domicile",
+          "dignity_label": "入庙",
+          "degree": 20.168831,
+          "retrograde": true,
+          "reason": "冥王星落在工作与健康，用于补充本命盘的完整轮盘视图。",
+          "speed": -0.014914,
+          "longitude": 230.168831
+        },
+        "NORTH_NODE": {
+          "sign": "CAPRICORN",
+          "sign_label": "摩羯座",
+          "house": 9,
+          "house_title": "远方与意义",
+          "dignity": "auxiliary",
+          "dignity_label": "附加点",
+          "degree": 25.694754,
+          "retrograde": true,
+          "reason": "北交点用于补充本命轮盘阅读。",
+          "longitude": 295.694754
+        },
+        "SOUTH_NODE": {
+          "sign": "CANCER",
+          "sign_label": "巨蟹座",
+          "house": 3,
+          "house_title": "学习与表达",
+          "dignity": "auxiliary",
+          "dignity_label": "附加点",
+          "degree": 25.694754,
+          "retrograde": false,
+          "reason": "南交点用于补充本命轮盘阅读。",
+          "longitude": 115.694754
+        }
+      },
+      "dominant_planets": [
+        {
+          "planet": "SATURN",
+          "label": "土星",
+          "score": 1.6,
+          "reason": "土星落在远方与意义，先天状态为入庙。 相位拉扯偏重，人生会通过摩擦逼出成熟度。"
+        },
+        {
+          "planet": "MOON",
+          "label": "月亮",
+          "score": 1.59,
+          "reason": "月亮落在自我与身体，先天状态为平常。 相位支持较多，能把天赋顺着结构用出来。"
+        },
+        {
+          "planet": "SUN",
+          "label": "太阳",
+          "score": 1.2,
+          "reason": "太阳落在社群与愿景，先天状态为平常。 相位支持较多，能把天赋顺着结构用出来。"
+        }
+      ],
+      "pressure_points": [
+        {
+          "planet": "JUPITER",
+          "label": "木星",
+          "score": -0.5,
+          "reason": "木星落在学习与表达，先天状态为平常。 相位拉扯偏重，人生会通过摩擦逼出成熟度。"
+        },
+        {
+          "planet": "MARS",
+          "label": "火星",
+          "score": 0.75,
+          "reason": "火星落在自我与身体，先天状态为平常。 支持与压力并存，需要靠节奏管理来定胜负。"
+        }
+      ],
+      "house_emphasis": [
+        {
+          "house": 1,
+          "title": "自我与身体",
+          "keywords": [
+            "自我定位",
+            "身体状态",
+            "个人意志"
+          ],
+          "weight": 2.2
+        },
+        {
+          "house": 11,
+          "title": "社群与愿景",
+          "keywords": [
+            "人脉",
+            "社群",
+            "长期愿景"
+          ],
+          "weight": 2.2
+        },
+        {
+          "house": 3,
+          "title": "学习与表达",
+          "keywords": [
+            "沟通",
+            "技能",
+            "短途连接"
+          ],
+          "weight": 1.0
+        },
+        {
+          "house": 9,
+          "title": "远方与意义",
+          "keywords": [
+            "高阶学习",
+            "远行",
+            "世界观"
+          ],
+          "weight": 1.0
+        }
+      ],
+      "major_aspects": [
+        {
+          "title": "木星 对冲 土星",
+          "strength": 0.717,
+          "nature": "challenging",
+          "summary": "木星与土星拉扯明显，需要在两端寻找平衡。"
+        },
+        {
+          "title": "金星 刑相 木星",
+          "strength": 0.649,
+          "nature": "challenging",
+          "summary": "金星与木星存在张力，逼你调整方法。"
+        },
+        {
+          "title": "金星 刑相 土星",
+          "strength": 0.562,
+          "nature": "challenging",
+          "summary": "金星与土星存在张力，逼你调整方法。"
+        },
+        {
+          "title": "太阳 六合 月亮",
+          "strength": 0.464,
+          "nature": "supportive",
+          "summary": "太阳与月亮互相配合，适合主动争取。"
+        },
+        {
+          "title": "月亮 三合 土星",
+          "strength": 0.413,
+          "nature": "supportive",
+          "summary": "月亮与土星形成顺流，推进更自然。"
+        },
+        {
+          "title": "太阳 三合 木星",
+          "strength": 0.336,
+          "nature": "supportive",
+          "summary": "太阳与木星形成顺流，推进更自然。"
+        }
+      ]
+    },
+    "lunar_return": {
+      "cycle_label": "2026-06 月返",
+      "return_time_local": "2026-06-13T22:40:50.398400",
+      "return_time_utc": "2026-06-13T14:40:50.398400",
+      "next_return_time_local": "2026-07-11T08:10:44.908800",
+      "next_return_time_utc": "2026-07-11T00:10:44.908800",
+      "cycle_start_local": "2026-06-13T22:40:50.398400",
+      "cycle_end_local": "2026-07-11T08:10:44.908800",
+      "cycle_start_utc": "2026-06-13T14:40:50.398400",
+      "cycle_end_utc": "2026-07-11T00:10:44.908800",
+      "moon_windows": [
+        {
+          "planet": "URANUS",
+          "planet_label": "天王星",
+          "aspect_label": "合相",
+          "orb_limit": 3.0,
+          "start_time_local": "2026-06-13T22:40:50.398400",
+          "end_time_local": "2026-06-14T05:40:50.398400",
+          "start_time_utc": "2026-06-13T14:40:50.398400",
+          "end_time_utc": "2026-06-13T21:40:50.398400",
+          "exact_time_local": "2026-06-14T01:40:50.398400",
+          "exact_time_utc": "2026-06-13T17:40:50.398400",
+          "exact_orb": 0.175,
+          "daily_degrees": [
+            {
+              "date": "2026-06-13",
+              "time_local": "2026-06-13T23:00:00",
+              "time_utc": "2026-06-13T15:00:00",
+              "orb": 1.584
+            },
+            {
+              "date": "2026-06-14",
+              "time_local": "2026-06-14T02:00:00",
+              "time_utc": "2026-06-13T18:00:00",
+              "orb": 0.307
+            }
+          ]
+        },
+        {
+          "planet": "SUN",
+          "planet_label": "太阳",
+          "aspect_label": "合相",
+          "orb_limit": 3.0,
+          "start_time_local": "2026-06-15T06:40:50.398400",
+          "end_time_local": "2026-06-15T15:40:50.398400",
+          "start_time_utc": "2026-06-14T22:40:50.398400",
+          "end_time_utc": "2026-06-15T07:40:50.398400",
+          "exact_time_local": "2026-06-15T10:40:50.398400",
+          "exact_time_utc": "2026-06-15T02:40:50.398400",
+          "exact_orb": 0.067,
+          "daily_degrees": [
+            {
+              "date": "2026-06-15",
+              "time_local": "2026-06-15T11:00:00",
+              "time_utc": "2026-06-15T03:00:00",
+              "orb": 0.058
+            }
+          ]
+        },
+        {
+          "planet": "MERCURY",
+          "planet_label": "水星",
+          "aspect_label": "合相",
+          "orb_limit": 3.0,
+          "start_time_local": "2026-06-16T23:40:50.398400",
+          "end_time_local": "2026-06-17T08:40:50.398400",
+          "start_time_utc": "2026-06-16T15:40:50.398400",
+          "end_time_utc": "2026-06-17T00:40:50.398400",
+          "exact_time_local": "2026-06-17T03:40:50.398400",
+          "exact_time_utc": "2026-06-16T19:40:50.398400",
+          "exact_orb": 0.236,
+          "daily_degrees": [
+            {
+              "date": "2026-06-17",
+              "time_local": "2026-06-17T04:00:00",
+              "time_utc": "2026-06-16T20:00:00",
+              "orb": 0.114
+            }
+          ]
+        },
+        {
+          "planet": "JUPITER",
+          "planet_label": "木星",
+          "aspect_label": "合相",
+          "orb_limit": 3.0,
+          "start_time_local": "2026-06-17T10:40:50.398400",
+          "end_time_local": "2026-06-17T19:40:50.398400",
+          "start_time_utc": "2026-06-17T02:40:50.398400",
+          "end_time_utc": "2026-06-17T11:40:50.398400",
+          "exact_time_local": "2026-06-17T15:40:50.398400",
+          "exact_time_utc": "2026-06-17T07:40:50.398400",
+          "exact_orb": 0.07,
+          "daily_degrees": [
+            {
+              "date": "2026-06-17",
+              "time_local": "2026-06-17T16:00:00",
+              "time_utc": "2026-06-17T08:00:00",
+              "orb": 0.196
+            }
+          ]
+        },
+        {
+          "planet": "VENUS",
+          "planet_label": "金星",
+          "aspect_label": "合相",
+          "orb_limit": 3.0,
+          "start_time_local": "2026-06-17T23:40:50.398400",
+          "end_time_local": "2026-06-18T09:40:50.398400",
+          "start_time_utc": "2026-06-17T15:40:50.398400",
+          "end_time_utc": "2026-06-18T01:40:50.398400",
+          "exact_time_local": "2026-06-18T04:40:50.398400",
+          "exact_time_utc": "2026-06-17T20:40:50.398400",
+          "exact_orb": 0.18,
+          "daily_degrees": [
+            {
+              "date": "2026-06-18",
+              "time_local": "2026-06-18T04:00:00",
+              "time_utc": "2026-06-17T20:00:00",
+              "orb": 0.262
+            }
+          ]
+        },
+        {
+          "planet": "PLUTO",
+          "planet_label": "冥王星",
+          "aspect_label": "合相",
+          "orb_limit": 3.0,
+          "start_time_local": "2026-07-02T07:40:50.398400",
+          "end_time_local": "2026-07-02T18:40:50.398400",
+          "start_time_utc": "2026-07-01T23:40:50.398400",
+          "end_time_utc": "2026-07-02T10:40:50.398400",
+          "exact_time_local": "2026-07-02T12:40:50.398400",
+          "exact_time_utc": "2026-07-02T04:40:50.398400",
+          "exact_orb": 0.203,
+          "daily_degrees": [
+            {
+              "date": "2026-07-02",
+              "time_local": "2026-07-02T13:00:00",
+              "time_utc": "2026-07-02T05:00:00",
+              "orb": 0.097
+            }
+          ]
+        },
+        {
+          "planet": "NEPTUNE",
+          "planet_label": "海王星",
+          "aspect_label": "合相",
+          "orb_limit": 3.0,
+          "start_time_local": "2026-07-07T01:40:50.398400",
+          "end_time_local": "2026-07-07T11:40:50.398400",
+          "start_time_utc": "2026-07-06T17:40:50.398400",
+          "end_time_utc": "2026-07-07T03:40:50.398400",
+          "exact_time_local": "2026-07-07T06:40:50.398400",
+          "exact_time_utc": "2026-07-06T22:40:50.398400",
+          "exact_orb": 0.222,
+          "daily_degrees": [
+            {
+              "date": "2026-07-07",
+              "time_local": "2026-07-07T07:00:00",
+              "time_utc": "2026-07-06T23:00:00",
+              "orb": 0.108
+            }
+          ]
+        },
+        {
+          "planet": "SATURN",
+          "planet_label": "土星",
+          "aspect_label": "合相",
+          "orb_limit": 3.0,
+          "start_time_local": "2026-07-07T20:40:50.398400",
+          "end_time_local": "2026-07-08T05:40:50.398400",
+          "start_time_utc": "2026-07-07T12:40:50.398400",
+          "end_time_utc": "2026-07-07T21:40:50.398400",
+          "exact_time_local": "2026-07-08T00:40:50.398400",
+          "exact_time_utc": "2026-07-07T16:40:50.398400",
+          "exact_orb": 0.255,
+          "daily_degrees": [
+            {
+              "date": "2026-07-07",
+              "time_local": "2026-07-07T23:00:00",
+              "time_utc": "2026-07-07T15:00:00",
+              "orb": 1.256
+            },
+            {
+              "date": "2026-07-08",
+              "time_local": "2026-07-08T01:00:00",
+              "time_utc": "2026-07-07T17:00:00",
+              "orb": 0.138
+            }
+          ]
+        }
+      ],
+      "chart": {
+        "ascendant": {
+          "sign": "AQUARIUS",
+          "sign_label": "水瓶座",
+          "degree": 11.79649
+        },
+        "houses": [
+          {
+            "house": 1,
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "degree": 11.79649,
+            "title": "自我与身体"
+          },
+          {
+            "house": 2,
+            "sign": "PISCES",
+            "sign_label": "双鱼座",
+            "degree": 17.555678,
+            "title": "收入与资源"
+          },
+          {
+            "house": 3,
+            "sign": "ARIES",
+            "sign_label": "白羊座",
+            "degree": 24.670176,
+            "title": "学习与表达"
+          },
+          {
+            "house": 4,
+            "sign": "TAURUS",
+            "sign_label": "金牛座",
+            "degree": 29.355758,
+            "title": "家庭与根基"
+          },
+          {
+            "house": 5,
+            "sign": "GEMINI",
+            "sign_label": "双子座",
+            "degree": 23.435986,
+            "title": "创造与恋爱"
+          },
+          {
+            "house": 6,
+            "sign": "CANCER",
+            "sign_label": "巨蟹座",
+            "degree": 17.116391,
+            "title": "工作与健康"
+          },
+          {
+            "house": 7,
+            "sign": "LEO",
+            "sign_label": "狮子座",
+            "degree": 11.79649,
+            "title": "伴侣与合作"
+          },
+          {
+            "house": 8,
+            "sign": "VIRGO",
+            "sign_label": "处女座",
+            "degree": 17.555678,
+            "title": "风险与转化"
+          },
+          {
+            "house": 9,
+            "sign": "LIBRA",
+            "sign_label": "天秤座",
+            "degree": 24.670176,
+            "title": "远方与意义"
+          },
+          {
+            "house": 10,
+            "sign": "SCORPIO",
+            "sign_label": "天蝎座",
+            "degree": 29.355758,
+            "title": "事业与名望"
+          },
+          {
+            "house": 11,
+            "sign": "SAGITTARIUS",
+            "sign_label": "射手座",
+            "degree": 23.435986,
+            "title": "社群与愿景"
+          },
+          {
+            "house": 12,
+            "sign": "CAPRICORN",
+            "sign_label": "摩羯座",
+            "degree": 17.116391,
+            "title": "潜意识与退隐"
+          }
+        ],
+        "sect": "night",
+        "sect_label": "夜盘",
+        "chart_ruler": "SATURN",
+        "chart_ruler_label": "土星",
+        "signature": "这是一个以水瓶座上升起盘、太阳落在双子座、月亮落在双子座的命盘。命主星是土星，主导力量偏向木星、月亮。整体不是靠单一高光取胜，而是靠把人生关键主题做成长期结构。",
+        "planets": {
+          "SUN": {
+            "sign": "GEMINI",
+            "sign_label": "双子座",
+            "house": 4,
+            "house_title": "家庭与根基",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "degree": 22.611931,
+            "retrograde": false,
+            "score": 0.95,
+            "keywords": [
+              "自我定义与主导能力",
+              "原生家庭",
+              "居所"
+            ],
+            "gift": "自我定义与主导能力",
+            "shadow": "过度自尊或只按意志推进",
+            "strategy": "把注意力放在长期目标、名望与作品沉淀上。",
+            "aspect_signature": [],
+            "reason": "太阳落在家庭与根基，先天状态为平常。 支持与压力并存，需要靠节奏管理来定胜负。",
+            "speed": 0.956008,
+            "longitude": 82.611931
+          },
+          "MOON": {
+            "sign": "GEMINI",
+            "sign_label": "双子座",
+            "house": 4,
+            "house_title": "家庭与根基",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "degree": 1.067719,
+            "retrograde": false,
+            "score": 1.53,
+            "keywords": [
+              "情绪感知、照料与安全需求的把握",
+              "原生家庭",
+              "居所"
+            ],
+            "gift": "情绪感知、照料与安全需求的把握",
+            "shadow": "情绪卷入、节奏被环境牵动",
+            "strategy": "先稳定作息与关系边界，再谈效率和决策。",
+            "aspect_signature": [
+              "六合 金星，容许度 0.87°",
+              "六合 木星，容许度 4.53°"
+            ],
+            "reason": "月亮落在家庭与根基，先天状态为平常。 相位支持较多，能把天赋顺着结构用出来。",
+            "speed": 15.16579,
+            "longitude": 61.067719
+          },
+          "MERCURY": {
+            "sign": "CANCER",
+            "sign_label": "巨蟹座",
+            "house": 5,
+            "house_title": "创造与恋爱",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "degree": 16.955672,
+            "retrograde": false,
+            "score": 0.56,
+            "keywords": [
+              "信息整合、表达、交易与学习能力",
+              "创作",
+              "恋爱"
+            ],
+            "gift": "信息整合、表达、交易与学习能力",
+            "shadow": "犹疑、分心、过度比较",
+            "strategy": "把复杂问题拆成流程，建立可复用的认知框架。",
+            "aspect_signature": [
+              "六合 火星，容许度 2.08°",
+              "刑相 土星，容许度 3.74°"
+            ],
+            "reason": "水星落在创造与恋爱，先天状态为平常。 支持与压力并存，需要靠节奏管理来定胜负。",
+            "speed": 1.087159,
+            "longitude": 106.955672
+          },
+          "VENUS": {
+            "sign": "LEO",
+            "sign_label": "狮子座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "degree": 0.194704,
+            "retrograde": false,
+            "score": 0.82,
+            "keywords": [
+              "关系经营、审美、合作与资源协调",
+              "执行",
+              "习惯"
+            ],
+            "gift": "关系经营、审美、合作与资源协调",
+            "shadow": "讨好、依赖外部认可、享乐分散",
+            "strategy": "通过关系与价值交换打开局面，但不要牺牲底线。",
+            "aspect_signature": [
+              "六合 月亮，容许度 0.87°",
+              "合相 木星，容许度 3.66°"
+            ],
+            "reason": "金星落在工作与健康，先天状态为平常。 相位支持较多，能把天赋顺着结构用出来。",
+            "speed": 1.16481,
+            "longitude": 120.194704
+          },
+          "MARS": {
+            "sign": "TAURUS",
+            "sign_label": "金牛座",
+            "house": 3,
+            "house_title": "学习与表达",
+            "dignity": "detriment",
+            "dignity_label": "失势",
+            "degree": 19.037066,
+            "retrograde": false,
+            "score": -0.81,
+            "keywords": [
+              "行动力、竞争性、突破与执行",
+              "沟通",
+              "技能"
+            ],
+            "gift": "行动力、竞争性、突破与执行",
+            "shadow": "急躁、对抗、提前消耗",
+            "strategy": "把火力聚焦在关键战役，而不是到处起冲突。",
+            "aspect_signature": [
+              "六合 水星，容许度 2.08°"
+            ],
+            "reason": "火星落在学习与表达，先天状态为失势。 支持与压力并存，需要靠节奏管理来定胜负。",
+            "speed": 0.729413,
+            "longitude": 49.037066
+          },
+          "JUPITER": {
+            "sign": "CANCER",
+            "sign_label": "巨蟹座",
+            "house": 6,
+            "house_title": "工作与健康",
+            "dignity": "exaltation",
+            "dignity_label": "旺相",
+            "degree": 26.535267,
+            "retrograde": false,
+            "score": 1.71,
+            "keywords": [
+              "扩张、信念、机会识别与贵人运",
+              "执行",
+              "习惯"
+            ],
+            "gift": "扩张、信念、机会识别与贵人运",
+            "shadow": "过度乐观、承诺过量、理想化",
+            "strategy": "扩张时保留边界与节奏，把好运落到制度上。",
+            "aspect_signature": [
+              "合相 金星，容许度 3.66°",
+              "六合 月亮，容许度 4.53°"
+            ],
+            "reason": "木星落在工作与健康，先天状态为旺相。 相位支持较多，能把天赋顺着结构用出来。",
+            "speed": 0.201953,
+            "longitude": 116.535267
+          },
+          "SATURN": {
+            "sign": "ARIES",
+            "sign_label": "白羊座",
+            "house": 2,
+            "house_title": "收入与资源",
+            "dignity": "fall",
+            "dignity_label": "落陷",
+            "degree": 13.212193,
+            "retrograde": false,
+            "score": -1.43,
+            "keywords": [
+              "结构、耐力、长期主义与责任",
+              "现金流",
+              "价值感"
+            ],
+            "gift": "结构、耐力、长期主义与责任",
+            "shadow": "压抑、迟滞、过度保守",
+            "strategy": "用时间换确定性，先筑底盘再谈跃迁。",
+            "aspect_signature": [
+              "刑相 水星，容许度 3.74°"
+            ],
+            "reason": "土星落在收入与资源，先天状态为落陷。 支持与压力并存，需要靠节奏管理来定胜负。 这也是整张命盘的命主星，权重更高。",
+            "speed": 0.068579,
+            "longitude": 13.212193
+          },
+          "URANUS": {
+            "sign": "GEMINI",
+            "sign_label": "双子座",
+            "house": 4,
+            "house_title": "家庭与根基",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "degree": 2.783247,
+            "retrograde": false,
+            "reason": "天王星落在家庭与根基，用于补充本命盘的完整轮盘视图。",
+            "speed": 0.055838,
+            "longitude": 62.783247
+          },
+          "NEPTUNE": {
+            "sign": "ARIES",
+            "sign_label": "白羊座",
+            "house": 2,
+            "house_title": "收入与资源",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "degree": 4.263358,
+            "retrograde": false,
+            "reason": "海王星落在收入与资源，用于补充本命盘的完整轮盘视图。",
+            "speed": 0.012906,
+            "longitude": 4.263358
+          },
+          "PLUTO": {
+            "sign": "AQUARIUS",
+            "sign_label": "水瓶座",
+            "house": 12,
+            "house_title": "潜意识与退隐",
+            "dignity": "peregrine",
+            "dignity_label": "平常",
+            "degree": 5.193981,
+            "retrograde": true,
+            "reason": "冥王星落在潜意识与退隐，用于补充本命盘的完整轮盘视图。",
+            "speed": -0.015711,
+            "longitude": 305.193981
+          },
+          "NORTH_NODE": {
+            "sign": "PISCES",
+            "sign_label": "双鱼座",
+            "house": 1,
+            "house_title": "自我与身体",
+            "dignity": "auxiliary",
+            "dignity_label": "附加点",
+            "degree": 2.521035,
+            "retrograde": true,
+            "reason": "北交点用于补充本命轮盘阅读。",
+            "longitude": 332.521035
+          },
+          "SOUTH_NODE": {
+            "sign": "VIRGO",
+            "sign_label": "处女座",
+            "house": 7,
+            "house_title": "伴侣与合作",
+            "dignity": "auxiliary",
+            "dignity_label": "附加点",
+            "degree": 2.521035,
+            "retrograde": false,
+            "reason": "南交点用于补充本命轮盘阅读。",
+            "longitude": 152.521035
+          }
+        },
+        "dominant_planets": [
+          {
+            "planet": "JUPITER",
+            "label": "木星",
+            "score": 1.71,
+            "reason": "木星落在工作与健康，先天状态为旺相。 相位支持较多，能把天赋顺着结构用出来。"
+          },
+          {
+            "planet": "MOON",
+            "label": "月亮",
+            "score": 1.53,
+            "reason": "月亮落在家庭与根基，先天状态为平常。 相位支持较多，能把天赋顺着结构用出来。"
+          },
+          {
+            "planet": "SUN",
+            "label": "太阳",
+            "score": 0.95,
+            "reason": "太阳落在家庭与根基，先天状态为平常。 支持与压力并存，需要靠节奏管理来定胜负。"
+          }
+        ],
+        "pressure_points": [
+          {
+            "planet": "SATURN",
+            "label": "土星",
+            "score": -1.43,
+            "reason": "土星落在收入与资源，先天状态为落陷。 支持与压力并存，需要靠节奏管理来定胜负。 这也是整张命盘的命主星，权重更高。"
+          },
+          {
+            "planet": "MARS",
+            "label": "火星",
+            "score": -0.81,
+            "reason": "火星落在学习与表达，先天状态为失势。 支持与压力并存，需要靠节奏管理来定胜负。"
+          }
+        ],
+        "house_emphasis": [
+          {
+            "house": 4,
+            "title": "家庭与根基",
+            "keywords": [
+              "原生家庭",
+              "居所",
+              "情绪根基"
+            ],
+            "weight": 2.4
+          },
+          {
+            "house": 6,
+            "title": "工作与健康",
+            "keywords": [
+              "执行",
+              "习惯",
+              "健康管理"
+            ],
+            "weight": 2.0
+          },
+          {
+            "house": 2,
+            "title": "收入与资源",
+            "keywords": [
+              "现金流",
+              "价值感",
+              "可支配资源"
+            ],
+            "weight": 1.0
+          },
+          {
+            "house": 3,
+            "title": "学习与表达",
+            "keywords": [
+              "沟通",
+              "技能",
+              "短途连接"
+            ],
+            "weight": 1.0
+          }
+        ],
+        "major_aspects": [
+          {
+            "title": "月亮 六合 金星",
+            "strength": 0.495,
+            "nature": "supportive",
+            "summary": "月亮与金星互相配合，适合主动争取。"
+          },
+          {
+            "title": "金星 合相 木星",
+            "strength": 0.364,
+            "nature": "supportive",
+            "summary": "金星与木星合流，主题会被放大。"
+          },
+          {
+            "title": "水星 六合 火星",
+            "strength": 0.35,
+            "nature": "supportive",
+            "summary": "水星与火星互相配合，适合主动争取。"
+          },
+          {
+            "title": "水星 刑相 土星",
+            "strength": 0.279,
+            "nature": "challenging",
+            "summary": "水星与土星存在张力，逼你调整方法。"
+          },
+          {
+            "title": "月亮 六合 木星",
+            "strength": 0.1,
+            "nature": "supportive",
+            "summary": "月亮与木星互相配合，适合主动争取。"
+          }
+        ]
+      }
+    }
+  },
+  "stored_at": "2026-06-29T08:17:02.131994"
+}

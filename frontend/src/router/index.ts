@@ -21,5 +21,10 @@ export default createRouter({
       name: "report",
       component: () => import("@/views/Kline/index.vue"),
     },
+    {
+      path: "/monthly-return/:id?",
+      name: "monthly-return",
+      component: () => import("@/views/MonthlyReturn/index.vue"),
+    },
   ],
 });
