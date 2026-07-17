@@ -79,7 +79,7 @@ ANALYSIS_TYPES: List[Dict[str, Any]] = [
             "后续将通过小限、年度主星与主题宫位，判断某一年应把火力集中在哪里。"
         ),
         "category": "timing",
-        "status": "planned",
+        "status": "paused",
         "subjects_count": 1,
         "required_inputs": ["birth_time", "lat", "lon", "timezone"],
         "engines": ["natal_core", "profection"],
@@ -96,7 +96,7 @@ ANALYSIS_TYPES: List[Dict[str, Any]] = [
             "生命阶段演化。"
         ),
         "category": "timing",
-        "status": "planned",
+        "status": "paused",
         "subjects_count": 1,
         "required_inputs": ["birth_time", "lat", "lon", "timezone"],
         "engines": ["natal_core", "secondary_progression"],
@@ -113,7 +113,7 @@ ANALYSIS_TYPES: List[Dict[str, Any]] = [
             "来解释关系。"
         ),
         "category": "relationship",
-        "status": "planned",
+        "status": "paused",
         "subjects_count": 2,
         "required_inputs": ["birth_time", "lat", "lon", "timezone"],
         "engines": ["natal_core", "synastry"],

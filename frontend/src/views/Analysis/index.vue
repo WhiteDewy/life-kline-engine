@@ -5,7 +5,7 @@
     <div class="wrap">
       <section v-if="analysis" class="hero">
         <div class="heroMain">
-          <div class="eyebrow">Reading Setup</div>
+          <div class="eyebrow">你好，很高兴认识你</div>
           <div class="heroTop">
             <div>
               <h1 class="title">{{ analysis.title }}</h1>
@@ -35,7 +35,6 @@
         </div>
 
         <aside class="heroAside">
-          <div class="panelEyebrow">What You'll Get</div>
           <h2 class="panelTitle">这次解读会告诉你什么</h2>
           <div class="moduleList">
             <span v-for="module in analysis.modules" :key="module" class="moduleChip">
@@ -55,10 +54,10 @@
 
       <section v-if="analysis" class="contentGrid">
         <article class="panel introPanel">
-          <div class="panelEyebrow">Before We Start</div>
-          <h2 class="panelTitle">先补全你的出生资料</h2>
+          <div class="panelEyebrow">在开始之前</div>
+          <h2 class="panelTitle">先简单介绍一下你自己</h2>
           <p class="panelText">
-            出生时间与地点会影响上升、宫位和阶段推演。资料越准确，报告越能贴近你的真实节奏。
+            这些信息帮我画出你出生那一刻的天空——那是你人生的出厂设置。出生时间与地点越准确，解读越能贴近你的真实节奏。
           </p>
           <ul class="list">
             <li>当前支持单人解读，适合查看个人阶段、人生主轴与关键趋势。</li>
@@ -70,8 +69,8 @@
         <el-card class="formCard" shadow="never">
           <div class="formHeader">
             <div>
-              <div class="panelEyebrow">Birth Data</div>
-              <h2 class="formTitle">录入这次解读所需的信息</h2>
+              <div class="panelEyebrow">你的出生信息</div>
+              <h2 class="formTitle">帮我画出你出生那一刻的天空</h2>
             </div>
             <el-alert
               v-if="analysis.status !== 'active'"
@@ -89,7 +88,7 @@
           <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="form">
             <div class="twoCol">
               <el-form-item label="你的称呼（可选）" prop="name">
-                <el-input v-model="form.name" placeholder="例如：Luna" clearable />
+                <el-input v-model="form.name" placeholder="例如：小明" clearable />
               </el-form-item>
 
               <el-form-item label="性别" prop="gender">
@@ -150,10 +149,21 @@
                 :disabled="analysis.status !== 'active'"
                 @click="onSubmit"
               >
-                {{ analysis.primary_cta }}
+                {{ ctaText }}
               </el-button>
             </div>
           </el-form>
+
+          <!-- 生成中动画 -->
+          <div class="generatingOverlay" v-if="loading">
+            <div class="genStages">
+              <div class="genStage" v-for="(stage, i) in loadingStages" :key="i"
+                :class="{ active: loadingStageIndex >= i, current: loadingStageIndex === i }">
+                <span class="genDot"></span>
+                <span class="genLabel">{{ stage }}</span>
+              </div>
+            </div>
+          </div>
         </el-card>
       </section>
     </div>
@@ -300,7 +310,7 @@ import { ElMessage, type FormInstance, type FormRules } from "element-plus";
 import { Location, Position } from "@element-plus/icons-vue";
 import { regionData, codeToText } from "element-china-area-data";
 import { apiClient } from "@/config/api";
-import { DEFAULT_TEST_SUBJECT as SHARED_DEFAULT_TEST_SUBJECT } from "@/config/examples";
+// default test subject inlined below
 import { getTestUserProfileByKey } from "@/config/testProfiles";
 import {
   composeCoordinateValue,
@@ -321,6 +331,23 @@ const locationMode = ref<"auto" | "custom">("auto");
 const selectedOptions = ref<string[]>([]);
 const geoLoading = ref(false);
 const loading = ref(false);
+const loadingStageIndex = ref(-1);
+let loadingStageTimer: ReturnType<typeof setInterval> | null = null;
+
+const loadingStages = [
+  "正在计算你的星盘…",
+  "分析你的性格结构…",
+  "匹配你当前的人生阶段…",
+  "整理你的专属解读…",
+];
+
+const ctaText = computed(() => {
+  const key = analysis.value?.key;
+  if (key === "natal_blueprint") return "开始了解我自己";
+  if (key === "phase_navigation") return "看清我现在的位置";
+  if (key === "monthly_lunar_return") return "看看这个月";
+  return analysis.value?.primary_cta || "开始解读";
+});
 
 const timezonePresets = [
   { value: -12 },
@@ -365,16 +392,14 @@ const DEFAULT_TEST_SUBJECT = {
   timezone: 8,
 };
 
-void DEFAULT_TEST_SUBJECT;
-
 const form = reactive({
-  name: SHARED_DEFAULT_TEST_SUBJECT.name,
-  gender: SHARED_DEFAULT_TEST_SUBJECT.gender,
-  birthDatetime: SHARED_DEFAULT_TEST_SUBJECT.birthDatetime,
-  birthPlace: SHARED_DEFAULT_TEST_SUBJECT.birthPlace,
-  lat: SHARED_DEFAULT_TEST_SUBJECT.lat,
-  lon: SHARED_DEFAULT_TEST_SUBJECT.lon,
-  timezone: SHARED_DEFAULT_TEST_SUBJECT.timezone,
+  name: DEFAULT_TEST_SUBJECT.name,
+  gender: DEFAULT_TEST_SUBJECT.gender,
+  birthDatetime: DEFAULT_TEST_SUBJECT.birthDatetime,
+  birthPlace: DEFAULT_TEST_SUBJECT.birthPlace,
+  lat: DEFAULT_TEST_SUBJECT.lat,
+  lon: DEFAULT_TEST_SUBJECT.lon,
+  timezone: DEFAULT_TEST_SUBJECT.timezone,
 });
 
 const manualCoords = reactive({
@@ -578,7 +603,7 @@ function savePlaceSettings() {
 }
 
 function resetForm() {
-  const profile = currentProfile() || SHARED_DEFAULT_TEST_SUBJECT;
+  const profile = currentProfile() || DEFAULT_TEST_SUBJECT;
   form.name = profile.name;
   form.gender = profile.gender;
   form.birthDatetime = profile.birthDatetime;
@@ -607,6 +632,13 @@ async function onSubmit() {
   }
 
   loading.value = true;
+  loadingStageIndex.value = 0;
+  loadingStageTimer = setInterval(() => {
+    if (loadingStageIndex.value < loadingStages.length - 1) {
+      loadingStageIndex.value++;
+    }
+  }, 1500);
+
   try {
     const response = await apiClient.post<AnalysisResponse<Record<string, any>>>("/analyses", {
       analysis_type: analysis.value.key,
@@ -623,11 +655,14 @@ async function onSubmit() {
     });
 
     if (response.data.status === "success" && response.data.report_id) {
+      loadingStageIndex.value = loadingStages.length;
       const routeName = analysis.value.key === "monthly_lunar_return" ? "monthly-return" : "report";
-      router.push({
-        name: routeName,
-        params: { id: response.data.report_id },
-      });
+      setTimeout(() => {
+        router.push({
+          name: routeName,
+          params: { id: response.data.report_id },
+        });
+      }, 300);
       return;
     }
 
@@ -638,6 +673,11 @@ async function onSubmit() {
     ElMessage.error(detail || "请求失败，请检查后端服务是否已启动");
   } finally {
     loading.value = false;
+    if (loadingStageTimer) {
+      clearInterval(loadingStageTimer);
+      loadingStageTimer = null;
+    }
+    loadingStageIndex.value = -1;
   }
 }
 
@@ -1049,6 +1089,53 @@ onMounted(() => {
 
 .errorCard {
   border-color: rgba(244, 63, 94, 0.24);
+}
+
+/* ── 生成中动画 ── */
+.generatingOverlay {
+  margin-top: 24px;
+  padding: 28px 24px;
+  border-radius: 20px;
+  border: 1px solid rgba(212, 175, 55, 0.10);
+  background: rgba(15, 23, 42, 0.55);
+}
+.genStages {
+  display: grid;
+  gap: 16px;
+}
+.genStage {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0.3;
+  transition: opacity 0.5s;
+}
+.genStage.active {
+  opacity: 1;
+}
+.genDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #475569;
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+.genStage.current .genDot {
+  background: #d4af37;
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
+  animation: pulse-dot 1s ease-in-out infinite;
+}
+.genLabel {
+  color: #94a3b8;
+  font-size: 14px;
+}
+.genStage.current .genLabel {
+  color: #e2e8f0;
+}
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.6); }
 }
 
 @media (max-width: 1100px) {

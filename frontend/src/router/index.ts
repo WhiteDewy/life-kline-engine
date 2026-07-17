@@ -26,5 +26,10 @@ export default createRouter({
       name: "monthly-return",
       component: () => import("@/views/MonthlyReturn/index.vue"),
     },
+    {
+      path: "/history",
+      name: "history",
+      component: () => import("@/views/History/index.vue"),
+    },
   ],
 });

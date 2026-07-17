@@ -1,14 +1,38 @@
 <template>
-  <AppShell @help="onHelp" @history="onHistory"> <router-view /></AppShell>
-</template>
-<script setup lang="ts">
-import AppShell from "@/layouts/AppShell.vue";
+  <AppShell
+    :logged-in="isLoggedIn"
+    :user-phone="user?.phone"
+    @login="showLogin = true"
+    @history="goHistory"
+  >
+    <router-view />
+  </AppShell>
 
-function onHelp() {
-  // 打开 Element Plus Dialog / Drawer
+  <LoginModal
+    :visible="showLogin"
+    @close="showLogin = false"
+    @logged-in="onLoggedIn"
+  />
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import AppShell from "@/layouts/AppShell.vue";
+import LoginModal from "@/components/LoginModal.vue";
+import { useAuth } from "@/utils/auth";
+
+const router = useRouter();
+const { user, isLoggedIn, loadMe } = useAuth();
+const showLogin = ref(false);
+
+onMounted(() => loadMe());
+
+function onLoggedIn() {
+  showLogin.value = false;
 }
-function onHistory() {
-  // 打开历史记录页 / Drawer
+
+function goHistory() {
+  router.push({ name: "history" });
 }
 </script>
-<style></style>

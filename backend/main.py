@@ -7,10 +7,13 @@ import math
 import os
 import sys
 import uuid
-from datetime import datetime
+import random
+import hashlib
+import time as _time
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -18,6 +21,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..",
 
 from life_kline.analysis_catalog import get_analysis_type, list_analysis_types
 from life_kline.service import LifeKlineService
+
+from backend.database import get_db, init_db, _uid, _now
 
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
@@ -323,6 +328,51 @@ class GeocodeResult(FlexibleModel):
     data: Dict[str, Any]
 
 
+# ── 用户系统 ──────────────────────────────────────────────
+
+JWT_SECRET = os.getenv("LIFE_KLINE_JWT_SECRET", "dev-secret-change-in-production")
+
+
+def _make_token(user_id: str) -> str:
+    payload = f"{user_id}:{int(_time.time())}"
+    sig = hashlib.sha256(f"{payload}:{JWT_SECRET}".encode()).hexdigest()[:16]
+    return f"{payload}:{sig}"
+
+
+def _parse_token(token: str) -> Optional[str]:
+    try:
+        parts = token.split(":")
+        if len(parts) != 3:
+            return None
+        user_id, ts, sig = parts
+        expected = hashlib.sha256(f"{user_id}:{ts}:{JWT_SECRET}".encode()).hexdigest()[:16]
+        if sig != expected:
+            return None
+        if int(_time.time()) - int(ts) > 86400 * 30:
+            return None
+        return user_id
+    except Exception:
+        return None
+
+
+class SendCodeInput(FlexibleModel):
+    phone: str
+
+
+class VerifyCodeInput(FlexibleModel):
+    phone: str
+    code: str
+
+
+class ProfileInput(FlexibleModel):
+    name: str = ""
+    gender: str = ""
+    birth_time: str
+    lat: float
+    lon: float
+    timezone: float = 8.0
+
+
 app = FastAPI(
     title="Life K-Line Engine API",
     description="Backend API for Life K-Line analysis.",
@@ -373,7 +423,7 @@ def load_report_record(report_id: str) -> Dict[str, Any]:
     }
 
 
-def run_analysis(input_data: AnalysisRequest) -> Dict[str, Any]:
+def run_analysis(input_data: AnalysisRequest, user_id: str = "", profile_id: str = "") -> Dict[str, Any]:
     if service is None:
         raise HTTPException(status_code=503, detail="Engine not initialized")
 
@@ -423,6 +473,18 @@ def run_analysis(input_data: AnalysisRequest) -> Dict[str, Any]:
         }
         save_report_record(report_id, record)
 
+        if user_id and profile_id:
+            try:
+                db = get_db()
+                db.execute(
+                    "INSERT INTO reports (id, profile_id, user_id, analysis_type, report_data, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+                    (report_id, profile_id, user_id, input_data.analysis_type, json.dumps(record, ensure_ascii=False), _now()),
+                )
+                db.commit()
+                db.close()
+            except Exception:
+                pass
+
         return {
             "status": "success",
             "report_id": report_id,
@@ -440,15 +502,6 @@ def run_analysis(input_data: AnalysisRequest) -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=f"Internal server error: {exc}") from exc
 
 
-@app.on_event("startup")
-async def startup_event() -> None:
-    global service
-    service = LifeKlineService()
-    provider_names = ["nominatim_global", "nominatim_cn", "maps_co"]
-    if AMAP_KEY:
-        provider_names.insert(0, "amap")
-    print(f"[life-kline] geocode providers: {', '.join(provider_names)}")
-
 
 @app.get("/")
 async def root() -> Dict[str, str]:
@@ -464,8 +517,42 @@ async def get_analysis_types() -> Dict[str, Any]:
 
 
 @app.post("/api/analyses", response_model=ServiceResponse)
-async def create_analysis(input_data: AnalysisRequest) -> Dict[str, Any]:
-    return run_analysis(input_data)
+async def create_analysis(input_data: AnalysisRequest, authorization: str = Header(default="")) -> Dict[str, Any]:
+    user_id = ""
+    profile_id = ""
+    token = authorization.replace("Bearer ", "")
+    uid = _parse_token(token)
+    if uid:
+        user_id = uid
+        if input_data.subjects:
+            s = input_data.subjects[0]
+            profile_id = _uid()
+            try:
+                db = get_db()
+                db.execute(
+                    "INSERT INTO profiles (id, user_id, name, gender, birth_time, lat, lon, timezone, is_default, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (profile_id, user_id, s.name or "", s.gender or "", s.birth_time, s.lat, s.lon, s.timezone, 0, _now()),
+                )
+                db.commit()
+                db.close()
+            except Exception:
+                profile_id = ""
+    return run_analysis(input_data, user_id=user_id, profile_id=profile_id)
+
+
+@app.get("/api/reports/history")
+async def report_history(authorization: str = Header(default="")) -> Dict[str, Any]:
+    token = authorization.replace("Bearer ", "")
+    user_id = _parse_token(token)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="请先登录")
+    db = get_db()
+    rows = db.execute(
+        "SELECT id, profile_id, analysis_type, created_at FROM reports WHERE user_id=? ORDER BY created_at DESC LIMIT 50",
+        (user_id,),
+    ).fetchall()
+    db.close()
+    return {"status": "success", "reports": [dict(r) for r in rows]}
 
 
 @app.get("/api/analyses/{report_id}", response_model=ServiceResponse)
@@ -505,6 +592,268 @@ async def get_report(report_id: str) -> Dict[str, Any]:
         "analysis": record["analysis"],
         "data": record["data"],
     }
+
+
+# ═══════════════════════════════════════════════════════════════
+# 角色系统 API
+# ═══════════════════════════════════════════════════════════════
+
+class CharacterChatInput(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    sign: str = Field(..., description="Sign key, e.g. 'ARIES'")
+    topic: str = Field(default="personal", description="Domain key")
+    message: Optional[str] = Field(default=None)
+    history: Optional[list[dict]] = Field(default_factory=list)
+
+class CouncilInput(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    topic: str = Field(..., description="Topic to discuss")
+    signs: Optional[list[str]] = Field(default=None, description="Signs to include; auto-selects top 3 if omitted")
+    message: Optional[str] = Field(default=None)
+
+
+@app.get("/api/characters/{report_id}")
+async def get_character_profiles(report_id: str) -> Dict[str, Any]:
+    """获取12星座个性化角色画像"""
+    record = load_report_record(report_id)
+    data = record.get("data", {})
+    characters = data.get("characters", {})
+    if not characters:
+        raise HTTPException(status_code=404, detail="Character profiles not found in this report")
+    return {"status": "success", "report_id": report_id, "data": characters}
+
+
+@app.get("/api/characters/{report_id}/daily")
+async def get_daily_activation(report_id: str) -> Dict[str, Any]:
+    """获取今日角色激活度和登场角色"""
+    record = load_report_record(report_id)
+    user_info = record.get("data", {}).get("user_info", {})
+    if not user_info:
+        raise HTTPException(status_code=400, detail="User info missing from report")
+
+    from life_kline.ephemeris import EphemerisEngine
+    from life_kline.firdaria import FirdariaPeriod, calculate_firdaria_periods
+    from life_kline.constants import Planet
+    from life_kline.characters.character_engine import CharacterEngine
+    from life_kline.awakening.daily_engine import DailyAwakeningEngine
+
+    # 重建本命盘
+    engine = EphemerisEngine()
+    birth_time = datetime.fromisoformat(user_info.get("birth_time_utc", user_info.get("birth_time_local", "")))
+    lat = user_info.get("lat", 0.0)
+    lon = user_info.get("lon", 0.0)
+    chart = engine.calculate_chart(birth_time, lat, lon)
+
+    # 当前法达周期
+    is_day = user_info.get("is_day_chart", True)
+    birth_time_local = datetime.fromisoformat(user_info.get("birth_time_local", user_info.get("birth_time_utc", "")))
+    current_age = (datetime.now() - birth_time_local.replace(tzinfo=None)).days / 365.2422
+    periods = calculate_firdaria_periods(is_day)
+    current_period = None
+    for p in periods:
+        if p.start_age <= current_age < p.end_age:
+            current_period = p
+            break
+
+    # 计算每日激活
+    char_engine = CharacterEngine(chart)
+    daily_engine = DailyAwakeningEngine(chart, char_engine, current_period)
+    activation = daily_engine.compute_daily_activation()
+
+    return {"status": "success", "report_id": report_id, "data": activation.to_dict()}
+
+
+@app.post("/api/characters/{report_id}/chat")
+async def chat_with_character(report_id: str, body: CharacterChatInput) -> Dict[str, Any]:
+    """与指定星座角色对话"""
+    record = load_report_record(report_id)
+    data = record.get("data", {})
+
+    from life_kline.constants import Sign
+    try:
+        sign = Sign(body.sign.upper())
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=400, detail=f"Invalid sign: {body.sign}")
+
+    # 获取角色画像
+    characters = data.get("characters", {}).get("characters", {})
+    char_data = characters.get(sign.value, {})
+    if not char_data:
+        raise HTTPException(status_code=404, detail=f"Character {body.sign} not found")
+
+    persona = char_data.get("persona", {})
+
+    # 构建角色风格的回复（规则驱动，不依赖 LLM）
+    topic_labels: dict[str, str] = {
+        "personal": "你的性格底色",
+        "career": "事业方向",
+        "finance": "财务格局",
+        "romance": "桃花感情",
+        "marriage": "婚姻画像",
+        "family": "原生家庭",
+        "work_skill": "工作技能",
+        "education": "学业方向",
+        "health": "健康体质",
+        "appearance": "外形气质",
+        "partnership": "事业合伙",
+        "children": "亲子关系",
+    }
+    topic_label = topic_labels.get(body.topic, body.topic)
+
+    # 领域洞察
+    domain_data = data.get("domains", {}).get(body.topic, {})
+    core_theme = domain_data.get("core_theme", "")
+    structure = domain_data.get("structure", "")[:300]
+
+    # 角色声音
+    voice_tone = persona.get("voice_tone", "")
+    advice_approach = persona.get("advice_approach", "")
+    archetype = persona.get("archetype", "")
+    gift = persona.get("gift_to_user", "")
+
+    user_msg = body.message or ""
+    has_user_msg = bool(user_msg.strip())
+
+    # 构造回复
+    if has_user_msg:
+        response = (
+            f"你说的'{user_msg[:50]}{'...' if len(user_msg) > 50 else ''}'——我听到了。\n\n"
+            f"从我的视角来看（我是你的{archetype}），关于{topic_label}：\n"
+            f"{core_theme}\n\n"
+            f"{structure[:200]}{'...' if len(structure) > 200 else ''}\n\n"
+            f"{gift}"
+        )
+    else:
+        response = (
+            f"嘿，关于{topic_label}，让我用我的方式跟你说——\n\n"
+            f"{core_theme}\n\n"
+            f"{structure[:200]}{'...' if len(structure) > 200 else ''}\n\n"
+            f"我的风格是：{advice_approach}\n\n"
+            f"你想具体聊聊什么？"
+        )
+
+    suggested_followup = persona.get("expertise_domains", ["personal"])[0]
+
+    # 记录对话到成长追踪器
+    try:
+        from life_kline.growth.growth_tracker import GrowthTracker
+        tracker = GrowthTracker(report_id)
+        tracker.record_conversation(sign, body.topic, body.message or "(开场)", response)
+    except Exception:
+        pass  # 成长追踪失败不影响对话
+
+    return {
+        "status": "success",
+        "data": {
+            "character": sign.value,
+            "character_name": persona.get("name", sign.value),
+            "response": response,
+            "emotional_tone": persona.get("element", "火"),
+            "suggested_followup": suggested_followup,
+        },
+    }
+
+
+@app.post("/api/characters/{report_id}/council")
+async def character_council(report_id: str, body: CouncilInput) -> Dict[str, Any]:
+    """获取多个角色对同一话题的不同视角"""
+    record = load_report_record(report_id)
+    data = record.get("data", {})
+
+    from life_kline.constants import Sign
+    characters = data.get("characters", {}).get("characters", {})
+
+    # 选择角色：指定或自动选 top 3
+    if body.signs:
+        selected = body.signs
+    else:
+        sorted_chars = data.get("characters", {}).get("sorted_by_presence", [])
+        selected = [c["sign"] for c in sorted_chars[:3]]
+
+    topic_labels: dict[str, str] = {
+        "personal": "你的性格底色", "career": "事业方向", "finance": "财务格局",
+        "romance": "桃花感情", "marriage": "婚姻画像", "family": "原生家庭",
+        "work_skill": "工作技能", "education": "学业方向", "health": "健康体质",
+    }
+    topic_label = topic_labels.get(body.topic, body.topic)
+    domain_data = data.get("domains", {}).get(body.topic, {})
+    core_theme = domain_data.get("core_theme", "")
+
+    perspectives = []
+    for sign_str in selected:
+        char_data = characters.get(sign_str, {})
+        persona = char_data.get("persona", {})
+        role_tag = char_data.get("role_tag", "")
+
+        if role_tag == "天赋角色":
+            angle = f"从我的角度看，{topic_label}是你的天然优势——{core_theme}"
+        elif role_tag == "课题角色":
+            angle = f"说实话，{topic_label}这个领域对你来说不太舒服。但正是因为不容易，你在这里的成长最有分量。"
+        else:
+            angle = f"关于{topic_label}，我的视角是：{core_theme}"
+
+        perspectives.append({
+            "character": sign_str,
+            "character_name": persona.get("name", sign_str),
+            "archetype": persona.get("archetype", ""),
+            "perspective": angle,
+            "visual_color": persona.get("visual_color", ""),
+        })
+
+    # 合成
+    role_tags = set()
+    for s in selected:
+        cd = characters.get(s, {})
+        role_tags.add(cd.get("role_tag", ""))
+    if len(role_tags) >= 2:
+        synthesis = f"你看，不同的角色看到了不同的东西——这说明{topic_label}对你来说是多维度的。整合这些视角，你会看得更全面。"
+    else:
+        synthesis = f"这些角色从不同角度看了{topic_label}。它们说的其实不冲突——加在一起，是一张更完整的地图。"
+
+    if body.message:
+        synthesis = f"关于你说的'{body.message[:50]}'——{synthesis}"
+
+    return {
+        "status": "success",
+        "data": {
+            "topic": body.topic,
+            "topic_label": topic_label,
+            "perspectives": perspectives,
+            "synthesis": synthesis,
+        },
+    }
+
+
+@app.get("/api/characters/{report_id}/growth")
+async def get_growth_data(report_id: str) -> Dict[str, Any]:
+    """获取用户成长数据"""
+    try:
+        from life_kline.growth.growth_tracker import GrowthTracker
+        tracker = GrowthTracker.load(report_id)
+        summary = tracker.get_growth_summary()
+        milestones = [m.to_dict() for m in tracker.milestones]
+        return {
+            "status": "success",
+            "report_id": report_id,
+            "data": {
+                "summary": summary.to_dict(),
+                "milestones": milestones,
+                "recent_conversations": [
+                    c.to_dict() for c in tracker.get_conversation_history(limit=10)
+                ],
+            },
+        }
+    except Exception as e:
+        return {
+            "status": "success",
+            "report_id": report_id,
+            "data": {
+                "summary": {"total_conversations": 0, "streak_days": 0},
+                "milestones": [],
+                "recent_conversations": [],
+                "note": f"Growth tracker not yet initialized: {e}",
+            },
+        }
 
 
 @app.post("/api/geocode", response_model=GeocodeResult)
@@ -668,6 +1017,102 @@ async def get_current_transit() -> Dict[str, Any]:
 
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+# ── 用户系统路由 ──────────────────────────────────────────
+
+@app.on_event("startup")
+async def startup_event() -> None:
+    init_db()
+    global service
+    service = LifeKlineService()
+    provider_names = ["nominatim_global", "nominatim_cn", "maps_co"]
+    if AMAP_KEY:
+        provider_names.insert(0, "amap")
+    print(f"[life-kline] geocode providers: {', '.join(provider_names)}")
+
+
+@app.post("/api/auth/send-code")
+async def send_code(body: SendCodeInput) -> Dict[str, Any]:
+    phone = body.phone.strip()
+    if not phone or len(phone) < 10:
+        raise HTTPException(status_code=400, detail="请输入有效的手机号")
+    code = str(random.randint(100000, 999999))
+    db = get_db()
+    db.execute(
+        "INSERT INTO verify_codes (phone, code, expires_at) VALUES (?, ?, ?)",
+        (phone, code, (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat()),
+    )
+    db.commit()
+    db.close()
+    print(f"[sms] {phone}: {code}")
+    return {"status": "success", "message": "验证码已发送（开发模式：查看控制台）"}
+
+
+@app.post("/api/auth/verify-code")
+async def verify_code(body: VerifyCodeInput) -> Dict[str, Any]:
+    phone, code = body.phone.strip(), body.code.strip()
+    db = get_db()
+    row = db.execute(
+        "SELECT id, code, expires_at FROM verify_codes WHERE phone=? AND used=0 ORDER BY id DESC LIMIT 1",
+        (phone,),
+    ).fetchone()
+    if not row:
+        db.close()
+        raise HTTPException(status_code=400, detail="请先获取验证码")
+    if row["code"] != code:
+        db.close()
+        raise HTTPException(status_code=400, detail="验证码错误")
+    if row["expires_at"] < _now():
+        db.close()
+        raise HTTPException(status_code=400, detail="验证码已过期")
+    db.execute("UPDATE verify_codes SET used=1 WHERE id=?", (row["id"],))
+    user = db.execute("SELECT * FROM users WHERE phone=?", (phone,)).fetchone()
+    if not user:
+        user_id = _uid()
+        db.execute("INSERT INTO users (id, phone, nickname, created_at, last_login_at) VALUES (?, ?, ?, ?, ?)", (user_id, phone, "", _now(), _now()))
+    else:
+        user_id = user["id"]
+        db.execute("UPDATE users SET last_login_at=? WHERE id=?", (_now(), user_id))
+    db.commit()
+    db.close()
+    return {"status": "success", "token": _make_token(user_id), "user_id": user_id}
+
+
+@app.get("/api/me")
+async def get_me(authorization: str = Header(default="")) -> Dict[str, Any]:
+    uid = _parse_token(authorization.replace("Bearer ", ""))
+    if not uid:
+        raise HTTPException(status_code=401, detail="请先登录")
+    db = get_db()
+    user = db.execute("SELECT * FROM users WHERE id=?", (uid,)).fetchone()
+    profiles = db.execute("SELECT * FROM profiles WHERE user_id=? ORDER BY created_at DESC", (uid,)).fetchall()
+    db.close()
+    return {"status": "success", "user": dict(user) if user else None, "profiles": [dict(p) for p in profiles]}
+
+
+@app.post("/api/profiles")
+async def create_profile(body: ProfileInput, authorization: str = Header(default="")) -> Dict[str, Any]:
+    uid = _parse_token(authorization.replace("Bearer ", ""))
+    if not uid:
+        raise HTTPException(status_code=401, detail="请先登录")
+    pid = _uid()
+    db = get_db()
+    db.execute("INSERT INTO profiles (id, user_id, name, gender, birth_time, lat, lon, timezone, is_default, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (pid, uid, body.name, body.gender, body.birth_time, body.lat, body.lon, body.timezone, 0, _now()))
+    db.commit()
+    db.close()
+    return {"status": "success", "profile_id": pid}
+
+
+@app.get("/api/profiles")
+async def list_profiles(authorization: str = Header(default="")) -> Dict[str, Any]:
+    uid = _parse_token(authorization.replace("Bearer ", ""))
+    if not uid:
+        raise HTTPException(status_code=401, detail="请先登录")
+    db = get_db()
+    rows = db.execute("SELECT * FROM profiles WHERE user_id=? ORDER BY created_at DESC", (uid,)).fetchall()
+    db.close()
+    return {"status": "success", "profiles": [dict(r) for r in rows]}
 
 
 if __name__ == "__main__":

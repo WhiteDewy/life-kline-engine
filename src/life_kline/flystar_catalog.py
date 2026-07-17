@@ -41,8 +41,8 @@ BASE_ENTRY_REQUIRED_TARGET_HOUSES: HouseKeySet = tuple(range(1, 11))
 TARGET_HOUSE_FLIGHT_SECTIONS: TargetHouseSections = {
     1: {
         "title": "自我宫",
-        "theme": "上升 ASC，肉身、人格、外在形象、先天体质、第一印象、自我意志、早年生存状态",
-        "body": "头部、面部、无关、大脑",
+        "theme": "上升星座即人格面具——不是伪装，是你进入世界的默认姿态。外貌轮廓、体质底色、给别人的第一印象。1宫强的人存在感明显，走到哪都不容易被忽略，但也容易把人生所有议题都'与自己相关'。身体是你的第一张名片。",
+        "body": "头部、面部、五官、大脑",
         "entries": {
             1: {
                 "summary": "追求自我实现，彰显个人意志，天生先行者",
@@ -108,8 +108,8 @@ TARGET_HOUSE_FLIGHT_SECTIONS: TargetHouseSections = {
     },
     2: {
         "title": "财帛宫",
-        "theme": "正财财运、消费观、物质资源积累",
-        "body": "咽喉、颈部、五官感官",
+        "theme": "正财宫——劳动收入、谋生技能、消费模式、物质安全感。也代表身体的'物质层面'：饮食、体态、嗓音。2宫强的人对价值敏感，知道什么东西值多少钱，也知道自己值多少。它和5宫（投机财）、8宫（他人财）、11宫（群体财）并称四财宫，任何一个被引动都会带来财务上的变化。",
+        "body": "咽喉、颈部、甲状腺、嗓音",
         "entries": {
             1: {
                 "summary": "财星入命，为自己买单",
@@ -175,8 +175,8 @@ TARGET_HOUSE_FLIGHT_SECTIONS: TargetHouseSections = {
     },
     3: {
         "title": "交流宫",
-        "theme": "口才学习、出行运势、手足人际、初等教育",
-        "body": "手臂、肺部、呼吸道",
+        "theme": "信息处理系统——沟通方式、学习风格、听说读写。短途出行、兄弟姐妹、邻里关系、早期教育。3宫强的人闲不下来，总在接收或发出信息。这里也是'消息'的宫位——你通过什么渠道知道世界在发生什么，你又如何让别人知道你在做什么。",
+        "body": "手臂、肺部、呼吸道、神经系统",
         "entries": {
             1: {
                 "summary": "手足缘分深，爱动脑子口才好",
@@ -242,8 +242,8 @@ TARGET_HOUSE_FLIGHT_SECTIONS: TargetHouseSections = {
     },
     4: {
         "title": "田宅宫",
-        "theme": "原生家庭、房产祖产、内心安全感、晚年运势、 家族根基",
-        "body": "胸腔、胸口、胃",
+        "theme": "原生家庭、房产土地、家族根源、内心深处的情感地基。父亲（古占以4宫看父）。童年住过的房子、成年后给自己筑的窝、晚年归宿。4宫强的人'根'的意识重——要么特别恋家，要么特别想逃离家，但不管哪种，家庭议题是他们一生的底层代码。",
+        "body": "胸腔、胸口、胃、乳腺",
         "entries": {
             1: {
                 "summary": "身负家族使命",
@@ -309,8 +309,8 @@ TARGET_HOUSE_FLIGHT_SECTIONS: TargetHouseSections = {
     },
     5: {
         "title": "恋爱子女宫",
-        "theme": "桃花姻缘、玩乐爱好、创作天赋、子女运势",
-        "body": "心脏、后背",
+        "theme": "投机财宫——也是恋爱、创作、娱乐、子女。5宫强的人需要舞台：不管是恋爱的舞台、创作的舞台、还是赌一把的舞台。他们身上有一种'玩'的天赋，能把人生过得有趣。但过度则容易沉溺享乐、投机失控。子女运和偏财运都指向这里。四财宫之一。",
+        "body": "心脏、后背、脊柱",
         "entries": {
             1: {
                 "summary": "论演员的自我修养与创作天赋",
@@ -376,8 +376,8 @@ TARGET_HOUSE_FLIGHT_SECTIONS: TargetHouseSections = {
     },
     6: {
         "title": "健康工作宫",
-        "theme": "匠人精神、日常劳务",
-        "body": "腹部、肠道、消化",
+        "theme": "日常工作——不是事业理想，是每天具体做什么。技能、流程、同事下属、服务与被服务的关系。健康管理、慢性病、养生习惯。6宫强的人往往是'把事做好'的那类人，但也容易过度操心细节、把自己累到。身体是最诚实的信号：你的工作方式对不对，身体会告诉你。",
+        "body": "腹部、肠道、消化系统",
         "entries": {
             1: {
                 "summary": "出众的职业技能，手艺人",
@@ -443,8 +443,8 @@ TARGET_HOUSE_FLIGHT_SECTIONS: TargetHouseSections = {
     },
     7: {
         "title": "伴侣人际宫",
-        "theme": "婚姻正缘、合作关系、对手贵人、一对一关系",
-        "body": "腰、肾脏",
+        "theme": "婚姻正缘、事业合伙、公开的对手、契约关系。7宫强的人一生绕不开'别人'——伴侣、合伙人、客户、甚至敌人，都是他们自我认知的镜子。14宫的对面:1宫是你独自的姿态，7宫是你和别人站在一起时的样子。7宫也涉及法律契约和公开纠纷——离婚、诉讼、合同争议都指向这里。与9宫联动时，法律和司法领域的职业倾向明显。",
+        "body": "腰、肾脏、下背",
         "entries": {
             1: {
                 "summary": "权衡利弊，处事周全",
@@ -510,7 +510,7 @@ TARGET_HOUSE_FLIGHT_SECTIONS: TargetHouseSections = {
     },
     8: {
         "title": "隐秘偏财宫",
-        "theme": "秘密欲望、投资偏财、生死业力、他人资源、财产继承",
+        "theme": "他人财宫——投资、合伙财、遗产、保险理赔、伴侣的钱。8宫也是危机、转化、死亡与重生的宫位——手术、重大变故、深度心理治疗。四财宫之一。8宫强的人天生对'表面之下的东西'敏感：钱从哪来、钱怎么流动、谁在暗处动了手脚。当他们把这种敏感用在正途，是投资和风险管理的天赋；用歪了就成了算计和控制的漩涡。与11宫联动时，常出现在财务、金融、保险从业者的星盘中。",
         "body": "生殖系统、排泄器官",
         "entries": {
             1: {
@@ -577,8 +577,8 @@ TARGET_HOUSE_FLIGHT_SECTIONS: TargetHouseSections = {
     },
     9: {
         "title": "高等学识宫",
-        "theme": "远行游学、信仰三观、异地运势、法律学业",
-        "body": "臀部、大腿",
+        "theme": "高等教育、长途旅行、异国文化、哲学与信仰、法律与出版。你相信什么？你的'神'在哪里——可能是宗教的神，也可能是知识的神、远方的神。9宫强的人需要意义的支撑：做一件事之前要先搞清楚'为什么'。这里也是法律宫——诉讼、仲裁、跨国法规都与9宫有关。与7宫联动时，法律职业倾向明显。",
+        "body": "臀部、大腿、肝脏",
         "entries": {
             1: {
                 "summary": "驿马入命、人生浮萍",
@@ -644,8 +644,8 @@ TARGET_HOUSE_FLIGHT_SECTIONS: TargetHouseSections = {
     },
     10: {
         "title": "事业名望宫",
-        "theme": "职场仕途、社会地位、上级贵人、公众名声",
-        "body": "膝盖、骨骼",
+        "theme": "社会地位、职业成就、公众形象、人生志业。母亲（古占以10宫看母）。10宫强的人有'向上走'的驱动力——不是每个10宫强的人都身居高位，但每个人都深刻关心自己在社会中的位置和评价。这是你的山顶：不只是头衔，而是你愿意为这个世界承担什么。天顶 MC 落在这里——它不是你能藏起来的宫位。",
+        "body": "膝盖、骨骼、牙齿、皮肤",
         "entries": {
             1: {
                 "summary": "百炼成钢、屡败屡战",
@@ -711,8 +711,8 @@ TARGET_HOUSE_FLIGHT_SECTIONS: TargetHouseSections = {
     },
     11: {
         "title": "大众福德宫",
-        "theme": "互联网 社会团体 资源",
-        "body": "小腿、脚踝",
+        "theme": "群体财宫——也是友谊、社群、社会网络、长期愿景。四财宫之一。11宫强的人天生懂得'人多力量大'：他们的资源和机会往往来自圈子和人脉，而非单打独斗。互联网、粉丝经济、社群运营、公司财务和政府资源都指向这里。但11宫的财富是'流动的'——进得快、散得也快，需要结构来兜住。与8宫联动时常见于金融、保险、基金从业者。",
+        "body": "小腿、脚踝、循环系统",
         "entries": {
             1: {
                 "summary": "善结人缘",
@@ -778,8 +778,8 @@ TARGET_HOUSE_FLIGHT_SECTIONS: TargetHouseSections = {
     },
     12: {
         "title": "玄秘宫",
-        "theme": "隐秘敌人、暗中小人、潜意识、业力、牢狱医院、隐居、牺牲、自我阻碍、隐秘悲伤、梦境、灵性修行、损耗破财、幕后阴谋、隔离之地",
-        "body": "双脚、免疫系统、隐秘病灶",
+        "theme": "业力与消融、潜意识、梦境、灵性、艺术灵感。也是医院、监狱、闭关、海外远居之地——所有需要'与世隔绝'的空间。12宫强的人身上有一种'边界模糊'的特质：他们容易被外界渗透，也容易在无形中影响别人。这里是小人宫，也是福报宫——你用什么方式对待他人，最终会以同样的方式回流。耗损、牺牲、放手、疗愈都在这里。它不是纯粹的恶宫，但需要觉知——看不见的力量最有力量。",
+        "body": "双脚、免疫系统、淋巴、松果体",
         "entries": {
             1: {
                 "summary": "悲剧艺术家、高灵高敏多梦",
@@ -946,4 +946,26 @@ def get_house_ruler_flight_entry(source_house: int, target_house: int) -> Option
         "summary": entry["summary"],
         "positive": entry["positive"],
         "negative": entry["negative"],
+    }
+
+
+def get_house_ruler_flight_with_planet_mod(
+    source_house: int,
+    target_house: int,
+    planet_name: str,
+    dignified: bool = False,
+    debilitated: bool = False,
+) -> Optional[Dict[str, Any]]:
+    """获取飞星条目 + 自动生成的 planet_mod 文本。"""
+    base = get_house_ruler_flight_entry(source_house, target_house)
+    if not base:
+        return None
+
+    from .interpretation.flystar_rules import generate_planet_mod
+    planet_mod = generate_planet_mod(planet_name, target_house, dignified, debilitated)
+
+    return {
+        **base,
+        "planet_name": planet_name,
+        "planet_mod": planet_mod,
     }

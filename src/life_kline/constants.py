@@ -6,8 +6,10 @@ constants.py - 占星常量定义
 2. 星座映射
 3. 庙旺失陷映射表
 4. 相位配置
-5. 接纳权重表
-6. 其他技术常量
+5. 接纳权重表（含分级加权）
+6. 三分主星/界主/面主度数表
+7. 四维基准线权重配置
+8. 其他技术常量
 """
 
 from enum import Enum
@@ -215,6 +217,266 @@ RECEPTION_WEIGHTS: Dict[str, float] = {
 }
 
 # ============================================================================
+# 5.1 接纳加权等级（PRD v1.3 §4.5）
+# 被谁接纳，权重不同。日月主贵，金木主富，水土火主执行，三王主时代机遇。
+# ============================================================================
+
+RECEPTION_TIER_SCORES: Dict[str, float] = {
+    "luminary": 3.0,     # 日月接纳 — "被点亮，存在本身被认可"
+    "benefic": 2.0,      # 金木接纳 — "有人铺路，有人给资源"
+    "practical": 1.0,    # 水土火接纳 — "有人出主意/搭框架/替你冲"
+    "outer": 0.5,        # 三王星接纳 — "时代的风在推你"
+    "chart_ruler_bonus": 1.0,  # 被命主星接纳 — 在所属等级基础上额外+1
+}
+
+RECEPTION_TIER_MAP: Dict[str, str] = {
+    "SUN": "luminary",
+    "MOON": "luminary",
+    "VENUS": "benefic",
+    "JUPITER": "benefic",
+    "MERCURY": "practical",
+    "SATURN": "practical",
+    "MARS": "practical",
+    "URANUS": "outer",
+    "NEPTUNE": "outer",
+    "PLUTO": "outer",
+}
+
+# ============================================================================
+# 5.2 三分主星配置（不分昼夜，PRD v1.3 §4.2）
+# ============================================================================
+
+TRIPLICITY_RULERS: Dict[str, List[str]] = {
+    "fire": ["SUN", "JUPITER", "SATURN"],
+    "earth": ["VENUS", "MOON", "MARS"],
+    "air": ["SATURN", "MERCURY", "JUPITER"],
+    "water": ["VENUS", "MARS", "MOON"],
+}
+
+SIGN_ELEMENT: Dict[str, str] = {
+    "ARIES": "fire", "LEO": "fire", "SAGITTARIUS": "fire",
+    "TAURUS": "earth", "VIRGO": "earth", "CAPRICORN": "earth",
+    "GEMINI": "air", "LIBRA": "air", "AQUARIUS": "air",
+    "CANCER": "water", "SCORPIO": "water", "PISCES": "water",
+}
+
+SIGN_MODALITY: Dict[str, str] = {
+    "ARIES": "cardinal", "CANCER": "cardinal", "LIBRA": "cardinal", "CAPRICORN": "cardinal",
+    "TAURUS": "fixed", "LEO": "fixed", "SCORPIO": "fixed", "AQUARIUS": "fixed",
+    "GEMINI": "mutable", "VIRGO": "mutable", "SAGITTARIUS": "mutable", "PISCES": "mutable",
+}
+
+# ============================================================================
+# 5.3 界主星度数表（标准埃及界 Term/Bound，PRD v1.3 §4.2）
+# 每个星座 5 个度数区间，按 [start, end) 划分
+# ============================================================================
+
+TERM_BOUNDS: Dict[str, List[Dict[str, object]]] = {
+    "ARIES": [
+        {"start": 0, "end": 6, "ruler": "JUPITER"},
+        {"start": 6, "end": 12, "ruler": "VENUS"},
+        {"start": 12, "end": 18, "ruler": "MERCURY"},
+        {"start": 18, "end": 24, "ruler": "MARS"},
+        {"start": 24, "end": 30, "ruler": "SATURN"},
+    ],
+    "TAURUS": [
+        {"start": 0, "end": 6, "ruler": "VENUS"},
+        {"start": 6, "end": 12, "ruler": "MERCURY"},
+        {"start": 12, "end": 18, "ruler": "JUPITER"},
+        {"start": 18, "end": 24, "ruler": "SATURN"},
+        {"start": 24, "end": 30, "ruler": "MARS"},
+    ],
+    "GEMINI": [
+        {"start": 0, "end": 6, "ruler": "MERCURY"},
+        {"start": 6, "end": 12, "ruler": "JUPITER"},
+        {"start": 12, "end": 18, "ruler": "VENUS"},
+        {"start": 18, "end": 24, "ruler": "MARS"},
+        {"start": 24, "end": 30, "ruler": "SATURN"},
+    ],
+    "CANCER": [
+        {"start": 0, "end": 6, "ruler": "MARS"},
+        {"start": 6, "end": 12, "ruler": "VENUS"},
+        {"start": 12, "end": 18, "ruler": "MERCURY"},
+        {"start": 18, "end": 24, "ruler": "JUPITER"},
+        {"start": 24, "end": 30, "ruler": "SATURN"},
+    ],
+    "LEO": [
+        {"start": 0, "end": 6, "ruler": "JUPITER"},
+        {"start": 6, "end": 12, "ruler": "VENUS"},
+        {"start": 12, "end": 18, "ruler": "SATURN"},
+        {"start": 18, "end": 24, "ruler": "MERCURY"},
+        {"start": 24, "end": 30, "ruler": "MARS"},
+    ],
+    "VIRGO": [
+        {"start": 0, "end": 6, "ruler": "MERCURY"},
+        {"start": 6, "end": 12, "ruler": "VENUS"},
+        {"start": 12, "end": 18, "ruler": "JUPITER"},
+        {"start": 18, "end": 24, "ruler": "SATURN"},
+        {"start": 24, "end": 30, "ruler": "MARS"},
+    ],
+    "LIBRA": [
+        {"start": 0, "end": 6, "ruler": "SATURN"},
+        {"start": 6, "end": 12, "ruler": "MERCURY"},
+        {"start": 12, "end": 18, "ruler": "JUPITER"},
+        {"start": 18, "end": 24, "ruler": "VENUS"},
+        {"start": 24, "end": 30, "ruler": "MARS"},
+    ],
+    "SCORPIO": [
+        {"start": 0, "end": 6, "ruler": "MARS"},
+        {"start": 6, "end": 12, "ruler": "VENUS"},
+        {"start": 12, "end": 18, "ruler": "MERCURY"},
+        {"start": 18, "end": 24, "ruler": "JUPITER"},
+        {"start": 24, "end": 30, "ruler": "SATURN"},
+    ],
+    "SAGITTARIUS": [
+        {"start": 0, "end": 6, "ruler": "JUPITER"},
+        {"start": 6, "end": 12, "ruler": "VENUS"},
+        {"start": 12, "end": 18, "ruler": "MERCURY"},
+        {"start": 18, "end": 24, "ruler": "SATURN"},
+        {"start": 24, "end": 30, "ruler": "MARS"},
+    ],
+    "CAPRICORN": [
+        {"start": 0, "end": 6, "ruler": "MERCURY"},
+        {"start": 6, "end": 12, "ruler": "JUPITER"},
+        {"start": 12, "end": 18, "ruler": "VENUS"},
+        {"start": 18, "end": 24, "ruler": "SATURN"},
+        {"start": 24, "end": 30, "ruler": "MARS"},
+    ],
+    "AQUARIUS": [
+        {"start": 0, "end": 6, "ruler": "MERCURY"},
+        {"start": 6, "end": 12, "ruler": "VENUS"},
+        {"start": 12, "end": 18, "ruler": "JUPITER"},
+        {"start": 18, "end": 24, "ruler": "MARS"},
+        {"start": 24, "end": 30, "ruler": "SATURN"},
+    ],
+    "PISCES": [
+        {"start": 0, "end": 6, "ruler": "VENUS"},
+        {"start": 6, "end": 12, "ruler": "JUPITER"},
+        {"start": 12, "end": 18, "ruler": "MERCURY"},
+        {"start": 18, "end": 24, "ruler": "MARS"},
+        {"start": 24, "end": 30, "ruler": "SATURN"},
+    ],
+}
+
+# ============================================================================
+# 5.4 面主星度数表（Chaldean Decans / Face，PRD v1.3 §4.2）
+# 每个星座 3 个 10° 面
+# ============================================================================
+
+FACE_DECANS: Dict[str, List[Dict[str, object]]] = {
+    "ARIES": [
+        {"start": 0, "end": 10, "ruler": "MARS"},
+        {"start": 10, "end": 20, "ruler": "SUN"},
+        {"start": 20, "end": 30, "ruler": "VENUS"},
+    ],
+    "TAURUS": [
+        {"start": 0, "end": 10, "ruler": "MERCURY"},
+        {"start": 10, "end": 20, "ruler": "MOON"},
+        {"start": 20, "end": 30, "ruler": "SATURN"},
+    ],
+    "GEMINI": [
+        {"start": 0, "end": 10, "ruler": "JUPITER"},
+        {"start": 10, "end": 20, "ruler": "MARS"},
+        {"start": 20, "end": 30, "ruler": "SUN"},
+    ],
+    "CANCER": [
+        {"start": 0, "end": 10, "ruler": "VENUS"},
+        {"start": 10, "end": 20, "ruler": "MERCURY"},
+        {"start": 20, "end": 30, "ruler": "MOON"},
+    ],
+    "LEO": [
+        {"start": 0, "end": 10, "ruler": "SATURN"},
+        {"start": 10, "end": 20, "ruler": "JUPITER"},
+        {"start": 20, "end": 30, "ruler": "MARS"},
+    ],
+    "VIRGO": [
+        {"start": 0, "end": 10, "ruler": "SUN"},
+        {"start": 10, "end": 20, "ruler": "VENUS"},
+        {"start": 20, "end": 30, "ruler": "MERCURY"},
+    ],
+    "LIBRA": [
+        {"start": 0, "end": 10, "ruler": "MOON"},
+        {"start": 10, "end": 20, "ruler": "SATURN"},
+        {"start": 20, "end": 30, "ruler": "JUPITER"},
+    ],
+    "SCORPIO": [
+        {"start": 0, "end": 10, "ruler": "MARS"},
+        {"start": 10, "end": 20, "ruler": "SUN"},
+        {"start": 20, "end": 30, "ruler": "VENUS"},
+    ],
+    "SAGITTARIUS": [
+        {"start": 0, "end": 10, "ruler": "MERCURY"},
+        {"start": 10, "end": 20, "ruler": "MOON"},
+        {"start": 20, "end": 30, "ruler": "SATURN"},
+    ],
+    "CAPRICORN": [
+        {"start": 0, "end": 10, "ruler": "JUPITER"},
+        {"start": 10, "end": 20, "ruler": "MARS"},
+        {"start": 20, "end": 30, "ruler": "SUN"},
+    ],
+    "AQUARIUS": [
+        {"start": 0, "end": 10, "ruler": "VENUS"},
+        {"start": 10, "end": 20, "ruler": "MERCURY"},
+        {"start": 20, "end": 30, "ruler": "MOON"},
+    ],
+    "PISCES": [
+        {"start": 0, "end": 10, "ruler": "SATURN"},
+        {"start": 10, "end": 20, "ruler": "JUPITER"},
+        {"start": 20, "end": 30, "ruler": "MARS"},
+    ],
+}
+
+# ============================================================================
+# 5.5 先天尊贵评分（PRD v1.3 §4.2）
+# ============================================================================
+
+DIGNITY_SCORE_DOMICILE = 5
+DIGNITY_SCORE_EXALTATION = 4
+DIGNITY_SCORE_PEREGRINE = 0
+DIGNITY_SCORE_FALL = -4
+DIGNITY_SCORE_DETRIMENT = -5
+DIGNITY_SCORE_TRIPLICITY = 3
+DIGNITY_SCORE_TERM = 2
+DIGNITY_SCORE_FACE = 1
+
+# ============================================================================
+# 5.6 四维基准线权重（PRD v1.3 §4.1）
+# ============================================================================
+
+BASELINE_WEIGHT_DIGNITY = 1.0        # 先天尊贵
+BASELINE_WEIGHT_RECEPTION = 1.0      # 接纳互溶
+BASELINE_WEIGHT_ASPECT = 0.7         # 相位叠加
+BASELINE_WEIGHT_HOUSE_TYPE = 0.5     # 落宫类型
+
+# 落宫类型分值
+HOUSE_TYPE_SCORE_ANGULAR = 1.0       # 角宫
+HOUSE_TYPE_SCORE_SUCCEDENT = 0.0     # 续宫
+HOUSE_TYPE_SCORE_CADENT = -1.0       # 果宫
+
+# ============================================================================
+# 5.7 相位叠加分值 + 容许度系数（PRD v1.3 §4.4）
+# ============================================================================
+
+ASPECT_OVERLAY_BASE_SCORES: Dict[str, float] = {
+    "benefic_harmonious": 1.0,     # 吉星拱/六合
+    "benefic_hard": 0.5,           # 吉星刑/冲
+    "malefic_harmonious": 0.5,     # 凶星拱/六合
+    "malefic_hard": -1.0,          # 凶星刑/冲
+    "luminary_conjunction": 1.0,   # 被光体合相
+    "chart_ruler_aspect": 1.0,     # 与命主星有任何相位
+}
+
+ASPECT_ORB_COEFFICIENTS = [
+    (1.0, 1.5),     # ≤1° 精准: ×1.5
+    (3.0, 1.0),     # 1°-3° 紧密: ×1.0
+    (5.0, 0.7),     # 3°-5° 宽松: ×0.7
+    (float("inf"), 0.4),  # >5° 边缘: ×0.4
+]
+
+DIGNITY_MODIFIER_MULTIPLIER_STRONG = 0.5   # 庙旺时受克减半
+DIGNITY_MODIFIER_MULTIPLIER_WEAK = 2.0     # 落陷时受克加倍
+
+# ============================================================================
 # 6. 工具常量和阈值
 # ============================================================================
 
@@ -375,6 +637,86 @@ def get_planet_orb(planet: Planet) -> float:
     return PLANET_ORBS.get(planet, 5.5)
 
 
+def get_term_ruler(sign_name: str, degree: float) -> str | None:
+    """根据星座名称和度数查找界主星（埃及界）"""
+    bounds = TERM_BOUNDS.get(sign_name.upper(), [])
+    d = degree % 30
+    for b in bounds:
+        if float(b["start"]) <= d < float(b["end"]):
+            return str(b["ruler"])
+    return None
+
+
+def get_face_ruler(sign_name: str, degree: float) -> str | None:
+    """根据星座名称和度数查找面主星（Chaldean Decans）"""
+    decans = FACE_DECANS.get(sign_name.upper(), [])
+    d = degree % 30
+    for dec in decans:
+        if float(dec["start"]) <= d < float(dec["end"]):
+            return str(dec["ruler"])
+    return None
+
+
+def get_sign_element(sign_name: str) -> str:
+    return SIGN_ELEMENT.get(sign_name.upper(), "unknown")
+
+
+def get_sign_modality(sign_name: str) -> str:
+    return SIGN_MODALITY.get(sign_name.upper(), "unknown")
+
+
+def is_sign_triplicity_ruler(sign_name: str, planet_name: str) -> bool:
+    """判断行星是否是其所在星座元素的三分主星"""
+    element = get_sign_element(sign_name)
+    rulers = TRIPLICITY_RULERS.get(element, [])
+    return planet_name.upper() in rulers
+
+
+def get_reception_tier(planet_name: str) -> str:
+    """获取行星的接纳等级（luminary/benefic/practical/outer）"""
+    return RECEPTION_TIER_MAP.get(planet_name.upper(), "practical")
+
+
+def get_reception_score(receptor_name: str, is_chart_ruler: bool = False) -> float:
+    """获取被某行星接纳的分数"""
+    tier = get_reception_tier(receptor_name)
+    score = RECEPTION_TIER_SCORES.get(tier, 1.0)
+    if is_chart_ruler:
+        score += RECEPTION_TIER_SCORES.get("chart_ruler_bonus", 1.0)
+    return score
+
+
+def get_house_type(house: int) -> str:
+    """获取宫位类型"""
+    if house in ANGULAR_HOUSES:
+        return "angular"
+    if house in SUCCEDENT_HOUSES:
+        return "succedent"
+    if house in CADENT_HOUSES:
+        return "cadent"
+    return "unknown"
+
+
+def get_house_type_score(house: int) -> float:
+    """获取宫位类型分值"""
+    ht = get_house_type(house)
+    if ht == "angular":
+        return HOUSE_TYPE_SCORE_ANGULAR
+    if ht == "succedent":
+        return HOUSE_TYPE_SCORE_SUCCEDENT
+    if ht == "cadent":
+        return HOUSE_TYPE_SCORE_CADENT
+    return 0.0
+
+
+def get_aspect_orb_coefficient(orb: float) -> float:
+    """根据容许度获取相位强度系数"""
+    for threshold, coeff in ASPECT_ORB_COEFFICIENTS:
+        if orb <= threshold:
+            return coeff
+    return 0.4
+
+
 # 导出所有重要的常量
 __all__ = [
     # 枚举类
@@ -382,28 +724,74 @@ __all__ = [
     "Sign",
     "AspectType",
     "CalculationMode",
-    
+
     # 列表
     "ALL_PLANETS",
     "TRADITIONAL_PLANETS",
     "OUTER_PLANETS",
     "SIGNS_IN_ORDER",
-    
-    # 映射表
+
+    # 庙旺失陷
     "DOMICILE_SIGNS",
     "EXALTATION_SIGNS",
     "EXALTATION_DEGREES",
     "DETRIMENT_SIGNS",
     "FALL_SIGNS",
+
+    # 相位
     "ASPECT_CONFIG",
+    "ASPECT_ORB_COEFFICIENTS",
+    "ASPECT_OVERLAY_BASE_SCORES",
+    "PLANET_ORBS",
+    "get_planet_orb",
+    "get_term_ruler",
+    "get_face_ruler",
+    "get_sign_element",
+    "get_sign_modality",
+    "is_sign_triplicity_ruler",
+    "get_reception_tier",
+    "get_reception_score",
+    "get_house_type",
+    "get_house_type_score",
+    "get_aspect_orb_coefficient",
+
+    # 接纳
     "RECEPTION_WEIGHTS",
+    "RECEPTION_TIER_SCORES",
+    "RECEPTION_TIER_MAP",
+
+    # 三分/界/面
+    "TRIPLICITY_RULERS",
+    "TERM_BOUNDS",
+    "FACE_DECANS",
+    "SIGN_ELEMENT",
+    "SIGN_MODALITY",
+
+    # 先天尊贵评分
+    "DIGNITY_SCORE_DOMICILE",
+    "DIGNITY_SCORE_EXALTATION",
+    "DIGNITY_SCORE_PEREGRINE",
+    "DIGNITY_SCORE_FALL",
+    "DIGNITY_SCORE_DETRIMENT",
+    "DIGNITY_SCORE_TRIPLICITY",
+    "DIGNITY_SCORE_TERM",
+    "DIGNITY_SCORE_FACE",
+
+    # 四维基准线
+    "BASELINE_WEIGHT_DIGNITY",
+    "BASELINE_WEIGHT_RECEPTION",
+    "BASELINE_WEIGHT_ASPECT",
+    "BASELINE_WEIGHT_HOUSE_TYPE",
+    "HOUSE_TYPE_SCORE_ANGULAR",
+    "HOUSE_TYPE_SCORE_SUCCEDENT",
+    "HOUSE_TYPE_SCORE_CADENT",
+    "DIGNITY_MODIFIER_MULTIPLIER_STRONG",
+    "DIGNITY_MODIFIER_MULTIPLIER_WEAK",
+
+    # 其他
     "JOY_HOUSES",
     "TIME_ACCURACY_WEIGHTS",
     "HOUSE_POWER_WEIGHTS",
-    "PLANET_ORBS",
-    "get_planet_orb",
-    
-    # 常量
     "ANGULAR_HOUSES",
     "SUCCEDENT_HOUSES",
     "CADENT_HOUSES",
@@ -411,7 +799,7 @@ __all__ = [
     "MIN_ESSENTIAL_RAW",
     "MAX_ASPECT_STRENGTH",
     "MAX_RECEPTION_STRENGTH",
-    
+
     # 工具函数
     "clamp",
     "normalize_to_range",

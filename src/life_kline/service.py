@@ -32,6 +32,7 @@ from .constants import (
 from .ephemeris import EphemerisEngine
 from .flystar_catalog import get_house_ruler_flight_entry
 from .firdaria import FirdariaPeriod, calculate_firdaria_periods
+from .composer import enrich_report
 
 
 PLANET_LABELS: Dict[Planet, str] = {
@@ -639,6 +640,41 @@ class LifeKlineService:
         output_data["natal_blueprint"] = natal_blueprint
         output_data["advanced_patterns"] = advanced_patterns
         output_data["timeline_validation"] = timeline_validation
+
+        # ── 行运数据 ──
+        transits = self.compute_transits(chart)
+        transits_fast = [t for t in transits if t.get("speed") == "fast"]
+        transits_slow = [t for t in transits if t.get("speed") == "slow"]
+
+        # ── 构建 Hero 时间锚点所需数据 ──
+        phase_info = None
+        if current_phase:
+            major_lord = current_phase.get("major_lord", "")
+            sub_lord = current_phase.get("sub_lord", "")
+            remaining_years = None
+            end_date_str = current_phase.get("end_date", "")
+            if end_date_str:
+                try:
+                    end_date = datetime.fromisoformat(end_date_str)
+                    remaining_years = round((end_date - datetime.now()).days / 365.2422, 1)
+                except Exception:
+                    pass
+            chart_ruler_value = natal_chart.get("chart_ruler", "")
+            phase_info = {
+                "major_label": planet_label(Planet(major_lord)) if major_lord else "",
+                "sub_label": planet_label(Planet(sub_lord)) if sub_lord else "",
+                "remaining_years": remaining_years,
+                "trend_type": current_phase.get("trend_type", ""),
+                "is_chart_ruler_phase": major_lord == chart_ruler_value if major_lord and chart_ruler_value else False,
+            }
+
+        enriched = enrich_report(chart, phase_info=phase_info, transits=transits)
+        output_data["hero"] = enriched.get("hero", {})
+        output_data["domains"] = enriched.get("domains", {})
+        output_data["_analysis_evidence"] = enriched.get("_analysis_evidence", {})
+        output_data["_transits"] = transits
+        output_data["_transits_fast"] = transits_fast
+        output_data["_transits_slow"] = transits_slow
         return output_data
 
     def _parse_birth_time(self, birth_time_iso: str, timezone_offset: float) -> tuple[datetime, datetime]:
@@ -858,6 +894,128 @@ class LifeKlineService:
             return f"{label_a}与{label_b}拉扯明显，需要在两端寻找平衡。"
         return f"{label_a}与{label_b}形成复杂联动。"
 
+    # ═══════════════════════════════════════════════════════════════
+    # 行运引擎 — 当前天空 × 本命盘
+    # ═══════════════════════════════════════════════════════════════
+
+    _TRANSIT_ORB: dict[AspectType, float] = {
+        AspectType.CONJUNCTION: 3.0,
+        AspectType.OPPOSITION: 3.0,
+        AspectType.SQUARE: 2.5,
+        AspectType.TRINE: 3.0,
+        AspectType.SEXTILE: 2.0,
+    }
+
+    _TRANSITING_PLANETS = [
+        Planet.JUPITER, Planet.SATURN, Planet.URANUS, Planet.NEPTUNE, Planet.PLUTO,
+        Planet.MARS, Planet.SUN, Planet.VENUS, Planet.MERCURY,
+    ]
+
+    _FAST_TRANSIT_PLANETS = {Planet.SUN, Planet.MOON, Planet.MERCURY, Planet.VENUS, Planet.MARS}
+    _SLOW_TRANSIT_PLANETS = {Planet.JUPITER, Planet.SATURN, Planet.URANUS, Planet.NEPTUNE, Planet.PLUTO}
+
+    def compute_transits(self, chart: Any) -> list[dict[str, Any]]:
+        now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+        lat = chart.location.get("lat", 0.0) if getattr(chart, "location", None) else 0.0
+        lon = chart.location.get("lon", 0.0) if getattr(chart, "location", None) else 0.0
+
+        current_chart = self.engine.calculate_chart(now_utc, lat, lon)
+        transits: list[dict[str, Any]] = []
+
+        for t_planet in self._TRANSITING_PLANETS:
+            t_info = current_chart.get_planet_info(t_planet)
+            if not t_info:
+                continue
+            for n_planet in TRADITIONAL_PLANETS:
+                n_info = chart.get_planet_info(n_planet)
+                if not n_info:
+                    continue
+                result = self._detect_transit(t_planet, t_info, n_planet, n_info)
+                if result:
+                    transits.append(result)
+
+        planet_rank = {p: i for i, p in enumerate(self._TRANSITING_PLANETS)}
+        transits.sort(key=lambda t: (planet_rank.get(t["transiting_planet"], 99), -t["strength"]))
+        return transits[:6]
+
+    def _detect_transit(self, t_planet: Planet, t_info: Any, n_planet: Planet, n_info: Any) -> dict[str, Any] | None:
+        t_lon = self._absolute_longitude(t_info)
+        n_lon = self._absolute_longitude(n_info)
+        diff = abs(t_lon - n_lon) % 360
+        diff = min(diff, 360 - diff)
+
+        best: dict[str, Any] | None = None
+        best_orb_pct = 999.0
+
+        for aspect_type, max_orb in self._TRANSIT_ORB.items():
+            config = ASPECT_CONFIG[aspect_type]
+            orb = abs(diff - config["angle"])
+            if orb > max_orb:
+                continue
+            orb_pct = orb / max_orb
+            if orb_pct >= best_orb_pct:
+                continue
+            best_orb_pct = orb_pct
+            strength = round(1.0 - orb_pct * 0.7, 3)
+            is_applying = getattr(t_info, "speed", 0) > 0  # simplified
+            best = {
+                "transiting_planet": t_planet,
+                "transiting_label": planet_label(t_planet),
+                "natal_planet": n_planet,
+                "natal_label": planet_label(n_planet),
+                "aspect_type": aspect_type,
+                "aspect_label": ASPECT_LABELS[aspect_type],
+                "orb": round(orb, 2),
+                "strength": strength,
+                "is_applying": is_applying,
+                "speed": "fast" if t_planet in self._FAST_TRANSIT_PLANETS else "slow",
+                "highlight": self._transit_highlight(t_planet, n_planet, aspect_type, is_applying),
+            }
+        return best
+
+    def _transit_highlight(self, t_planet: Planet, n_planet: Planet, aspect_type: AspectType, is_applying: bool) -> str:
+        tl = planet_label(t_planet)
+        nl = planet_label(n_planet)
+        al = ASPECT_LABELS[aspect_type]
+
+        # 行星角色
+        transit_roles: dict[str, str] = {
+            "木星": "扩张和机会",
+            "土星": "压力和责任",
+            "天王星": "意外和突破",
+            "海王星": "迷茫和灵感",
+            "冥王星": "深层的转化",
+            "火星": "行动力和冲突",
+            "太阳": "焦点和能量",
+            "金星": "关系和价值",
+            "水星": "沟通和思绪",
+        }
+        natal_domains: dict[str, str] = {
+            "太阳": "你的自我认同和生活方向",
+            "月亮": "你的情绪和安全感",
+            "水星": "你的思考和沟通方式",
+            "金星": "你的感情和价值观",
+            "火星": "你的行动力和脾气",
+            "木星": "你的信念和成长",
+            "土星": "你的责任和底线",
+        }
+        aspect_verbs: dict[str, str] = {
+            "合相": "正在激活",
+            "对冲": "正在拉扯",
+            "刑相": "正在施压",
+            "三合": "正在顺流推动",
+            "六合": "正在给你开一扇小窗",
+        }
+
+        role = transit_roles.get(tl, "变化")
+        domain = natal_domains.get(nl, "你的一个重要部分")
+        verb = aspect_verbs.get(al, "正在影响")
+
+        direction = "接下来几周" if is_applying else "这段时间"
+        return f"{tl}{al}{nl}——{verb}{domain}。{role}的能量{direction}会被放大——留意它。"
+
+    # ═══════════════════════════════════════════════════════════════
+
     def _build_planet_profiles(
         self,
         chart: Any,
@@ -1067,6 +1225,7 @@ class LifeKlineService:
                     "opportunities": summary_pack["opportunities"],
                     "cautions": summary_pack["cautions"],
                     "action_focus": summary_pack["action_focus"],
+                    "insight": summary_pack["insight"],
                     "type": "major",
                 }
             )
@@ -1156,6 +1315,108 @@ class LifeKlineService:
             "opportunities": opportunities,
             "cautions": cautions,
             "action_focus": action_focus,
+            "insight": self._build_phase_insight(major_profile, trend_type, domains),
+        }
+
+    def _build_phase_insight(
+        self,
+        major_profile: Dict[str, Any],
+        trend_type: str,
+        domains: Dict[str, float],
+    ) -> Dict[str, Any]:
+        """用引擎知识库生成当前阶段的核心洞察。规则驱动，不硬编码。"""
+        planet_key = major_profile["planet"]
+        planet_label = major_profile["label"]
+        house = major_profile["house"]
+        house_title = major_profile["house_title"]
+        dignity = major_profile["dignity"]
+        dignity_label = major_profile["dignity_label"]
+        sign_label = major_profile["sign_label"]
+        strategy = major_profile.get("strategy", "")
+
+        # 从知识库取宫位含义
+        house_info = HOUSE_ADULT_MEANINGS.get(house, {})
+        house_adult = house_info.get("adult", house_title)
+        house_power = house_info.get("power", "")
+
+        # 从知识库取行星原型
+        archetype = PLANET_ARCHETYPES.get(planet_key, {})
+        planet_gift = archetype.get("gift", "")
+        planet_strategy = archetype.get("strategy", strategy)
+
+        # 从知识库取星座风格（sign_label 是中文如"白羊座"，反查 Sign 枚举）
+        sign_persona = ""
+        for s_val, s_label in SIGN_LABELS.items():
+            if s_label == sign_label:
+                sign_info = SIGN_ARCHETYPES.get(s_val, {})
+                sign_persona = sign_info.get("persona", "")
+                break
+
+        # 尊严修饰
+        dignity_notes: dict[str, str] = {
+            "domicile": "而且状态很好——这件事你做起来比一般人顺手得多。",
+            "exaltation": "而且正是优势区间——你的表现容易被看见、被认可。",
+            "detriment": "不算你的舒适区——但一旦找到自己的方法，别人抄不走。",
+            "fall": "需要你花更多心力——但过了这段，你的韧性是别人没有的。",
+            "peregrine": "没有特别的加持或阻力——全靠你自己的节奏和判断。",
+        }
+        dignity_note = dignity_notes.get(dignity, dignity_notes["peregrine"])
+
+        # 趋势修饰
+        trend_notes = {
+            "bull": "整体是顺风期——抓住窗口，把已经成熟的能力推向更大的舞台。",
+            "bear": "节奏偏紧——不是坏事，是在逼你把真正重要的东西做扎实。",
+            "stable": "节奏平稳——不用急，把方法打磨好、结构搭稳，后面自然快起来。",
+        }
+        trend_note = trend_notes.get(trend_type, trend_notes["stable"])
+
+        # 领域排名
+        ranked = self._top_domains(domains)
+        top_domains = [d["label"] for d in ranked[:2]]
+        patience_domains = [d["label"] for d in ranked[-2:]]
+
+        # 组装洞察
+        headline = f"这几年，你的主舞台在{house_title}。"
+        if trend_type == "bull":
+            headline = f"这几年，{house_title}是你的顺风方向——大胆走。"
+        elif trend_type == "bear":
+            headline = f"这几年，{house_title}是绕不开的功课——但做完你会不一样。"
+
+        body = (
+            f"{planet_label}是这段时期的主导行星。{planet_label}天然负责{planet_gift}，"
+            f"落在你的{house_title}（{house_adult}）。"
+        )
+        if sign_persona:
+            body += f"在{sign_label}的风格里——{sign_persona}。"
+        body += dignity_note
+
+        advice = planet_strategy
+        if house_power:
+            advice = f"{planet_strategy}具体来说：{house_power}"
+
+        # 运势偏向
+        bias_note = ""
+        if top_domains:
+            bias_note = f"当下运势最顺的领域是{'和'.join(top_domains)}——"
+            if trend_type == "bull":
+                bias_note += "这几年你的时间和运气天然往这边流。"
+            elif trend_type == "bear":
+                bias_note += "即使整体偏紧，这几个方向仍然有空间。"
+            else:
+                bias_note += "它们是这段时期最值得你分配精力的方向。"
+
+        return {
+            "headline": headline,
+            "body": body,
+            "advice": advice,
+            "trend_note": trend_note,
+            "top_domains": top_domains,
+            "patience_domains": patience_domains,
+            "bias_note": bias_note,
+            "planet_label": planet_label,
+            "house_title": house_title,
+            "dignity_label": dignity_label,
+            "dignity_note": dignity_note,
         }
 
     def _phase_opportunity_line(self, profile: Dict[str, Any], domain_label: str, trend_type: str) -> str:
@@ -1579,7 +1840,6 @@ class LifeKlineService:
         planet_profiles: Dict[Planet, Dict[str, Any]],
         advanced_patterns: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
-        is_historical_sample = self._is_huang_jinrong_sample(birth_time_iso, lat, lon)
         dominant = natal_chart.get("dominant_planets", [])
         pressure_points = natal_chart.get("pressure_points", [])
         houses = natal_chart.get("house_emphasis", [])
@@ -1610,7 +1870,7 @@ class LifeKlineService:
         line_10 = house_map.get(10)
         line_12 = house_map.get(12)
 
-        role_title = self._build_role_title(natal_chart, planet_profiles, is_historical_sample)
+        role_title = self._build_role_title(natal_chart, planet_profiles)
         role_keywords = self._build_role_keywords(natal_chart)
         dominant_labels = " / ".join(item["label"] for item in dominant[:2]) if dominant else chart_ruler_label
         chart_ruler_line = (
@@ -1621,8 +1881,6 @@ class LifeKlineService:
         top_aspect = aspects[0]["title"] if aspects else None
         structure_summary = (
             "这张盘的底层不是靠单点爆发取胜，而是靠把核心议题做成长期结构。"
-            if not is_historical_sample
-            else "这张盘的底层不是天然高位，而是通过信息、关系、资源与隐性控制一步步做大。"
         )
         power_summary = (
             "真正影响人生走向的，不只是性格，而是你如何获得资源、进入系统并形成控制力。"
@@ -1734,13 +1992,6 @@ class LifeKlineService:
             power_points.append(
                 f"12宫主链路是“{line_12['line']}”，说明你的杠杆里往往还夹带幕后系统、隐线压力或收尾成本。"
             )
-        if is_historical_sample:
-            power_points = [
-                "3宫过强，说明真正的上位方式不是抽象的“表达”，而是线报、传播、谈判与地面关系。",
-                "7宫木星让扩张更多通过联盟、门生、保护关系与更大的制度平台完成。",
-                "2宫金星与12宫火星把资源经营和幕后控制绑在一起，钱与权不会完全分开。",
-            ]
-
         role_evidence = self._unique_strings(
             [
                 role_title,
@@ -1794,13 +2045,6 @@ class LifeKlineService:
             role_points.append(
                 f"角色层还要兼顾相位网络。“{top_aspect}”说明几条人格线之间会持续联动，所以你的角色不是静态标签，而是一套动态运作方式。"
             )
-        if is_historical_sample:
-            role_points = [
-                "这张盘更像“信息操盘型权力人物”，不是温和的表达型人格。",
-                "它的核心不是正面高光，而是把名单、关系、口径、制度缝隙变成控制力。",
-                "同样的结构放在现代语境里，也常见于组织操盘者、关系整合者、规则边缘高手。",
-            ]
-
         cost_evidence = self._unique_strings(
             [
                 f"第一代价 {pressure_points[0]['label']}" if pressure_points else None,
@@ -1843,13 +2087,6 @@ class LifeKlineService:
             cost_points.append(
                 f"12宫主链路是“{line_12['line']}”，这意味着有些代价不会立刻爆发，而会以幕后压力、关系回收或阶段性清算的方式出现。"
             )
-        if is_historical_sample:
-            cost_points = [
-                "水星失势又合土星，意味着信息优势会越来越带上冷硬、规训与控制色彩。",
-                "金星失势落2宫，说明资源与享乐一旦绑定，后期就容易把欲望变成结构性代价。",
-                "12宫火星不是简单的内耗，而是幕后冲突、清算与晚年回收机制。",
-            ]
-
         self_profile = self._build_self_profile(
             natal_chart=natal_chart,
             planet_profiles=planet_profiles,
@@ -1897,7 +2134,6 @@ class LifeKlineService:
                 chart_ruler_profile=chart_ruler_profile,
                 dominant_labels=dominant_labels,
                 houses=houses,
-                is_historical_sample=is_historical_sample,
             ),
             "signature": natal_chart.get("signature"),
             "keywords": role_keywords,
@@ -1961,14 +2197,7 @@ class LifeKlineService:
         chart_ruler_profile: Optional[Dict[str, Any]],
         dominant_labels: str,
         houses: list[Dict[str, Any]],
-        is_historical_sample: bool,
     ) -> str:
-        if is_historical_sample:
-            return (
-                f"这不是一张只讲性格的盘，而是一张把{dominant_labels}、"
-                f"{self._format_house_titles(houses[:3])}和“{role_title}”绑成同一套人生运作方式的蓝图。"
-            )
-
         ruler_part = (
             f"{chart_ruler_label}落在第{chart_ruler_profile['house']}宫 {chart_ruler_profile['house_title']}"
             if chart_ruler_profile
@@ -3535,84 +3764,7 @@ class LifeKlineService:
         lon: float,
         periods_data: list[Dict[str, Any]],
     ) -> Optional[Dict[str, Any]]:
-        if not self._is_huang_jinrong_sample(birth_time_iso, lat, lon):
-            return None
-
-        event_specs = [
-            {
-                "date": "1873-07-01T12:00:00",
-                "date_label": "1873年",
-                "title": "举家迁往上海",
-                "category": "家庭迁移",
-                "validation": "家庭、迁移与生存感成为早年主轴，适合用月亮主题来校验早期命运塑形。",
-            },
-            {
-                "date": "1892-07-01T12:00:00",
-                "date_label": "1892年",
-                "title": "考入法租界巡捕房",
-                "category": "进入制度平台",
-                "validation": "通过关系、制度入口与更大的平台完成上升，正是这张盘最典型的扩张方式。",
-            },
-            {
-                "date": "1924-07-01T12:00:00",
-                "date_label": "1924年",
-                "title": "升任督察长",
-                "category": "公开地位抬升",
-                "validation": "这一步不只是职位变化，而是社会可见度、资源调动权与公共身份同步抬升。",
-            },
-            {
-                "date": "1927-04-12T12:00:00",
-                "date_label": "1927年4月12日",
-                "title": "参与四一二政变",
-                "category": "组织与口径合流",
-                "validation": "真正危险的地方不是单纯暴力，而是名单、口径、组织调度与政治站队合流。",
-            },
-            {
-                "date": "1951-05-20T12:00:00",
-                "date_label": "1951年5月20日",
-                "title": "发表自白并扫街改造",
-                "category": "晚年清算",
-                "validation": "旧有结构进入回收期，幕后权力被公众评价和新秩序反向处理，代价层彻底显形。",
-            },
-        ]
-
-        events: list[Dict[str, Any]] = []
-        for spec in event_specs:
-            event_dt = datetime.fromisoformat(spec["date"])
-            age = (event_dt - birth_time_local).days / 365.2422
-            period = self._find_period_for_age(periods_data, age)
-            if not period:
-                continue
-
-            phase_range = f"{int(period['timing']['start_age'])}-{int(period['timing']['end_age'])}岁"
-            lords = (
-                f"{planet_label(period['lords']['major'])}/"
-                f"{planet_label(period['lords']['sub']) if period['lords']['sub'] else '无'}"
-            )
-            events.append(
-                {
-                    "date_label": spec["date_label"],
-                    "title": spec["title"],
-                    "category": spec["category"],
-                    "age_label": f"{int(age)}岁左右",
-                    "phase_title": period["title"],
-                    "phase_range": phase_range,
-                    "phase_lords": lords,
-                    "phase_summary": period["summary"],
-                    "validation": spec["validation"],
-                    "reading": (
-                        f"对应阶段是{period['title']}，重心落在{period['astrology']['house_title']}，"
-                        f"这和“{spec['category']}”形成了直接映射。"
-                    ),
-                }
-            )
-
-        return {
-            "mode": "historical_validation",
-            "title": "人生节点校验",
-            "summary": "这个案例不看“你现在在哪一段”，而是用已知人生事件反推命盘结构和阶段逻辑是否成立。",
-            "events": events,
-        }
+        return None
 
     def _build_advanced_patterns(
         self,
@@ -3637,18 +3789,6 @@ class LifeKlineService:
             derived_houses=derived_houses,
             planet_profiles=planet_profiles,
         )
-        case_themes: list[Dict[str, Any]] = []
-
-        if self._is_huang_jinrong_sample(birth_time_iso, lat, lon):
-            case_themes = self._build_huang_jinrong_case_themes(
-                natal_chart=natal_chart,
-                planet_profiles=planet_profiles,
-                house_rulers=house_rulers,
-                ruler_groups=ruler_groups,
-                reception_groups=reception_groups,
-                derived_houses=derived_houses,
-            )
-
         return {
             "summary": "把几宫主飞几宫、同一行星统领哪些宫位，先拆成规则层，再进入现实语言解释。",
             "house_rulers": house_rulers,
@@ -3658,7 +3798,6 @@ class LifeKlineService:
             "derived_houses": derived_houses,
             "core_threads": core_threads,
             "pattern_readings": pattern_readings,
-            "case_themes": case_themes,
         }
 
     def _build_house_ruler_map(
@@ -4765,166 +4904,6 @@ class LifeKlineService:
             return items[0]
         return "、".join(items[:-1]) + "和" + items[-1]
 
-    def _build_huang_jinrong_case_themes(
-        self,
-        natal_chart: Dict[str, Any],
-        planet_profiles: Dict[Planet, Dict[str, Any]],
-        house_rulers: list[Dict[str, Any]],
-        ruler_groups: list[Dict[str, Any]],
-        reception_groups: list[Dict[str, Any]],
-        derived_houses: list[Dict[str, Any]],
-    ) -> list[Dict[str, Any]]:
-        group_map = {item["ruler"]: item for item in ruler_groups}
-        reception_map = {item["receiver"]: item for item in reception_groups}
-        spouse_profile = derived_houses[0] if derived_houses else None
-
-        mercury_group = group_map.get(Planet.MERCURY.value)
-        jupiter_group = group_map.get(Planet.JUPITER.value)
-        venus_group = group_map.get(Planet.VENUS.value)
-        saturn_group = group_map.get(Planet.SATURN.value)
-        mars_group = group_map.get(Planet.MARS.value)
-        moon_group = group_map.get(Planet.MOON.value)
-        sun_group = group_map.get(Planet.SUN.value)
-
-        mercury_profile = planet_profiles.get(Planet.MERCURY, {})
-        venus_profile = planet_profiles.get(Planet.VENUS, {})
-        mars_profile = planet_profiles.get(Planet.MARS, {})
-
-        return [
-            {
-                "key": "nobility",
-                "title": "得贵格局",
-                "summary": "先天不是轻松命，后天靠7宫木星与联盟结构托举上位，属于典型的后天得贵。",
-                "evidence": [
-                    mercury_group["line"] if mercury_group else "1R/10R 水星飞3宫",
-                    jupiter_group["line"] if jupiter_group else "4R/7R 木星飞7宫",
-                    sun_group["line"] if sun_group else "12R 太阳飞3宫",
-                    reception_map.get(Planet.JUPITER.value, {}).get("line", "木星接纳太阳/水星/土星"),
-                    f"水星{mercury_profile.get('dignity_label', '失势')}" if mercury_profile else "水星失势",
-                ],
-                "points": [
-                    "命主水星既主1宫也主10宫，却落在3宫且先天失势，说明不是门第型、清望型的轻松贵命。",
-                    "真正的抬升点来自7宫木星：贵气不是自己天然带来的，而是通过贵人、伴侣、联盟和更大的制度平台后天形成。",
-                    "木星把落在自己星座里的太阳、水星、土星接住，再把这些议题带去7宫运作，所以得贵不是空话，而是有人托、有人带、有人接。",
-                    "这类贵不是清贵，而是势贵：先借人、借系统、借关系，后把借来的势做成自己的位置。",
-                ],
-            },
-            {
-                "key": "seventh_house_support",
-                "title": "7宫助力",
-                "summary": "7宫不是单纯婚姻，而是最强的托举口。伴侣、贵人、兄弟网络都会从这里进来。",
-                "evidence": [
-                    jupiter_group["line"] if jupiter_group else "4R/7R 木星飞7宫",
-                    saturn_group["line"] if saturn_group else "5R/6R 土星飞3宫",
-                    moon_group["line"] if moon_group else "11R 月亮飞3宫",
-                    mercury_group["line"] if mercury_group else "10R 水星飞3宫",
-                    spouse_profile["links"][2]["line"] if spouse_profile and len(spouse_profile["links"]) > 2 else "伴侣的信念看本盘第3宫",
-                ],
-                "points": [
-                    "7R 木星飞7，本身就说明伴侣、盟友、保护关系、门生网络是成事入口，不只是情感配置。",
-                    "7宫木星不只接住命主，也间接带动事业宫，所以伴侣和联盟对事业抬升有实质帮助。",
-                    "11宫月亮飞3宫，朋友、团队、兄弟感和信息网络连在一起，容易形成讲义气、重关系的帮会式结构。",
-                ],
-            },
-            {
-                "key": "wealth",
-                "title": "财富格局",
-                "summary": "有挣钱格局，也有大进大出的格局。能把资源做成钱，但守财和留财不强。",
-                "evidence": [
-                    venus_group["line"] if venus_group else "2R/9R 金星飞2宫",
-                    saturn_group["line"] if saturn_group else "5R/6R 土星飞3宫",
-                    mars_group["line"] if mars_group else "3R/8R 火星飞12宫",
-                    f"金星{venus_profile.get('dignity_label', '失势')}" if venus_profile else "金星失势",
-                ],
-                "points": [
-                    "2R/9R 金星飞2宫，说明他有财富嗅觉，也懂得把关系、欲望、资源和现实收益绑成钱。",
-                    "但金星先天失势，财富不是干净稳态的累积，更像大进大出、能挣但不容易真正留下。",
-                    "5R/6R 土星和 3R/8R 火星把投机财、辛苦财、暗财、灰度财连在一起，所以财路往往和技能、跑动、娱乐、地下资源有关。",
-                ],
-            },
-            {
-                "key": "dual_system",
-                "title": "黑白通吃",
-                "summary": "这张盘最大的本事，不是单一权威，而是在台面上和台面下都能运作。",
-                "evidence": [
-                    mercury_group["line"] if mercury_group else "1R/10R 水星飞3宫",
-                    mars_group["line"] if mars_group else "3R/8R 火星飞12宫",
-                    sun_group["line"] if sun_group else "12R 太阳飞3宫",
-                    "水星合土星",
-                ],
-                "points": [
-                    "1R/10R 水星飞3宫，身份与事业都靠消息、口才、名单、交通、传递、组织网络运作。",
-                    "3R/8R 火星飞12宫，说明沟通、风险、暗财、暴力和幕后操作天然有链路，不是完全分开的系统。",
-                    "12R 太阳飞3宫又让幕后资源、隐性保护和台面上的说法绑在一起，所以能同时打通黑白两面。",
-                ],
-            },
-            {
-                "key": "career",
-                "title": "事业暗线",
-                "summary": "事业不是常规体制型上升，而是信息、差事、规则边缘和联盟关系推动出来的。",
-                "evidence": [
-                    mercury_group["line"] if mercury_group else "10R 水星飞3宫",
-                    jupiter_group["line"] if jupiter_group else "7R 木星飞7宫",
-                    saturn_group["line"] if saturn_group else "6R 土星飞3宫",
-                    "木星拱土星",
-                ],
-                "points": [
-                    "10R 水星飞3宫，事业抬升不是靠纯名望，而是靠能跑、能说、能接线、能调度人和规则。",
-                    "6R 土星飞3宫说明技能、学徒、劳苦、执行力都和事业底盘绑在一起，先苦后抬升。",
-                    "7宫木星再把事业接进联盟和贵人系统，所以职业线经常不是单兵突破，而是被带着往上走。",
-                ],
-            },
-            {
-                "key": "marriage",
-                "title": "婚姻与外缘",
-                "summary": "正宫关系是托举型的，但外缘不会少，婚姻里容易出现隐藏人物与台面下关系。",
-                "evidence": [
-                    jupiter_group["line"] if jupiter_group else "7R 木星飞7宫",
-                    sun_group["line"] if sun_group else "12R 太阳飞3宫",
-                    saturn_group["line"] if saturn_group else "5R 土星飞3宫",
-                    mars_group["line"] if mars_group else "8R 火星飞12宫",
-                    spouse_profile["links"][3]["line"] if spouse_profile and len(spouse_profile["links"]) > 3 else "伴侣的事业看本盘第4宫",
-                ],
-                "points": [
-                    "7R 木星飞7先说明正宫本身有托举、包容和带平台的力量，婚姻不是完全失序的。",
-                    "但12宫不断被带进婚姻与社交链路，说明关系里会有隐藏人、暗线、看不见的外部因素。",
-                    "5宫和8宫又都牵到12宫，所以短桃花、露水关系、外面有人这类题目更像盘主自己带出来的结构性问题。",
-                ],
-            },
-            {
-                "key": "spouse_profile",
-                "title": "伴侣画像",
-                "summary": "伴侣不是弱角色，更像托举型、包容型、有理想感的人。",
-                "evidence": [
-                    jupiter_group["line"] if jupiter_group else "7R 木星飞7宫",
-                    spouse_profile["links"][0]["line"] if spouse_profile and spouse_profile["links"] else "伴侣本人看本盘第7宫",
-                    spouse_profile["links"][2]["line"] if spouse_profile and len(spouse_profile["links"]) > 2 else "伴侣的信念看本盘第3宫",
-                    spouse_profile["links"][3]["line"] if spouse_profile and len(spouse_profile["links"]) > 3 else "伴侣的事业看本盘第4宫",
-                ],
-                "points": [
-                    "7宫自己就很强，说明伴侣不是边缘人物，而是能独立成事、能提供平台的人。",
-                    "伴侣的信念看本盘第3宫，那里群星集中，说明她身上带着强烈的理念感、讲法、信念与价值判断。",
-                    "伴侣的事业与外部位置再看转宫，也能看到她并不是单纯依附型，而是具备实际托举和资源调动能力的人。",
-                ],
-            },
-            {
-                "key": "reckoning",
-                "title": "晚年清算",
-                "summary": "前半生靠幕后、暗线和制度缝隙成事，后半生也容易被这些东西反向回收。",
-                "evidence": [
-                    mars_group["line"] if mars_group else "8R 火星飞12宫",
-                    sun_group["line"] if sun_group else "12R 太阳飞3宫",
-                    mercury_group["line"] if mercury_group else "1R/10R 水星飞3宫",
-                    f"火星落{mars_profile.get('house_title', '12宫')}" if mars_profile else "火星落12宫",
-                ],
-                "points": [
-                    "12宫在这张盘里不是纯隐退，而是幕后运作、清算、监禁、隐形敌人与回收机制。",
-                    "前面那些台面下的助力，在得势时叫保护伞和资源；失势时就会变成公众评价、名单、羞辱和清算。",
-                    "所以这是典型的前半生借势，后半生回收的结构盘，晚年很难完全脱离前面留下的因果。",
-                ],
-            },
-        ]
-
     def _find_period_for_age(
         self,
         periods_data: list[Dict[str, Any]],
@@ -4937,23 +4916,11 @@ class LifeKlineService:
                 return period
         return None
 
-    def _is_huang_jinrong_sample(self, birth_time_iso: str, lat: float, lon: float) -> bool:
-        normalized_time = birth_time_iso.strip()
-        return (
-            normalized_time.startswith("1868-12-14T00:01")
-            and abs(lat - 30.05) < 0.02
-            and abs(lon - 121.1667) < 0.02
-        )
-
     def _build_role_title(
         self,
         natal_chart: Dict[str, Any],
         planet_profiles: Dict[Planet, Dict[str, Any]],
-        is_historical_sample: bool = False,
     ) -> str:
-        if is_historical_sample:
-            return "信息操盘型权力人物"
-
         top_houses = [item["house"] for item in natal_chart.get("house_emphasis", [])]
         chart_ruler = natal_chart.get("chart_ruler")
         chart_ruler_profile = self._planet_profile_by_value(planet_profiles, chart_ruler) if chart_ruler else None
@@ -5188,6 +5155,10 @@ class LifeKlineService:
             timezone_offset=timezone_offset,
         )
 
+        # ── 快星行运：本月提醒 ──
+        all_transits = self.compute_transits(natal_chart)
+        fast_transits = [t for t in all_transits if t.get("speed") == "fast"]
+
         return {
             "meta": {
                 "generated_at": datetime.now().isoformat(),
@@ -5220,6 +5191,7 @@ class LifeKlineService:
                 "cycle_end_utc": next_lunar_return_exact_utc.isoformat(),
                 "moon_windows": moon_windows,
                 "chart": lunar_return_chart_payload,
+                "fast_transits": fast_transits,
             },
         }
 

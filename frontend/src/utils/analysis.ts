@@ -100,6 +100,12 @@ export const ANALYSIS_CATEGORY_LABELS: Record<string, string> = {
   topic: "专题解读",
 };
 
+export function statusLabel(status: string): string {
+  if (status === "active") return "已开放";
+  if (status === "paused") return "规划中";
+  return "即将上线";
+}
+
 export function getAnalysisByKey(key?: string) {
   return FALLBACK_ANALYSIS_TYPES.find((item) => item.key === key) ?? null;
 }

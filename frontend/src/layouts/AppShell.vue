@@ -1,6 +1,11 @@
 <template>
   <div class="shell">
-    <SiteHeader @help="$emit('help')" @history="$emit('history')" />
+    <SiteHeader
+      :logged-in="loggedIn"
+      :user-phone="userPhone"
+      @login="$emit('login')"
+      @history="$emit('history')"
+    />
     <main class="content">
       <slot />
     </main>
@@ -12,9 +17,14 @@
 import SiteHeader from "@/components/SiteHeader.vue";
 import SiteFooter from "@/components/SiteFooter.vue";
 
+defineProps<{
+  loggedIn?: boolean;
+  userPhone?: string;
+}>();
+
 defineEmits<{
-  (e: "help"): void;
-  (e: "history"): void;
+  login: [];
+  history: [];
 }>();
 </script>
 

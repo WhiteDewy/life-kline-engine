@@ -56,6 +56,36 @@
           :advanced-patterns="null"
         />
 
+        <!-- 本月快星行运提醒 -->
+        <section v-if="fastTransits.length" class="transitSection">
+          <article class="panel sectionIntro">
+            <div class="panelEyebrow">Fast Transit Alerts</div>
+            <h2 class="panelTitle">⚡ 本月行运提醒</h2>
+            <p class="panelSummary">
+              快行星（日月水金火）在本月与你本命盘的互动。这些影响持续几天到几周，是本月需要留意的短期信号。
+            </p>
+          </article>
+
+          <div class="fastTransitCards">
+            <article
+              v-for="(t, i) in fastTransits"
+              :key="'ft-' + i"
+              class="fastTransitCard"
+            >
+              <div class="ftTop">
+                <span class="ftPlanets">
+                  <strong>{{ t.transiting_label }}</strong>
+                  <span class="ftAspect">{{ t.aspect_label }}</span>
+                  <strong>{{ t.natal_label }}</strong>
+                </span>
+                <span class="ftOrb">容许 {{ t.orb }}°</span>
+              </div>
+              <p class="ftText">{{ t.highlight }}</p>
+              <div class="ftBar"><div class="ftBarFill" :style="{ width: Math.round(t.strength * 100) + '%' }"></div></div>
+            </article>
+          </div>
+        </section>
+
         <section class="windowSection">
           <article class="panel sectionIntro">
             <div class="panelEyebrow">Moon Aspect Table</div>
@@ -124,6 +154,12 @@ const strongestWindow = computed(() => {
   const windows = report.value?.lunar_return.moon_windows || [];
   if (!windows.length) return null;
   return [...windows].sort((left, right) => left.exact_orb - right.exact_orb)[0];
+});
+
+const fastTransits = computed(() => {
+  return (report.value?.lunar_return.fast_transits || [])
+    .filter((t) => t.transiting_planet !== t.natal_planet)
+    .slice(0, 5);
 });
 
 function currentReportId() {
@@ -378,6 +414,76 @@ watch(
 
 .errorCard {
   border-color: rgba(244, 63, 94, 0.2);
+}
+
+/* ── 快星行运卡片 ── */
+.transitSection {
+  display: grid;
+  gap: 18px;
+  margin-bottom: 32px;
+}
+
+.fastTransitCards {
+  display: grid;
+  gap: 10px;
+}
+
+.fastTransitCard {
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(56, 189, 248, 0.12);
+  background: rgba(56, 189, 248, 0.04);
+}
+
+.ftTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.ftPlanets {
+  font-size: 14px;
+  color: #e2e8f0;
+}
+
+.ftPlanets strong {
+  color: #f8fafc;
+}
+
+.ftAspect {
+  margin: 0 6px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  background: rgba(56, 189, 248, 0.12);
+  color: #7dd3fc;
+}
+
+.ftOrb {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.ftText {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.7;
+}
+
+.ftBar {
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.ftBarFill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.5), rgba(56, 189, 248, 0.9));
+  transition: width 0.4s;
 }
 
 @media (max-width: 1100px) {

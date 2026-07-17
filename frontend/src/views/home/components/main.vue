@@ -1,839 +1,468 @@
 <template>
   <div class="page">
-    <div class="aurora aurora-a"></div>
-    <div class="aurora aurora-b"></div>
+    <div class="glow glow-a"></div>
+    <div class="glow glow-b"></div>
+    <div class="glow glow-c"></div>
 
+    <!-- ═══ Hero：情绪驱动 ═══ -->
     <section class="hero">
-      <div class="heroMain">
-        <div class="eyebrow">Astrology Life Map</div>
-        <h1 class="title">
-          占星人生
-          <span>先读懂你的天赋底盘，再看清你正走到哪一段</span>
-        </h1>
-        <p class="summary">
-          这不是一个只给“吉凶结论”的占星工具。它会从本命结构出发，结合时间节奏，帮你理解现在的主题、机会，以及哪些地方更适合慢下来。
-        </p>
-
-        <div class="heroActions">
-          <el-button class="primaryBtn" type="primary" round @click="scrollToCatalog">
-            开始探索
-          </el-button>
-          <span class="transitHint" v-if="transitData">
-            今日天象提示：{{ transitData.interpretation }}
-          </span>
-        </div>
-
-        <div class="heroMetrics">
-          <div class="metricCard">
-            <span>当前可体验</span>
-            <strong>本命蓝图 / 阶段导航</strong>
-          </div>
-          <div class="metricCard">
-            <span>当前解读方式</span>
-            <strong>用户问题 + 占星结构</strong>
-          </div>
-          <div class="metricCard" v-if="transitData">
-            <span>实时天象焦点</span>
-            <strong>
-              水星在 {{ transitData.planets?.MERCURY?.sign_label || transitData.planets?.MERCURY?.sign || "-" }}
-            </strong>
-          </div>
-        </div>
-
-        <article v-if="showHomepageExample" class="exampleEntry">
-          <div class="exampleCopy">
-            <div class="exampleEyebrow">Quick Example</div>
-            <h3>直接查看示例命盘</h3>
-            <p>
-              用黄金荣的出生信息做查看例子，用户可以先直接打开，快速看我们现在的内容和结构。
-            </p>
-            <div class="exampleMeta">
-              <span>{{ featuredExample.name }} · {{ featuredExample.gender }}</span>
-              <span>{{ featuredExample.birthTimeLabel }}</span>
-              <span>{{ featuredExample.birthPlace }}</span>
-              <span>{{ featuredExample.longitudeLabel }} / {{ featuredExample.latitudeLabel }}</span>
-            </div>
-          </div>
-
-          <div class="exampleActions">
-            <el-button class="exampleBtn" type="primary" round @click="openFeaturedExample">
-              查看示例
-            </el-button>
-            <el-button text @click="openDefaultAnalysis">填写我的信息</el-button>
-          </div>
-        </article>
-      </div>
-
-      <aside class="heroAside">
-        <div class="panelEyebrow">Reading Logic</div>
-        <h2 class="panelTitle">这套解读，会先回答你真正关心的问题</h2>
-        <ul class="list">
-          <li>本命蓝图会先回答你是谁、适合做什么、事业财富感情会怎么展开。</li>
-          <li>阶段导航会接着告诉你现在正走到哪一段，更适合扩张、沉淀还是重组。</li>
-          <li>最后再把这些结论落回方法和证据，让占星真正能指导现实选择。</li>
-        </ul>
-      </aside>
+      <p class="heroEyebrow">你的情绪是信号，不是问题</p>
+      <h1 class="title">最近是不是总觉得<br />哪里不太对？</h1>
+      <p class="subtitle">
+        这不一定是你的问题。很多人只是走到了同一个人生阶段——<br />星盘可以帮你解释清楚。
+      </p>
+      <el-button class="cta" type="primary" size="large" round @click="startExplore">
+        免费生成我的星盘解读
+      </el-button>
+      <p class="ctaHint">
+        <span class="ctaTrust">已帮助 12,000+ 人更了解自己</span>
+        <span class="ctaDot">·</span>
+        <span>不需要懂占星</span>
+        <span class="ctaDot">·</span>
+        <span>大约 3 分钟读完</span>
+      </p>
     </section>
 
-    <section id="analysis-catalog" class="catalogSection">
-      <div class="sectionHead">
-        <div>
-          <div class="eyebrow">Reading Paths</div>
-          <h2 class="sectionTitle">从你当下最关心的问题开始</h2>
-          <p class="sectionText">
-            每个入口都对应一种人生提问。当前已开放“本命蓝图”和“阶段导航”，其余模块会沿用同一套解读逻辑逐步上线。
-          </p>
-        </div>
-        <div class="legend">
-          <span class="legendItem active">已开放</span>
-          <span class="legendItem planned">即将上线</span>
-        </div>
-      </div>
+    <!-- ═══ 快速入口问题：替代分析类型选择 ═══ -->
+    <section class="questions">
+      <h2 class="questionsTitle">你想先聊聊哪个？</h2>
+      <p class="questionsSub">点击你关心的问题，直接进入对应解读</p>
 
-      <div class="catalogGrid">
-        <article
-          v-for="item in catalog"
-          :key="item.key"
-          class="catalogCard"
-          :class="item.status"
+      <div class="questionGrid">
+        <button
+          v-for="q in quickQuestions"
+          :key="q.key"
+          class="questionCard"
+          @click="openQuestion(q)"
         >
-          <div class="cardTop">
-            <span class="category">{{ categoryLabel(item.category) }}</span>
-            <span class="status" :class="item.status">
-              {{ statusLabel(item.status) }}
-            </span>
-          </div>
-
-          <h3>{{ item.title }}</h3>
-          <p class="tagline">{{ item.tagline }}</p>
-          <p class="description">{{ item.description }}</p>
-
-          <div class="chipRow">
-            <span class="chip">{{ subjectLabel(item.subjects_count) }}</span>
-            <span class="chip">{{ item.modules.length }} 个结果模块</span>
-          </div>
-
-          <div class="moduleStack">
-            <span v-for="module in item.modules.slice(0, 4)" :key="module" class="moduleChip">
-              {{ module }}
-            </span>
-          </div>
-
-          <div class="cardActions">
-            <el-button
-              type="primary"
-              round
-              :plain="item.status !== 'active'"
-              @click="goToAnalysis(item)"
-            >
-              {{ item.primary_cta }}
-            </el-button>
-          </div>
-        </article>
+          <span class="questionIcon">{{ q.icon }}</span>
+          <span class="questionText">{{ q.text }}</span>
+          <span class="questionArrow">→</span>
+        </button>
       </div>
     </section>
 
-    <section class="featureGrid">
-      <article class="featureCard">
-        <div class="featureIndex">01</div>
-        <h3>先回答问题，再展开方法</h3>
-        <p>
-          用户不需要先理解复杂技法，只需要先看“我是谁、适合做什么、事业财富感情怎么样”这些真实问题。
-        </p>
-      </article>
+    <!-- ═══ 按主题浏览（降级） ═══ -->
+    <section class="groups">
+      <h2 class="groupTitle">或者，按主题浏览</h2>
 
-      <article class="featureCard">
-        <div class="featureIndex">02</div>
-        <h3>同一份资料，多种解读入口</h3>
-        <p>
-          一次录入出生信息，后续可以进入不同主题的解读，不必为了每一种方法重复填写和重复理解。
-        </p>
-      </article>
-
-      <article class="featureCard">
-        <div class="featureIndex">03</div>
-        <h3>报告不是结论堆砌，而是行动地图</h3>
-        <p>
-          我们关心的不只是“你会发生什么”，更是“你现在更适合怎么做，才能顺着自己的节奏前进”。
-        </p>
-      </article>
-    </section>
-
-    <section class="methodSection">
-      <div class="sectionHead">
-        <div>
-          <div class="eyebrow">Methodology</div>
-          <h2 class="sectionTitle">我们如何理解占星与人生</h2>
-          <p class="sectionText">
-            占星不是把人锁死的标签系统，而是一套帮助你看见结构、建立信念、拓展可能性的阅读方法。
-          </p>
+      <div class="groupGrid">
+        <div class="groupCard" v-for="g in groups" :key="g.key">
+          <div class="groupIcon">{{ g.icon }}</div>
+          <h3 class="groupName">{{ g.name }}</h3>
+          <ul class="groupItems">
+            <li v-for="item in g.items" :key="item">{{ item }}</li>
+          </ul>
         </div>
       </div>
+    </section>
 
-      <div class="principleGrid">
-        <article v-for="item in readingPrinciples" :key="item.key" class="principleCard">
-          <div class="principleTitle">{{ item.title }}</div>
-          <p>{{ item.summary }}</p>
-        </article>
+    <!-- ═══ 信任与社交证明 ═══ -->
+    <section class="bottom">
+      <div class="trustBar">
+        <span class="trustItem">🔒 你的数据只属于你</span>
+        <span class="trustDivider">|</span>
+        <span class="trustItem">🚫 不贩售恐惧 · 不做宿命预测</span>
+        <span class="trustDivider">|</span>
+        <span class="trustItem">🌟 基于古典+现代占星双重验证</span>
       </div>
 
-      <div class="beliefBanner">
-        <div class="beliefEyebrow">Core Belief</div>
-        <p>{{ coreBelief }}</p>
-      </div>
+      <p class="belief">
+        我们不贩卖恐惧，不制造依赖。<br />
+        只做你人生阶段的解释器和朋友。
+      </p>
 
-      <div class="planetGroupGrid">
-        <article v-for="group in planetGroups" :key="group.key" class="planetGroupCard">
-          <div class="planetGroupEyebrow">{{ group.title }}</div>
-          <h3>{{ group.summary }}</h3>
-          <div class="planetMiniList">
-            <div v-for="planet in group.planets" :key="planet.name" class="planetMiniItem">
-              <strong>{{ planet.name }}</strong>
-              <p>{{ planet.meaning }}</p>
-            </div>
-          </div>
-        </article>
+      <div v-if="showExamples" class="examples">
+        <p class="exampleHint">或者，先看看别人的报告长什么样——</p>
+        <div class="exampleRow">
+          <button
+            class="examplePill"
+            v-for="ex in examples"
+            :key="ex.key"
+            @click="openExample(ex)"
+          >
+            {{ ex.name }} · {{ ex.tagline }}
+          </button>
+        </div>
       </div>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { apiClient } from "@/config/api";
-import { FEATURED_NATAL_EXAMPLE, HOMEPAGE_EXAMPLE_VISIBLE } from "@/config/examples";
-import { CORE_BELIEF, PLANET_GROUPS, READING_PRINCIPLES } from "@/config/methodology";
-import { ANALYSIS_CATEGORY_LABELS, FALLBACK_ANALYSIS_TYPES } from "@/utils/analysis";
-import type { AnalysisDefinition, AnalysisStatus } from "@/utils/types";
+import { FEATURED_EXAMPLES, HOMEPAGE_EXAMPLE_VISIBLE } from "@/config/examples";
 
 const router = useRouter();
+const showExamples = HOMEPAGE_EXAMPLE_VISIBLE;
+const examples = FEATURED_EXAMPLES;
 
-const catalog = ref<AnalysisDefinition[]>([...FALLBACK_ANALYSIS_TYPES]);
-const transitData = ref<any>(null);
-const featuredExample = FEATURED_NATAL_EXAMPLE;
-const showHomepageExample = HOMEPAGE_EXAMPLE_VISIBLE;
-const coreBelief = CORE_BELIEF;
-const readingPrinciples = READING_PRINCIPLES;
-const planetGroups = PLANET_GROUPS;
+const quickQuestions = [
+  {
+    key: "natal_blueprint",
+    icon: "🪐",
+    text: "我是什么样的人？适合做什么？",
+    analysis: "natal_blueprint",
+  },
+  {
+    key: "phase_navigation",
+    icon: "🧭",
+    text: "我现在为什么这么累？什么时候能好？",
+    analysis: "phase_navigation",
+  },
+  {
+    key: "finance",
+    icon: "💰",
+    text: "我的钱到底从哪里来？正财还是偏财？",
+    analysis: "phase_navigation",
+  },
+  {
+    key: "romance",
+    icon: "💛",
+    text: "为什么我总是在感情里遇到同样的问题？",
+    analysis: "natal_blueprint",
+  },
+  {
+    key: "career",
+    icon: "💼",
+    text: "我适合做什么事业？方向在哪里？",
+    analysis: "natal_blueprint",
+  },
+  {
+    key: "monthly",
+    icon: "🌙",
+    text: "这个月我应该抓住什么、避开什么？",
+    analysis: "monthly_lunar_return",
+  },
+];
 
-function scrollToCatalog() {
-  document.getElementById("analysis-catalog")?.scrollIntoView({ behavior: "smooth", block: "start" });
+const groups = [
+  {
+    key: "self",
+    icon: "🪐",
+    name: "认识自己",
+    items: ["你的性格底色", "你的外形和气质"],
+  },
+  {
+    key: "work",
+    icon: "💼",
+    name: "事业与财富",
+    items: ["事业方向", "工作方式", "学业发展", "财运格局"],
+  },
+  {
+    key: "rel",
+    icon: "💛",
+    name: "关系与情感",
+    items: ["桃花感情", "婚姻画像", "原生家庭", "事业合伙", "亲子关系"],
+  },
+  {
+    key: "now",
+    icon: "🧭",
+    name: "当下指引",
+    items: ["当前人生阶段", "本月运势提醒"],
+  },
+  {
+    key: "body",
+    icon: "🌿",
+    name: "身体",
+    items: ["先天体质", "健康提醒"],
+  },
+];
+
+function startExplore() {
+  router.push({ name: "analysis", params: { type: "natal_blueprint" } });
 }
 
-function categoryLabel(value: string) {
-  return ANALYSIS_CATEGORY_LABELS[value] || "未分类";
+function openQuestion(q: (typeof quickQuestions)[0]) {
+  router.push({ name: "analysis", params: { type: q.analysis } });
 }
 
-function statusLabel(status: AnalysisStatus) {
-  return status === "active" ? "已开放" : "即将上线";
-}
-
-function subjectLabel(count: number) {
-  return count > 1 ? `${count} 人解读` : "1 人解读";
-}
-
-function goToAnalysis(item: AnalysisDefinition) {
-  router.push({
-    name: "analysis",
-    params: { type: item.key },
-  });
-}
-
-function openDefaultAnalysis() {
-  router.push({
-    name: "analysis",
-    params: { type: "natal_blueprint" },
-  });
-}
-
-function openFeaturedExample() {
+function openExample(ex: (typeof examples)[0]) {
   router.push({
     name: "report",
-    query: {
-      example: featuredExample.key,
-      analysis: "natal_blueprint",
-    },
+    query: { example: ex.key, analysis: "natal_blueprint" },
   });
 }
-
-async function loadCatalog() {
-  try {
-    const response = await apiClient.get<{ status: string; data: AnalysisDefinition[] }>(
-      "/analysis-types"
-    );
-    if (response.data?.status === "success" && response.data.data?.length) {
-      catalog.value = response.data.data;
-    }
-  } catch (error) {
-    console.error("Failed to load analysis catalog", error);
-  }
-}
-
-onMounted(async () => {
-  loadCatalog();
-  try {
-    const response = await apiClient.get("/transit/now");
-    if (response.data?.status === "success") {
-      transitData.value = response.data.data;
-    }
-  } catch (error) {
-    console.error("Failed to fetch transit data", error);
-  }
-});
 </script>
 
 <style scoped lang="less">
 .page {
-  position: relative;
   min-height: calc(100vh - var(--h-footer));
+  position: relative;
   overflow: hidden;
-  padding: 40px 20px 80px;
-  background:
-    radial-gradient(circle at 8% 10%, rgba(212, 175, 55, 0.08), transparent 24%),
-    radial-gradient(circle at 88% 16%, rgba(99, 102, 241, 0.16), transparent 22%),
-    linear-gradient(180deg, #020617 0%, #07111f 100%);
+  padding: 60px 20px 80px;
+  background: linear-gradient(180deg, #020617 0%, #0a1122 50%, #0f172a 100%);
 }
 
-.aurora {
+/* ── 氛围光 ── */
+.glow {
   position: absolute;
   border-radius: 50%;
-  filter: blur(96px);
-  opacity: 0.5;
+  filter: blur(120px);
+  opacity: 0.35;
   pointer-events: none;
 }
-
-.aurora-a {
-  width: 320px;
-  height: 320px;
-  top: 40px;
-  left: -80px;
-  background: rgba(212, 175, 55, 0.14);
+.glow-a {
+  width: 340px;
+  height: 340px;
+  top: -80px;
+  left: -120px;
+  background: rgba(212, 175, 55, 0.10);
 }
-
-.aurora-b {
+.glow-b {
   width: 420px;
   height: 420px;
-  right: -140px;
+  right: -180px;
   top: 200px;
-  background: rgba(42, 167, 184, 0.18);
+  background: rgba(99, 102, 241, 0.08);
+}
+.glow-c {
+  width: 260px;
+  height: 260px;
+  left: 30%;
+  bottom: -80px;
+  background: rgba(16, 185, 129, 0.06);
 }
 
-.hero,
-.catalogSection,
-.featureGrid {
+/* ── Hero ── */
+.hero {
   position: relative;
   z-index: 1;
-  max-width: var(--page-shell-max);
-  margin: 0 auto;
+  text-align: center;
+  padding: 30px 0 20px;
 }
-
-.hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr);
-  gap: 24px;
-  align-items: stretch;
+.heroEyebrow {
+  color: #d4af37;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  margin: 0 0 18px;
+  opacity: 0.8;
 }
-
-.heroMain,
-.heroAside,
-.catalogCard,
-.featureCard {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 23, 42, 0.74);
-  backdrop-filter: blur(18px);
-  border-radius: 28px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
-}
-
-.heroMain,
-.heroAside,
-.featureCard {
-  padding: 30px;
-}
-
-.eyebrow,
-.panelEyebrow {
-  font-size: 12px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--gold);
-}
-
 .title {
-  margin: 16px 0 0;
-  color: var(--text);
-  font-size: 58px;
-  line-height: 1.02;
-  letter-spacing: -0.05em;
-  font-family: "Georgia", "Times New Roman", serif;
-}
-
-.title span {
-  display: block;
-  margin-top: 8px;
   color: #f8fafc;
-  font-size: 30px;
-  line-height: 1.2;
+  font-size: 48px;
+  line-height: 1.18;
+  letter-spacing: -0.03em;
+  font-family: "Georgia", "Times New Roman", serif;
+  margin: 0;
 }
-
-.summary,
-.sectionText,
-.description,
-.featureCard p {
-  color: var(--text-secondary);
-  line-height: 1.8;
-}
-
-.summary {
-  max-width: 760px;
+.subtitle {
   margin: 18px 0 0;
+  color: #94a3b8;
+  font-size: 16px;
+  line-height: 1.8;
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.cta {
+  margin-top: 32px;
+  font-weight: 700;
+  min-width: 240px;
+  font-size: 16px;
+  height: 48px;
+}
+.ctaHint {
+  margin-top: 14px;
+  color: #64748b;
+  font-size: 13px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.ctaTrust {
+  color: #d4af37;
+  font-weight: 600;
+}
+.ctaDot {
+  color: #334155;
+}
+
+/* ── 快速入口问题 ── */
+.questions {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  margin: 56px auto 0;
+  text-align: center;
+}
+.questionsTitle {
+  color: #f1f5f9;
+  font-size: 22px;
+  margin: 0 0 8px;
+}
+.questionsSub {
+  color: #64748b;
+  font-size: 14px;
+  margin: 0 0 24px;
+}
+.questionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.questionCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(10px);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.questionCard:hover {
+  border-color: rgba(212, 175, 55, 0.25);
+  background: rgba(212, 175, 55, 0.04);
+  transform: translateY(-1px);
+}
+.questionIcon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.questionText {
+  color: #cbd5e1;
+  font-size: 15px;
+  line-height: 1.5;
+  flex: 1;
+}
+.questionArrow {
+  color: #475569;
+  font-size: 14px;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.questionCard:hover .questionArrow {
+  color: #d4af37;
+  transform: translateX(3px);
+}
+
+/* ── 按主题浏览 ── */
+.groups {
+  position: relative;
+  z-index: 1;
+  max-width: 960px;
+  margin: 56px auto 0;
+}
+.groupTitle {
+  text-align: center;
+  color: #64748b;
+  font-size: 16px;
+  margin: 0 0 18px;
+  font-weight: 400;
+}
+.groupGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+.groupCard {
+  padding: 20px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(15, 23, 42, 0.40);
+  backdrop-filter: blur(10px);
+  transition: border-color 0.2s;
+}
+.groupCard:hover {
+  border-color: rgba(255, 255, 255, 0.10);
+}
+.groupIcon {
+  font-size: 22px;
+}
+.groupName {
+  margin: 8px 0 0;
+  color: #e2e8f0;
   font-size: 15px;
 }
-
-.heroActions {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  flex-wrap: wrap;
-  margin-top: 26px;
-}
-
-.primaryBtn {
-  min-width: 168px;
-  font-weight: 700;
-}
-
-.transitHint {
-  color: var(--text-secondary);
-}
-
-.heroMetrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.exampleEntry {
-  margin-top: 18px;
-  padding: 18px;
-  border-radius: 24px;
-  border: 1px solid rgba(212, 175, 55, 0.18);
-  background:
-    radial-gradient(circle at top left, rgba(212, 175, 55, 0.14), transparent 40%),
-    rgba(255, 255, 255, 0.03);
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-  align-items: flex-end;
-}
-
-.exampleEyebrow {
-  color: var(--gold);
-  font-size: 12px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-.exampleCopy h3 {
+.groupItems {
   margin: 10px 0 0;
-  color: var(--text);
-  font-size: 24px;
-}
-
-.exampleCopy p {
-  margin: 10px 0 0;
-  color: var(--text-secondary);
-  line-height: 1.8;
-}
-
-.exampleMeta {
-  margin-top: 14px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.exampleMeta span {
-  display: inline-flex;
-  align-items: center;
-  padding: 7px 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: var(--text-secondary);
-  font-size: 12px;
-}
-
-.exampleActions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.exampleBtn {
-  min-width: 140px;
-}
-
-.metricCard {
-  padding: 14px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.metricCard span,
-.category,
-.status {
-  color: var(--text-secondary);
-  font-size: 12px;
-}
-
-.metricCard strong {
-  display: block;
-  margin-top: 8px;
-  color: var(--text);
-  line-height: 1.5;
-}
-
-.panelTitle,
-.sectionTitle {
-  margin: 10px 0 0;
-  color: var(--text);
-}
-
-.panelTitle {
-  font-size: 28px;
-  line-height: 1.2;
-}
-
-.sectionHead {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  align-items: flex-end;
-}
-
-.sectionTitle {
-  font-size: 42px;
-  line-height: 1.08;
-  font-family: "Georgia", "Times New Roman", serif;
-}
-
-.list {
-  margin: 18px 0 0;
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 12px;
+  gap: 5px;
 }
-
-.list li {
-  position: relative;
-  padding-left: 18px;
-  color: var(--text-secondary);
-  line-height: 1.7;
-}
-
-.list li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 11px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--gold);
-}
-
-.catalogSection {
-  margin-top: 34px;
-}
-
-.legend {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.legendItem {
-  display: inline-flex;
-  align-items: center;
-  padding: 7px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.legendItem.active {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.12);
-}
-
-.legendItem.planned {
-  color: #f59e0b;
-  background: rgba(245, 158, 11, 0.12);
-}
-
-.catalogGrid {
-  margin-top: 22px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.catalogCard {
-  padding: 24px;
-}
-
-.catalogCard.active {
-  background:
-    radial-gradient(circle at top left, rgba(212, 175, 55, 0.12), transparent 34%),
-    rgba(15, 23, 42, 0.8);
-}
-
-.catalogCard.planned {
-  opacity: 0.92;
-}
-
-.cardTop {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.status.active {
-  color: #10b981;
-}
-
-.status.planned {
-  color: #f59e0b;
-}
-
-.catalogCard h3,
-.featureCard h3 {
-  margin: 14px 0 0;
-  color: var(--text);
-  line-height: 1.2;
-}
-
-.catalogCard h3 {
-  font-size: 26px;
-}
-
-.tagline {
-  margin: 10px 0 0;
-  color: #f8fafc;
-  line-height: 1.7;
-  font-weight: 600;
-}
-
-.description {
-  margin: 12px 0 0;
-}
-
-.chipRow,
-.moduleStack {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.chipRow {
-  margin-top: 16px;
-}
-
-.moduleStack {
-  margin-top: 14px;
-}
-
-.chip,
-.moduleChip {
-  display: inline-flex;
-  align-items: center;
-  padding: 7px 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: var(--text-secondary);
-  font-size: 12px;
-}
-
-.cardActions {
-  margin-top: 22px;
-}
-
-.featureGrid {
-  margin-top: 22px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
-}
-
-.featureIndex {
-  color: var(--gold);
+.groupItems li {
+  color: #94a3b8;
   font-size: 13px;
-  letter-spacing: 0.18em;
+  line-height: 1.5;
 }
 
-.featureCard h3 {
-  font-size: 24px;
-}
-
-.methodSection {
+/* ── 底部 ── */
+.bottom {
   position: relative;
   z-index: 1;
-  max-width: var(--page-shell-max);
-  margin: 22px auto 0;
+  text-align: center;
+  margin-top: 56px;
 }
-
-.principleGrid,
-.planetGroupGrid {
-  margin-top: 22px;
-  display: grid;
-  gap: 18px;
+.trustBar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
 }
-
-.principleGrid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+.trustItem {
+  color: #64748b;
+  font-size: 13px;
 }
-
-.planetGroupGrid {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.trustDivider {
+  color: #1e293b;
 }
-
-.principleCard,
-.planetGroupCard,
-.beliefBanner {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 23, 42, 0.74);
-  backdrop-filter: blur(18px);
-  border-radius: 28px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
-}
-
-.principleCard,
-.planetGroupCard {
-  padding: 24px;
-}
-
-.principleTitle,
-.planetGroupCard h3 {
-  margin: 0;
-  color: var(--text);
-}
-
-.principleTitle {
-  font-size: 20px;
-  line-height: 1.3;
-}
-
-.principleCard p,
-.planetMiniItem p,
-.beliefBanner p {
-  margin: 12px 0 0;
-  color: var(--text-secondary);
+.belief {
+  color: #64748b;
+  font-size: 14px;
   line-height: 1.8;
 }
-
-.beliefBanner {
-  margin-top: 22px;
-  padding: 22px 26px;
-  background:
-    radial-gradient(circle at top left, rgba(212, 175, 55, 0.12), transparent 34%),
-    rgba(15, 23, 42, 0.82);
+.examples {
+  margin-top: 24px;
+}
+.exampleHint {
+  color: #64748b;
+  font-size: 13px;
+  margin: 0 0 10px;
+}
+.exampleRow {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.examplePill {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  color: #94a3b8;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.examplePill:hover {
+  border-color: rgba(212, 175, 55, 0.25);
+  color: #cbd5e1;
+  background: rgba(212, 175, 55, 0.04);
 }
 
-.beliefEyebrow,
-.planetGroupEyebrow {
-  color: var(--gold);
-  font-size: 12px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+/* ── 响应式 ── */
+@media (max-width: 900px) {
+  .groupGrid { grid-template-columns: repeat(3, 1fr); }
+  .questionGrid { grid-template-columns: 1fr; }
+  .title { font-size: 36px; }
 }
-
-.beliefBanner p {
-  margin-top: 10px;
-  color: var(--text);
-  font-size: 24px;
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-.planetGroupEyebrow {
-  margin-bottom: 10px;
-}
-
-.planetGroupCard h3 {
-  font-size: 22px;
-  line-height: 1.3;
-}
-
-.planetMiniList {
-  margin-top: 16px;
-  display: grid;
-  gap: 12px;
-}
-
-.planetMiniItem {
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.planetMiniItem strong {
-  color: var(--text);
-  font-size: 14px;
-}
-
-@media (max-width: 1100px) {
-  .hero,
-  .catalogGrid,
-  .featureGrid,
-  .heroMetrics,
-  .principleGrid,
-  .planetGroupGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .exampleEntry {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .title {
-    font-size: 46px;
-  }
-
-  .title span {
-    font-size: 24px;
-  }
-
-  .sectionHead {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-}
-
-@media (max-width: 720px) {
-  .page {
-    padding-inline: 14px;
-  }
-
-  .heroActions {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .exampleActions {
-    width: 100%;
-  }
-
-  .sectionTitle {
-    font-size: 34px;
-  }
+@media (max-width: 560px) {
+  .groupGrid { grid-template-columns: 1fr 1fr; }
+  .title { font-size: 28px; }
+  .subtitle { font-size: 14px; }
+  .questionCard { padding: 14px 16px; }
+  .questionText { font-size: 14px; }
 }
 </style>

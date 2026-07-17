@@ -1,4 +1,3 @@
-import { DEFAULT_TEST_SUBJECT } from "@/config/examples";
 import { formatCoordinateLabel, formatTimezoneLabel } from "@/utils/coordinates";
 
 export interface TestUserProfile {
@@ -25,21 +24,24 @@ export interface TestUserProfile {
   }>;
 }
 
+const DEFAULT_LAT = 35.7;
+const DEFAULT_LON = 113.35;
+
 export const TEST_USER_PROFILES: TestUserProfile[] = [
   {
     key: "xiatian",
-    name: DEFAULT_TEST_SUBJECT.name,
-    gender: DEFAULT_TEST_SUBJECT.gender,
-    birthDatetime: DEFAULT_TEST_SUBJECT.birthDatetime,
-    birthTime: DEFAULT_TEST_SUBJECT.birthTime,
-    birthTimeLabel: DEFAULT_TEST_SUBJECT.birthDatetime.replace("T", " "),
-    birthPlace: DEFAULT_TEST_SUBJECT.birthPlace,
-    lat: DEFAULT_TEST_SUBJECT.lat,
-    lon: DEFAULT_TEST_SUBJECT.lon,
-    latitudeLabel: DEFAULT_TEST_SUBJECT.latitudeLabel,
-    longitudeLabel: DEFAULT_TEST_SUBJECT.longitudeLabel,
-    timezone: DEFAULT_TEST_SUBJECT.timezone,
-    timezoneLabel: DEFAULT_TEST_SUBJECT.timezoneLabel,
+    name: "\u590f\u5929",
+    gender: "\u5973",
+    birthDatetime: "1991-03-21T09:25",
+    birthTime: "1991-03-21T09:25:00",
+    birthTimeLabel: "1991-03-21 09:25",
+    birthPlace: "\u5c71\u897f\u7701\u9675\u5ddd\u53bf\u9644\u57ce\u9547\u9752\u6768\u5e84\u6751",
+    lat: DEFAULT_LAT,
+    lon: DEFAULT_LON,
+    latitudeLabel: formatCoordinateLabel(DEFAULT_LAT, "latitude"),
+    longitudeLabel: formatCoordinateLabel(DEFAULT_LON, "longitude"),
+    timezone: 8,
+    timezoneLabel: formatTimezoneLabel(8),
     note: "\u5f53\u524d\u9ed8\u8ba4\u6d4b\u8bd5\u7528\u6237\uff0c\u73b0\u5b9e\u8def\u5f84\u5df2\u7ecf\u6709\u8f83\u6e05\u695a\u7684\u8de8\u9886\u57df\u8f6c\u5411\uff0c\u9002\u5408\u7528\u6765\u5bf9\u7167\u672c\u547d\u84dd\u56fe\u4e0e\u804c\u4e1a\u8def\u7ebf\u662f\u5426\u6253\u4e2d\u3002",
     tags: [
       "\u9ed8\u8ba4\u6d4b\u8bd5",

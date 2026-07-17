@@ -1,5 +1,5 @@
 export type AnalysisCategory = "structure" | "timing" | "relationship" | "topic";
-export type AnalysisStatus = "active" | "planned";
+export type AnalysisStatus = "active" | "planned" | "paused";
 
 export interface AnalysisDefinition {
   key: string;
@@ -73,6 +73,20 @@ export interface DomainPoint {
   scores: DomainScores;
 }
 
+export interface KlinePeriodInsight {
+  headline: string;
+  body: string;
+  advice: string;
+  trend_note: string;
+  top_domains: string[];
+  patience_domains: string[];
+  bias_note: string;
+  planet_label: string;
+  house_title: string;
+  dignity_label: string;
+  dignity_note: string;
+}
+
 export interface KlinePeriod {
   index: number;
   timing: {
@@ -108,6 +122,7 @@ export interface KlinePeriod {
   opportunities?: string[];
   cautions?: string[];
   action_focus?: string[];
+  insight?: KlinePeriodInsight | null;
   type: string;
 }
 
@@ -153,6 +168,12 @@ export interface LifeReport {
     major_aspects?: Array<Record<string, any>>;
     [key: string]: any;
   } | null;
+  hero?: HeroSection | null;
+  domains?: Record<string, DomainReport> | null;
+  _analysis_evidence?: AnalysisEvidence | null;
+  _transits?: TransitItem[] | null;
+  _transits_fast?: TransitItem[] | null;
+  _transits_slow?: TransitItem[] | null;
   current_phase?: Record<string, any> | null;
   life_model?: Record<string, any> | null;
   natal_blueprint?: {
@@ -352,6 +373,54 @@ export interface LifeReport {
     }>;
     [key: string]: any;
   } | null;
+  characters?: CharacterProfilesData | null;
+}
+
+export interface AngleView {
+  angle_id: string;
+  angle_label: string;
+  narrative: string;
+}
+
+export interface InterpretationMatrix {
+  primary_angle: AngleView;
+  alternative_angles: AngleView[];
+}
+
+export interface DomainReport {
+  domain: string;
+  core_theme: string;
+  tradition_weight: number;
+  structure: string;
+  psychology: string;
+  suggestion: string;
+  interpretation_matrix?: InterpretationMatrix;
+  hero_bridge?: string;
+}
+
+export interface TransitItem {
+  transiting_planet?: string;
+  transiting_label: string;
+  natal_planet?: string;
+  natal_label: string;
+  aspect_type?: string;
+  aspect_label: string;
+  orb: number;
+  strength: number;
+  is_applying: boolean;
+  speed?: "fast" | "slow";
+  highlight: string;
+}
+
+export interface HeroSection {
+  core_theme: string;
+  domain_summaries: Record<string, string>;
+}
+
+export interface AnalysisEvidence {
+  planet_baselines: Record<string, any>;
+  dignity_breakdown: Record<string, any>;
+  house_infos?: Record<string, any>;
 }
 
 export interface LunarReturnDailyDegree {
@@ -412,5 +481,142 @@ export interface MonthlyLunarReturnReport {
     cycle_end_utc: string;
     moon_windows: LunarReturnWindow[];
     chart: LifeReport["natal_chart"];
+    fast_transits: TransitItem[];
   };
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 角色系统类型
+// ═══════════════════════════════════════════════════════════════
+
+export interface SignPersona {
+  sign: string;
+  name: string;
+  archetype: string;
+  element: string;
+  modality: string;
+  polarity: string;
+  ruling_planet: string;
+  essence: string;
+  personality: string;
+  voice_tone: string;
+  social_mask: string;
+  comfort_zone: string;
+  stress_response: string;
+  expertise_domains: string[];
+  greeting_style: string;
+  advice_approach: string;
+  gift_to_user: string;
+  challenge_to_user: string;
+  keywords: string[];
+  visual_color: string;
+}
+
+export interface CharacterProfile {
+  sign: string;
+  persona: SignPersona;
+  presence_score: number;
+  comfort_score: number;
+  role_tag: string;           // "天赋角色" | "课题角色" | "核心角色" | "背景角色"
+  planets_here: string[];
+  planets_dignity: Record<string, string>;
+  house_cusps_here: number[];
+  is_ascendant: boolean;
+  is_midheaven: boolean;
+  storylines: string[];
+  linked_domains: string[];
+  personalized_greeting: string;
+}
+
+export interface CharacterProfilesData {
+  characters: Record<string, CharacterProfile>;
+  sorted_by_presence: Array<{
+    sign: string;
+    name: string;
+    archetype: string;
+    presence_score: number;
+    role_tag: string;
+  }>;
+  core_characters: Array<{
+    sign: string;
+    name: string;
+    presence_score: number;
+    role_tag: string;
+  }>;
+  dormant_characters: Array<{
+    sign: string;
+    name: string;
+  }>;
+}
+
+export interface FeaturedCharacter {
+  sign: string;
+  name: string;
+  archetype: string;
+  activation_score: number;
+  reason: string;
+  daily_message: string;
+  suggested_topic: string;
+  visual_color: string;
+}
+
+export interface DailyActivation {
+  date: string;
+  activation_scores: Record<string, number>;
+  featured_characters: FeaturedCharacter[];
+  lunar_note: string;
+  firdaria_note: string;
+  daily_theme: string;
+}
+
+export interface CharacterResponse {
+  character: string;
+  character_name: string;
+  response: string;
+  emotional_tone: string;
+  suggested_followup: string;
+}
+
+export interface CouncilPerspective {
+  character: string;
+  character_name: string;
+  archetype: string;
+  perspective: string;
+  visual_color: string;
+}
+
+export interface CouncilResponse {
+  topic: string;
+  topic_label: string;
+  perspectives: CouncilPerspective[];
+  synthesis: string;
+}
+
+export interface GrowthSummary {
+  total_conversations: number;
+  most_engaged_character: string;
+  favorite_topics: Record<string, number>;
+  streak_days: number;
+  character_affinity: Record<string, number>;
+  milestones_achieved: number;
+  first_interaction_date: string;
+  last_interaction_date: string;
+}
+
+export interface GrowthData {
+  summary: GrowthSummary;
+  milestones: Array<{
+    milestone_type: string;
+    sign: string;
+    achieved_at: string;
+    description: string;
+  }>;
+  recent_conversations: Array<{
+    timestamp: string;
+    sign: string;
+    topic: string;
+    user_message: string;
+    character_response: string;
+    emotional_context: string;
+  }>;
 }

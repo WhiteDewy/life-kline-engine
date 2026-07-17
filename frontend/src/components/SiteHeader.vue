@@ -10,11 +10,20 @@
       </button>
 
       <nav class="nav">
-        <button class="navLink" type="button" @click="goHome">解读目录</button>
-        <button class="navLink" type="button" @click="goUsers">测试用户</button>
-        <button class="navLink" type="button" @click="goPhaseNavigation">当前阶段</button>
-        <el-button type="primary" round class="navAction" @click="goPhaseNavigation">
-          开始解读
+        <button class="navLink" type="button" @click="$emit('history')" v-if="loggedIn">
+          我的报告
+        </button>
+        <button class="navLink navPremium" type="button" v-if="loggedIn">
+          ✦ 升级会员
+        </button>
+        <button class="navLink" type="button" @click="$emit('login')" v-if="!loggedIn">
+          登录
+        </button>
+        <span class="navLink userTag" v-if="loggedIn && userPhone">
+          {{ displayName }}
+        </span>
+        <el-button type="primary" round class="navAction" @click="goExplore">
+          开始探索
         </el-button>
       </nav>
     </div>
@@ -22,12 +31,18 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 
-defineEmits<{
-  (e: "help"): void;
-  (e: "history"): void;
+const props = defineProps<{
+  loggedIn?: boolean;
+  userPhone?: string;
 }>();
+
+const displayName = computed(() => {
+  if (!props.userPhone) return "";
+  return props.userPhone.replace(/(\d{3})\d{4}(\d{4})/, "$1****$2");
+});
 
 const router = useRouter();
 
@@ -35,15 +50,8 @@ function goHome() {
   router.push({ name: "entry" });
 }
 
-function goUsers() {
-  router.push({ name: "users" });
-}
-
-function goPhaseNavigation() {
-  router.push({
-    name: "analysis",
-    params: { type: "phase_navigation" },
-  });
+function goExplore() {
+  router.push({ name: "analysis", params: { type: "natal_blueprint" } });
 }
 </script>
 
@@ -131,6 +139,10 @@ function goPhaseNavigation() {
 
 .navLink:hover {
   color: var(--gold);
+}
+.navPremium {
+  color: #d4af37;
+  font-weight: 600;
 }
 
 .navAction {
