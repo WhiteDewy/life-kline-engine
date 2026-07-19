@@ -111,7 +111,7 @@ function simulatePayment() {
   max-width: 420px;
   padding: 32px 28px 24px;
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(0,0,0,0.06);
   background: #0f172a;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
 }
@@ -124,14 +124,14 @@ function simulatePayment() {
   border-radius: 50%;
   border: 1px solid rgba(255,255,255,0.08);
   background: transparent;
-  color: #94a3b8;
+  color: #8b7355;
   cursor: pointer;
   font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.close-btn:hover { color: #f8fafc; border-color: rgba(255,255,255,0.15); }
+.close-btn:hover { color: #4a3728; border-color: rgba(255,255,255,0.15); }
 .modal-head {
   text-align: center;
   margin-bottom: 24px;
@@ -139,12 +139,12 @@ function simulatePayment() {
 .modal-icon { font-size: 32px; }
 .modal-title {
   margin: 8px 0 6px;
-  color: #f8fafc;
+  color: #4a3728;
   font-size: 20px;
   font-weight: 700;
 }
 .modal-price { margin: 0; }
-.price-num { color: #d4af37; font-size: 32px; font-weight: 700; }
+.price-num { color: #ff9a8b; font-size: 32px; font-weight: 700; }
 .price-period { color: #64748b; font-size: 14px; }
 .modal-body { margin-bottom: 16px; }
 .pay-methods {
@@ -158,7 +158,7 @@ function simulatePayment() {
   border-radius: 12px;
   border: 1px solid rgba(255,255,255,0.06);
   background: rgba(255,255,255,0.02);
-  color: #94a3b8;
+  color: #8b7355;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -168,9 +168,9 @@ function simulatePayment() {
   transition: all 0.2s;
 }
 .pay-method.active {
-  border-color: rgba(212, 175, 55, 0.3);
-  background: rgba(212, 175, 55, 0.06);
-  color: #f8fafc;
+  border-color: rgba(255,154,139, 0.3);
+  background: rgba(255,154,139, 0.06);
+  color: #4a3728;
 }
 .pay-icon { font-size: 18px; }
 .qr-placeholder {

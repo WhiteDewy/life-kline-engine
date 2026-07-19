@@ -57,7 +57,7 @@ class ReportComposer:
         return {"planet_baselines": pb, "dignity_breakdown": db, "house_infos": {str(i): {"title": _ht(i)} for i in range(1,13)}}
 
     def compose_character_profiles(self, chart: Any) -> dict[str, Any]:
-        """生成12星座个性化角色画像。
+        """生成12星座个性化角色画像（v1.5 旧系统，保留兼容）。
 
         返回:
             characters: 12个角色画像 (dict[sign.value, CharacterProfile.to_dict()])
@@ -88,6 +88,37 @@ class ReportComposer:
             ],
         }
 
+    def compose_planet_profiles(self, chart: Any) -> dict[str, Any]:
+        """生成10行星个性化角色画像（v2.0 新系统，对标万象有灵十神模型）。
+
+        返回:
+            planet_characters: 10个行星角色 (dict[planet.value, PlanetCharacterProfile.to_dict()])
+            main_character: 太阳（主人格）画像
+            sorted_by_strength: 按强度降序
+            core_planets: 强度 >= 50 的核心行星
+        """
+        from .characters.planet_character_engine import PlanetCharacterEngine
+
+        engine = PlanetCharacterEngine(chart)
+        all_profiles = engine.get_all_profiles()
+        sorted_profiles = engine.get_profiles_by_strength()
+
+        return {
+            "planet_characters": {p.value: prof.to_dict() for p, prof in all_profiles.items()},
+            "main_character": engine.get_main_character().to_dict(),
+            "sorted_by_strength": [
+                {"planet": p.planet.value, "name_zh": p.persona.name_zh,
+                 "archetype_zh": p.persona.archetype_zh, "core_strength": p.core_strength,
+                 "role_tag": p.role_tag, "symbol": p.persona.symbol}
+                for p in sorted_profiles
+            ],
+            "core_planets": [
+                {"planet": p.planet.value, "name_zh": p.persona.name_zh,
+                 "core_strength": p.core_strength, "role_tag": p.role_tag}
+                for p in sorted_profiles if p.core_strength >= 50
+            ],
+        }
+
 
 def _ht(h: int) -> str:
     try:
@@ -102,11 +133,13 @@ def enrich_report(chart: Any, phase_info: dict[str, Any] | None = None, transits
     domains = c.compose_domains(chart, hero_context=hero.get("narrative", ""))
     evidence = c.compose_evidence(chart)
     characters = c.compose_character_profiles(chart)
+    planet_characters = c.compose_planet_profiles(chart)
     return {
         "hero": hero,
         "domains": domains,
         "_analysis_evidence": evidence,
         "characters": characters,
+        "planet_characters": planet_characters,
     }
 
 
@@ -160,9 +193,9 @@ def _build_phase_anchor(phase_info: dict[str, Any], chart_ruler_label: str) -> s
         if remaining < 1:
             time_note = f"。离下一个阶段切换不到一年——是时候做收尾和准备了"
         elif remaining < 3:
-            time_note = f"。距离下一个大阶段还有大约{ remaining:.1f }年——好好用"
+            time_note = f"。距离下一个大阶段还有大约{remaining:.1f}年——好好用"
         else:
-            time_note = f"。这个阶段还有{ remaining:.1f }年——时间够你做一次认真的调整"
+            time_note = f"。这个阶段还有{remaining:.1f}年——时间够你做一次认真的调整"
         core += time_note
 
     # 趋势提示

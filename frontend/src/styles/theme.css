@@ -2,8 +2,8 @@
   /* Deep Space Order Palette */
 
   /* Brand Colors */
-  --color-gold: #D4AF37; /* Orderly Gold */
-  --color-gold-rgb: 212, 175, 55;
+  --color-gold: #FF9A8B; /* Orderly Gold */
+  --color-gold-rgb: 255, 154, 139;
   --color-indigo: #6366F1; /* Logic Indigo */
   --color-indigo-rgb: 99, 102, 241;
   --color-red: #F43F5E; /* Entropy Red */
@@ -15,16 +15,16 @@
   --color-data-neu: rgba(148, 163, 184, 0.2); /* Neutral/Grid */
 
   /* Backgrounds & Layers */
-  --bg-main: #020617; /* Void Black */
-  --bg-card: rgba(15, 23, 42, 0.6); /* Nebula Grey */
+  --bg-main: #FFF5EE; /* Void Black */
+  --bg-card: rgba(255,255,255,0.7); /* Nebula Grey */
   --card-hover: rgba(255, 255, 255, 0.08);
-  --border-light: rgba(255, 255, 255, 0.1); /* Orderly Border */
-  --glass-mask: rgba(15, 23, 42, 0.8); /* Glass Mask */
+  --border-light: rgba(0,0,0,0.06); /* Orderly Border */
+  --glass-mask: rgba(255,255,255,0.85); /* Glass Mask */
 
   /* Text */
-  --text-primary: #F8FAFC;
-  --text-muted: #94A3B8;
-  --text-disabled: #475569;
+  --text-primary: #4A3728;
+  --text-muted: #8B7355;
+  --text-disabled: #A89880;
 
   /* Gradients */
   --grad-hero: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
@@ -64,6 +64,42 @@
   /* Shadows */
   --shadow-card: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
   --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
+
+  /* ── Design System Tokens ── */
+
+  /* Border Radius Scale */
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+
+  /* Shadow Levels */
+  --shadow-flat: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-raised: 0 4px 20px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-glow-gold: 0 0 0 3px rgba(255, 154, 139, 0.12);
+
+  /* Animation Easing */
+  --ease-bounce: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 0.2s;
+  --dur-normal: 0.3s;
+  --dur-slow: 0.5s;
+
+  /* Card Surfaces */
+  --surface-card: rgba(255, 255, 255, 0.7);
+  --surface-hover: rgba(255, 255, 255, 0.85);
+  --surface-glass: rgba(255, 255, 255, 0.6);
+  --surface-backdrop: rgba(0, 0, 0, 0.15);
+
+  /* Planet Personality Colors */
+  --planet-sun: #F2A900;
+  --planet-moon: #9BC4D0;
+  --planet-mercury: #7B8D6F;
+  --planet-venus: #E8A0BF;
+  --planet-mars: #E8533F;
+  --planet-jupiter: #4B6BAA;
+  --planet-saturn: #5B6770;
 }
 
 /* Element Plus Overrides - Using :root to match specificity */
@@ -81,9 +117,9 @@
   --el-color-danger: var(--color-red);
   --el-color-info: var(--color-indigo);
   
-  --el-bg-color: var(--bg-main);
-  --el-bg-color-page: var(--bg-main);
-  --el-bg-color-overlay: var(--bg-card);
+  --el-bg-color: #FFF5EE;
+  --el-bg-color-page: #FFF5EE;
+  --el-bg-color-overlay: rgba(255,255,255,0.9);
   
   --el-text-color-primary: var(--text-primary);
   --el-text-color-regular: var(--text-muted);
@@ -95,15 +131,15 @@
   --el-border-color-lighter: rgba(255, 255, 255, 0.05);
   --el-border-color-extra-light: rgba(255, 255, 255, 0.02);
   
-  --el-fill-color: rgba(255, 255, 255, 0.05);
-  --el-fill-color-light: rgba(255, 255, 255, 0.03);
+  --el-fill-color: rgba(0,0,0,0.03);
+  --el-fill-color-light: rgba(0,0,0,0.02);
   --el-fill-color-lighter: rgba(255, 255, 255, 0.02);
   --el-fill-color-blank: transparent;
   
-  --el-mask-color: rgba(0, 0, 0, 0.8);
+  --el-mask-color: rgba(0,0,0,0.3);
   
   /* Input specific overrides */
-  --el-input-bg-color: rgba(255, 255, 255, 0.03);
+  --el-input-bg-color: rgba(0,0,0,0.02);
   --el-input-border-color: var(--border-light);
   --el-input-hover-border-color: var(--color-gold);
   --el-input-focus-border-color: var(--color-gold);
@@ -119,7 +155,7 @@
   --el-select-input-focus-border-color: var(--color-gold);
   
   /* Button specific */
-  --el-button-bg-color: rgba(255, 255, 255, 0.05);
+  --el-button-bg-color: rgba(0,0,0,0.03);
   --el-button-border-color: var(--border-light);
   --el-button-text-color: var(--text-primary);
   --el-button-hover-text-color: var(--color-gold);
@@ -206,4 +242,41 @@ html, body {
 
 .el-dialog__headerbtn:hover .el-dialog__close {
   color: var(--color-gold) !important;
+}
+
+/* ── Cosmic Date/Time Picker (星灵花园引导页深色主题) ── */
+.cosmic-popper {
+  background: rgba(24, 20, 40, 0.95) !important;
+  backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4) !important;
+  color: rgba(235, 225, 250, 0.8) !important;
+}
+.cosmic-popper .el-picker-panel__icon-btn {
+  color: rgba(200, 190, 220, 0.6) !important;
+}
+.cosmic-popper .el-picker-panel__icon-btn:hover {
+  color: rgba(230, 220, 250, 0.9) !important;
+}
+.cosmic-popper .el-date-table td {
+  color: rgba(210, 200, 230, 0.7) !important;
+}
+.cosmic-popper .el-date-table td.available:hover {
+  color: #fff !important;
+}
+.cosmic-popper .el-date-table td.current span {
+  background: rgba(180, 150, 220, 0.5) !important;
+  color: #fff !important;
+}
+.cosmic-popper .el-date-table td.today span {
+  color: rgba(200, 180, 230, 0.9) !important;
+}
+.cosmic-popper .el-time-spinner__item {
+  color: rgba(200, 190, 220, 0.6) !important;
+}
+.cosmic-popper .el-time-spinner__item.active {
+  color: rgba(230, 220, 250, 0.9) !important;
+}
+.cosmic-popper .el-time-spinner__item:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
 }

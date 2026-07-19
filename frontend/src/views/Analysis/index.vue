@@ -1,303 +1,149 @@
 <template>
-  <div class="page">
-    <div class="backdrop"></div>
+  <div class="analysis-page">
+    <div class="glow glow-a"></div>
+    <div class="glow glow-b"></div>
 
-    <div class="wrap">
-      <section v-if="analysis" class="hero">
-        <div class="heroMain">
-          <div class="eyebrow">你好，很高兴认识你</div>
-          <div class="heroTop">
-            <div>
-              <h1 class="title">{{ analysis.title }}</h1>
-              <p class="tagline">{{ analysis.tagline }}</p>
-            </div>
-            <span class="statusBadge" :class="analysis.status">
-              {{ statusLabel(analysis.status) }}
-            </span>
-          </div>
-
-          <p class="summary">{{ analysis.description }}</p>
-
-          <div class="metaGrid">
-            <div class="metaCard">
-              <span>适合解决</span>
-              <strong>{{ categoryLabel }}</strong>
-            </div>
-            <div class="metaCard">
-              <span>适用人数</span>
-              <strong>{{ subjectLabel(analysis.subjects_count) }}</strong>
-            </div>
-            <div class="metaCard">
-              <span>报告内容</span>
-              <strong>{{ analysis.modules.length }} 个结果模块</strong>
-            </div>
+    <div class="page-content">
+      <!-- ═══ 加载态 ═══ -->
+      <div class="loading-view" v-if="loading">
+        <div class="loading-crystal"></div>
+        <h2 class="loading-title">正在绘制你的星盘...</h2>
+        <div class="loading-stages">
+          <div class="loading-stage" v-for="(stage, i) in loadingStages" :key="i"
+            :class="{ active: loadingStageIndex >= i, current: loadingStageIndex === i }">
+            <span class="stage-dot"></span>
+            <span>{{ stage }}</span>
           </div>
         </div>
+      </div>
 
-        <aside class="heroAside">
-          <h2 class="panelTitle">这次解读会告诉你什么</h2>
-          <div class="moduleList">
-            <span v-for="module in analysis.modules" :key="module" class="moduleChip">
-              {{ module }}
-            </span>
-          </div>
-          <p class="panelText">
-            它不会只给你一个简单标签，而会结合本命结构、阶段主题与关键提醒，帮助你知道“我现在在哪里，接下来怎么走”。
-          </p>
-        </aside>
-      </section>
+      <!-- ═══ 表单 ═══ -->
+      <div class="form-view" v-else>
+        <div class="form-header">
+          <span class="form-emoji">{{ formEmoji }}</span>
+          <h1 class="form-title">{{ formTitle }}</h1>
+          <p class="form-sub">帮我画出你出生那一刻的天空——那是你人生的出厂设置</p>
+        </div>
 
-      <section v-else class="stateCard errorCard">
-        <div class="stateTitle">没有找到这个解读入口</div>
-        <p class="stateText">请返回首页，从已开放的解读入口重新进入。</p>
-      </section>
-
-      <section v-if="analysis" class="contentGrid">
-        <article class="panel introPanel">
-          <div class="panelEyebrow">在开始之前</div>
-          <h2 class="panelTitle">先简单介绍一下你自己</h2>
-          <p class="panelText">
-            这些信息帮我画出你出生那一刻的天空——那是你人生的出厂设置。出生时间与地点越准确，解读越能贴近你的真实节奏。
-          </p>
-          <ul class="list">
-            <li>当前支持单人解读，适合查看个人阶段、人生主轴与关键趋势。</li>
-            <li>后续关系合盘会扩展为双人资料输入，不需要重新学习新的填写方式。</li>
-            <li>如果自动定位失败，也可以手动填写坐标，不影响报告生成。</li>
-          </ul>
-        </article>
-
-        <el-card class="formCard" shadow="never">
-          <div class="formHeader">
-            <div>
-              <div class="panelEyebrow">你的出生信息</div>
-              <h2 class="formTitle">帮我画出你出生那一刻的天空</h2>
+        <div class="form-card">
+          <!-- 称呼 + 性别 -->
+          <div class="field-row">
+            <div class="field field--name">
+              <label class="field-label">你的称呼</label>
+              <input v-model="form.name" class="field-input" placeholder="怎么称呼你？" />
             </div>
-            <el-alert
-              v-if="analysis.status !== 'active'"
-              title="这个解读入口还在准备中"
-              type="warning"
-              :closable="false"
-              show-icon
-            >
-              <template #default>
-                当前可以先体验“阶段导航”，先看看你正处于怎样的人生阶段。
-              </template>
-            </el-alert>
-          </div>
-
-          <el-form ref="formRef" :model="form" :rules="rules" label-position="top" class="form">
-            <div class="twoCol">
-              <el-form-item label="你的称呼（可选）" prop="name">
-                <el-input v-model="form.name" placeholder="例如：小明" clearable />
-              </el-form-item>
-
-              <el-form-item label="性别" prop="gender">
-                <el-select v-model="form.gender" placeholder="请选择" style="width: 100%">
-                  <el-option label="女" value="女" />
-                  <el-option label="男" value="男" />
-                </el-select>
-              </el-form-item>
-            </div>
-
-            <el-form-item label="出生日期与时间" prop="birthDatetime">
-              <el-date-picker
-                v-model="form.birthDatetime"
-                type="datetime"
-                style="width: 100%"
-                format="YYYY-MM-DD HH:mm"
-                value-format="YYYY-MM-DDTHH:mm"
-                placeholder="选择出生日期与时间"
-              />
-            </el-form-item>
-
-            <el-form-item label="出生地点" prop="birthPlace">
-              <el-input
-                v-model="form.birthPlace"
-                readonly
-                placeholder="点击设置出生地点"
-                @click="placeDialogOpen = true"
-              >
-                <template #suffix>
-                  <el-icon class="suffixIcon" @click.stop="placeDialogOpen = true">
-                    <Location />
-                  </el-icon>
-                </template>
-              </el-input>
-            </el-form-item>
-
-            <div class="coordPreview" v-if="hasCoordinates">
-              <div class="coordItem">
-                <span>纬度</span>
-                <strong>{{ latitudePreview }}</strong>
-              </div>
-              <div class="coordItem">
-                <span>经度</span>
-                <strong>{{ longitudePreview }}</strong>
-              </div>
-              <div class="coordItem">
-                <span>时区</span>
-                <strong>{{ timezonePreview }}</strong>
-              </div>
-            </div>
-
-            <div class="actions">
-              <el-button class="ghostBtn" @click="resetForm">重新填写</el-button>
-              <el-button
-                class="primaryBtn"
-                type="primary"
-                :loading="loading"
-                :disabled="analysis.status !== 'active'"
-                @click="onSubmit"
-              >
-                {{ ctaText }}
-              </el-button>
-            </div>
-          </el-form>
-
-          <!-- 生成中动画 -->
-          <div class="generatingOverlay" v-if="loading">
-            <div class="genStages">
-              <div class="genStage" v-for="(stage, i) in loadingStages" :key="i"
-                :class="{ active: loadingStageIndex >= i, current: loadingStageIndex === i }">
-                <span class="genDot"></span>
-                <span class="genLabel">{{ stage }}</span>
+            <div class="field field--gender">
+              <label class="field-label">性别</label>
+              <div class="gender-toggle">
+                <button :class="{ active: form.gender === '女' }" @click="form.gender = '女'">♀ 女</button>
+                <button :class="{ active: form.gender === '男' }" @click="form.gender = '男'">♂ 男</button>
               </div>
             </div>
           </div>
-        </el-card>
-      </section>
+
+          <!-- 出生日期 -->
+          <div class="field">
+            <label class="field-label">出生日期和时间</label>
+            <el-date-picker
+              v-model="form.birthDatetime"
+              type="datetime"
+              style="width: 100%"
+              format="YYYY-MM-DD HH:mm"
+              value-format="YYYY-MM-DDTHH:mm"
+              placeholder="选择你的生日和时间"
+              popper-class="warm-picker"
+            />
+          </div>
+
+          <!-- 出生地点 -->
+          <div class="field">
+            <label class="field-label">出生地点</label>
+            <div class="place-input" @click="placeDialogOpen = true">
+              <span v-if="form.birthPlace" class="place-text">{{ form.birthPlace }}</span>
+              <span v-else class="place-placeholder">点击设置出生地点</span>
+              <span class="place-arrow">📍</span>
+            </div>
+            <div class="coord-preview" v-if="hasCoordinates">
+              <span>{{ latitudePreview }}</span>
+              <span>·</span>
+              <span>{{ longitudePreview }}</span>
+              <span>·</span>
+              <span>{{ timezonePreview }}</span>
+            </div>
+          </div>
+
+          <!-- CTA -->
+          <button class="submit-btn" :disabled="!canSubmit" @click="onSubmit">
+            {{ ctaText }}
+          </button>
+          <p class="submit-hint">生成报告大约需要 10 秒</p>
+
+          <!-- 示例入口 -->
+          <div class="demo-entry" v-if="showExamples">
+            <span class="demo-divider">或者</span>
+            <button class="demo-btn" v-for="ex in examples" :key="ex.key"
+              @click="openExample(ex)">
+              看看 {{ ex.name }} 的报告 →
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <el-dialog
-      v-model="placeDialogOpen"
-      title="设置出生地点"
-      width="92%"
-      :max-width="560"
-      destroy-on-close
-    >
-      <div class="dialogBody">
-        <el-tabs v-model="locationMode" type="card">
+    <!-- ═══ 地点弹窗（逻辑不变） ═══ -->
+    <el-dialog v-model="placeDialogOpen" title="设置出生地点" width="92%" :max-width="480" destroy-on-close>
+      <div class="place-dialog">
+        <el-tabs v-model="locationMode">
           <el-tab-pane label="自动获取" name="auto">
-            <div class="tabBody">
-              <el-alert title="推荐方式" type="success" :closable="false" show-icon>
-                <template #default>
-                  先选择地区，再自动获取坐标。中国大陆地区建议优先配置 AMap Key，以提升定位成功率。
-                </template>
-              </el-alert>
-
-              <el-form-item label="出生地区" required class="spaced">
-                <el-cascader
-                  v-model="selectedOptions"
-                  :options="regionData"
-                  clearable
-                  filterable
-                  placeholder="选择省 / 市 / 区"
-                  style="width: 100%"
-                  @change="handleAddressChange"
-                />
-              </el-form-item>
-
-              <el-button
-                class="geoBtn"
-                type="primary"
-                plain
-                :loading="geoLoading"
-                :disabled="!form.birthPlace"
-                @click="autoGeocode"
-              >
-                <el-icon><Position /></el-icon>
-                自动获取坐标
-              </el-button>
-            </div>
+            <el-form-item label="出生地区">
+              <el-cascader v-model="selectedOptions" :options="regionData" clearable filterable
+                placeholder="省 / 市 / 区" style="width: 100%" @change="handleAddressChange" />
+            </el-form-item>
+            <el-button type="primary" plain :loading="geoLoading" :disabled="!form.birthPlace" @click="autoGeocode">
+              自动获取坐标
+            </el-button>
           </el-tab-pane>
-
           <el-tab-pane label="手动填写" name="custom">
-            <div class="tabBody">
-              <el-form-item label="地点名称" required>
-                <el-input v-model="form.birthPlace" placeholder="例如：北京市朝阳区" />
-              </el-form-item>
-
-              <div class="manualCoordGrid">
-                <div class="manualCoordCard">
-                  <el-form-item label="纬度" required>
-                    <div class="manualCoordRow">
-                      <el-input-number
-                        v-model="manualCoords.latDegrees"
-                        :min="0"
-                        :max="90"
-                        :step="1"
-                        :precision="0"
-                        controls-position="right"
-                      />
-                      <span class="coordUnit">°</span>
-                      <el-input-number
-                        v-model="manualCoords.latMinutes"
-                        :min="0"
-                        :max="59"
-                        :step="1"
-                        :precision="0"
-                        controls-position="right"
-                      />
-                      <span class="coordUnit">′</span>
-                      <el-select v-model="manualCoords.latDirection" class="coordDirection">
-                        <el-option label="N" value="N" />
-                        <el-option label="S" value="S" />
-                      </el-select>
-                    </div>
-                  </el-form-item>
-                  <p class="manualCoordHint">{{ latitudeManualPreview }}</p>
-
-                  <el-form-item label="经度" required>
-                    <div class="manualCoordRow">
-                      <el-input-number
-                        v-model="manualCoords.lonDegrees"
-                        :min="0"
-                        :max="180"
-                        :step="1"
-                        :precision="0"
-                        controls-position="right"
-                      />
-                      <span class="coordUnit">°</span>
-                      <el-input-number
-                        v-model="manualCoords.lonMinutes"
-                        :min="0"
-                        :max="59"
-                        :step="1"
-                        :precision="0"
-                        controls-position="right"
-                      />
-                      <span class="coordUnit">′</span>
-                      <el-select v-model="manualCoords.lonDirection" class="coordDirection">
-                        <el-option label="E" value="E" />
-                        <el-option label="W" value="W" />
-                      </el-select>
-                    </div>
-                  </el-form-item>
-                  <p class="manualCoordHint">{{ longitudeManualPreview }}</p>
+            <el-form-item label="地点名称">
+              <el-input v-model="form.birthPlace" placeholder="例如：北京市朝阳区" />
+            </el-form-item>
+            <div class="manual-grid">
+              <div class="manual-field">
+                <label>纬度</label>
+                <div class="manual-row">
+                  <el-input-number v-model="manualCoords.latDegrees" :min="0" :max="90" controls-position="right" size="small" />
+                  <span>°</span>
+                  <el-input-number v-model="manualCoords.latMinutes" :min="0" :max="59" controls-position="right" size="small" />
+                  <span>′</span>
+                  <el-select v-model="manualCoords.latDirection" size="small" style="width:70px">
+                    <el-option label="N" value="N" /><el-option label="S" value="S" />
+                  </el-select>
                 </div>
               </div>
-
-              <el-form-item label="时区" required>
-                <el-select v-model="form.timezone" style="width: 100%" placeholder="选择时区">
-                  <el-option
-                    v-for="tz in commonTimezones"
-                    :key="tz.value"
-                    :label="tz.label"
-                    :value="tz.value"
-                  />
-                </el-select>
-                <p class="manualCoordHint timezoneHint">{{ timezonePreview }}</p>
-              </el-form-item>
+              <div class="manual-field">
+                <label>经度</label>
+                <div class="manual-row">
+                  <el-input-number v-model="manualCoords.lonDegrees" :min="0" :max="180" controls-position="right" size="small" />
+                  <span>°</span>
+                  <el-input-number v-model="manualCoords.lonMinutes" :min="0" :max="59" controls-position="right" size="small" />
+                  <span>′</span>
+                  <el-select v-model="manualCoords.lonDirection" size="small" style="width:70px">
+                    <el-option label="E" value="E" /><el-option label="W" value="W" />
+                  </el-select>
+                </div>
+              </div>
             </div>
+            <el-form-item label="时区">
+              <el-select v-model="form.timezone" style="width:100%" placeholder="选择时区">
+                <el-option v-for="tz in commonTimezones" :key="tz.value" :label="tz.label" :value="tz.value" />
+              </el-select>
+            </el-form-item>
           </el-tab-pane>
         </el-tabs>
       </div>
-
       <template #footer>
-        <div class="dialogFooter">
-          <el-button @click="placeDialogOpen = false">取消</el-button>
-          <el-button type="primary" @click="savePlaceSettings">保存地点</el-button>
-        </div>
+        <el-button @click="placeDialogOpen = false">取消</el-button>
+        <el-button type="primary" @click="savePlaceSettings">保存地点</el-button>
       </template>
     </el-dialog>
   </div>
@@ -306,874 +152,241 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { ElMessage, type FormInstance, type FormRules } from "element-plus";
-import { Location, Position } from "@element-plus/icons-vue";
+import { ElMessage } from "element-plus";
 import { regionData, codeToText } from "element-china-area-data";
 import { apiClient } from "@/config/api";
-// default test subject inlined below
+import { FEATURED_EXAMPLES, HOMEPAGE_EXAMPLE_VISIBLE } from "@/config/examples";
 import { getTestUserProfileByKey } from "@/config/testProfiles";
-import {
-  composeCoordinateValue,
-  formatCoordinateLabel,
-  formatTimezoneLabel,
-  splitCoordinateParts,
-} from "@/utils/coordinates";
-import { ANALYSIS_CATEGORY_LABELS, FALLBACK_ANALYSIS_TYPES } from "@/utils/analysis";
-import type { AnalysisDefinition, AnalysisResponse, AnalysisStatus } from "@/utils/types";
+import { composeCoordinateValue, formatCoordinateLabel, formatTimezoneLabel, splitCoordinateParts } from "@/utils/coordinates";
 
 const route = useRoute();
 const router = useRouter();
-const formRef = ref<FormInstance>();
+const showExamples = HOMEPAGE_EXAMPLE_VISIBLE;
+const examples = FEATURED_EXAMPLES;
 
-const catalog = ref<AnalysisDefinition[]>([...FALLBACK_ANALYSIS_TYPES]);
+const loading = ref(false);
+const loadingStageIndex = ref(-1);
+let loadingStageTimer: ReturnType<typeof setInterval> | null = null;
+const loadingStages = ["计算星盘…", "分析性格结构…", "匹配人生阶段…", "整理专属解读…"];
+
 const placeDialogOpen = ref(false);
 const locationMode = ref<"auto" | "custom">("auto");
 const selectedOptions = ref<string[]>([]);
 const geoLoading = ref(false);
-const loading = ref(false);
-const loadingStageIndex = ref(-1);
-let loadingStageTimer: ReturnType<typeof setInterval> | null = null;
+const manualCoords = reactive({ latDegrees: 0, latMinutes: 0, latDirection: "N" as const, lonDegrees: 0, lonMinutes: 0, lonDirection: "E" as const });
 
-const loadingStages = [
-  "正在计算你的星盘…",
-  "分析你的性格结构…",
-  "匹配你当前的人生阶段…",
-  "整理你的专属解读…",
-];
+const DEFAULT = { name: "夏天", gender: "女", birthDatetime: "1991-03-21T09:25", birthPlace: "山西省陵川县附城镇青杨庄村", lat: 35.7, lon: 113.35, timezone: 8 };
+const form = reactive({ ...DEFAULT });
 
+const formEmoji = computed(() => {
+  const t = String(route.params.type || "");
+  if (t === "monthly_lunar_return") return "🌙";
+  return "🪐";
+});
+const formTitle = computed(() => {
+  const t = String(route.params.type || "");
+  if (t === "monthly_lunar_return") return "本月运势";
+  return "认识你自己";
+});
 const ctaText = computed(() => {
-  const key = analysis.value?.key;
-  if (key === "natal_blueprint") return "开始了解我自己";
-  if (key === "phase_navigation") return "看清我现在的位置";
-  if (key === "monthly_lunar_return") return "看看这个月";
-  return analysis.value?.primary_cta || "开始解读";
+  const t = String(route.params.type || "");
+  if (t === "monthly_lunar_return") return "看看这个月 🌙";
+  return "开始探索 🪐";
 });
 
-const timezonePresets = [
-  { value: -12 },
-  { value: -11 },
-  { value: -10 },
-  { value: -9 },
-  { value: -8, note: "Pacific" },
-  { value: -7, note: "Mountain" },
-  { value: -6, note: "Central" },
-  { value: -5, note: "Eastern" },
-  { value: -4 },
-  { value: -3 },
-  { value: -2 },
-  { value: -1 },
-  { value: 0, note: "GMT" },
-  { value: 1, note: "CET" },
-  { value: 2, note: "EET" },
-  { value: 3 },
-  { value: 4 },
-  { value: 5 },
-  { value: 6 },
-  { value: 7 },
-  { value: 8, note: "CST" },
-  { value: 9, note: "JST" },
-  { value: 10 },
-  { value: 11 },
-  { value: 12 },
-];
-
-const commonTimezones = timezonePresets.map((item) => ({
-  label: item.note ? `${formatTimezoneLabel(item.value)} (${item.note})` : formatTimezoneLabel(item.value),
-  value: item.value,
-}));
-
-const DEFAULT_TEST_SUBJECT = {
-  name: "夏天",
-  gender: "女",
-  birthDatetime: "1991-03-21T09:25",
-  birthPlace: "山西省陵川县附城镇青杨庄村",
-  lat: 35.7,
-  lon: 113.35,
-  timezone: 8,
-};
-
-const form = reactive({
-  name: DEFAULT_TEST_SUBJECT.name,
-  gender: DEFAULT_TEST_SUBJECT.gender,
-  birthDatetime: DEFAULT_TEST_SUBJECT.birthDatetime,
-  birthPlace: DEFAULT_TEST_SUBJECT.birthPlace,
-  lat: DEFAULT_TEST_SUBJECT.lat,
-  lon: DEFAULT_TEST_SUBJECT.lon,
-  timezone: DEFAULT_TEST_SUBJECT.timezone,
-});
-
-const manualCoords = reactive({
-  latDegrees: 0,
-  latMinutes: 0,
-  latDirection: "N",
-  lonDegrees: 0,
-  lonMinutes: 0,
-  lonDirection: "E",
-});
-
-const MANUAL_COORDINATE_WARNING = "\u8bf7\u6309 xx\u00b0xx\u2032 \u5b8c\u6574\u586b\u5199\u7ecf\u7eac\u5ea6";
-const TIMEZONE_REQUIRED_WARNING = "\u8bf7\u5148\u8865\u5168\u65f6\u533a";
-
-const rules: FormRules = {
-  gender: [{ required: true, message: "请选择性别", trigger: "change" }],
-  birthDatetime: [{ required: true, message: "请选择出生日期与时间", trigger: "change" }],
-  birthPlace: [{ required: true, message: "请设置出生地点", trigger: "blur" }],
-};
-
-const analysis = computed(() => {
-  const type = String(route.params.type || "");
-  return catalog.value.find((item) => item.key === type) ?? null;
-});
-
-const categoryLabel = computed(() => {
-  return ANALYSIS_CATEGORY_LABELS[analysis.value?.category || ""] || "未分类";
-});
-
-const hasCoordinates = computed(
-  () => Number.isFinite(Number(form.lat)) && Number.isFinite(Number(form.lon))
-);
-const hasTimezone = computed(() => parseTimezoneValue(form.timezone) !== null);
+const hasCoordinates = computed(() => Number.isFinite(Number(form.lat)) && Number.isFinite(Number(form.lon)));
 const latitudePreview = computed(() => formatCoordinateLabel(Number(form.lat), "latitude"));
 const longitudePreview = computed(() => formatCoordinateLabel(Number(form.lon), "longitude"));
-const timezonePreview = computed(() => {
-  const timezone = parseTimezoneValue(form.timezone);
-  return timezone === null ? "-" : formatTimezoneLabel(timezone);
-});
-const latitudeManualPreview = computed(() =>
-  formatCoordinateLabel(
-    composeCoordinateValue(
-      Number(manualCoords.latDegrees),
-      Number(manualCoords.latMinutes),
-      manualCoords.latDirection as "N" | "S",
-      "latitude"
-    ),
-    "latitude"
-  )
-);
-const longitudeManualPreview = computed(() =>
-  formatCoordinateLabel(
-    composeCoordinateValue(
-      Number(manualCoords.lonDegrees),
-      Number(manualCoords.lonMinutes),
-      manualCoords.lonDirection as "E" | "W",
-      "longitude"
-    ),
-    "longitude"
-  )
-);
+const timezonePreview = computed(() => formatTimezoneLabel(Number(form.timezone)));
+const canSubmit = computed(() => form.birthDatetime && form.birthPlace && hasCoordinates.value);
 
-const birthTimePayload = computed(() => {
-  if (!form.birthDatetime) return "";
-  return form.birthDatetime.length === 16 ? `${form.birthDatetime}:00` : form.birthDatetime;
-});
-
-function currentProfileKey() {
-  const profile = route.query.profile;
-  return typeof profile === "string" && profile ? profile : undefined;
-}
-
-function currentProfile() {
-  return getTestUserProfileByKey(currentProfileKey());
-}
-
-function statusLabel(status: AnalysisStatus) {
-  return status === "active" ? "已开放" : "即将上线";
-}
-
-function subjectLabel(count: number) {
-  return count > 1 ? `${count} 人解读` : "1 人解读";
-}
+const timezonePresets = [-12,-11,-10,-9,-8,-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7,8,9,10,11,12];
+const commonTimezones = timezonePresets.map(v => ({ label: formatTimezoneLabel(v), value: v }));
 
 function handleAddressChange(codes: string[]) {
-  if (!codes?.length) {
-    form.birthPlace = "";
-    return;
-  }
-  form.birthPlace = codes.map((code) => codeToText[code]).join(" ");
+  if (!codes?.length) { form.birthPlace = ""; return; }
+  form.birthPlace = codes.map(c => codeToText[c]).join(" ");
 }
-
-function parseTimezoneValue(value: unknown) {
-  if (value === "" || value === null || value === undefined) return null;
-
-  const timezone = Number(value);
-  return Number.isFinite(timezone) ? timezone : null;
-}
-
 function syncManualCoordsFromForm() {
-  const latitude = splitCoordinateParts(Number(form.lat), "latitude");
-  const longitude = splitCoordinateParts(Number(form.lon), "longitude");
-
-  manualCoords.latDegrees = latitude.degrees;
-  manualCoords.latMinutes = latitude.minutes;
-  manualCoords.latDirection = latitude.direction;
-  manualCoords.lonDegrees = longitude.degrees;
-  manualCoords.lonMinutes = longitude.minutes;
-  manualCoords.lonDirection = longitude.direction;
+  const lat = splitCoordinateParts(Number(form.lat), "latitude");
+  const lon = splitCoordinateParts(Number(form.lon), "longitude");
+  manualCoords.latDegrees = lat.degrees; manualCoords.latMinutes = lat.minutes; manualCoords.latDirection = lat.direction;
+  manualCoords.lonDegrees = lon.degrees; manualCoords.lonMinutes = lon.minutes; manualCoords.lonDirection = lon.direction;
 }
-
-function hasValidCoordinateParts(axis: "latitude" | "longitude") {
-  const maxDegrees = axis === "latitude" ? 90 : 180;
-  const degrees = Number(axis === "latitude" ? manualCoords.latDegrees : manualCoords.lonDegrees);
-  const minutes = Number(axis === "latitude" ? manualCoords.latMinutes : manualCoords.lonMinutes);
-
-  if (!Number.isFinite(degrees) || !Number.isFinite(minutes)) return false;
-  if (degrees < 0 || degrees > maxDegrees) return false;
-  if (minutes < 0 || minutes > 59) return false;
-  if (degrees === maxDegrees && minutes > 0) return false;
-  return true;
-}
-
 function syncFormCoordsFromManual() {
-  if (!hasValidCoordinateParts("latitude") || !hasValidCoordinateParts("longitude")) {
-    /*
-    ElMessage.warning("璇锋寜 xx°xx′ 鏍煎紡瀹屾暣濉啓缁忕含搴?);
-    */
-    ElMessage.warning(MANUAL_COORDINATE_WARNING);
-    return false;
-  }
-
-  form.lat = composeCoordinateValue(
-    Number(manualCoords.latDegrees),
-    Number(manualCoords.latMinutes),
-    manualCoords.latDirection as "N" | "S",
-    "latitude"
-  );
-  form.lon = composeCoordinateValue(
-    Number(manualCoords.lonDegrees),
-    Number(manualCoords.lonMinutes),
-    manualCoords.lonDirection as "E" | "W",
-    "longitude"
-  );
-  return true;
+  form.lat = composeCoordinateValue(manualCoords.latDegrees, manualCoords.latMinutes, manualCoords.latDirection, "latitude");
+  form.lon = composeCoordinateValue(manualCoords.lonDegrees, manualCoords.lonMinutes, manualCoords.lonDirection, "longitude");
 }
-
 async function autoGeocode() {
-  if (!form.birthPlace) {
-    ElMessage.warning("请先选择出生地点");
-    return;
-  }
-
+  if (!form.birthPlace) { ElMessage.warning("请先选择出生地点"); return; }
   geoLoading.value = true;
   try {
-    const response = await apiClient.post("/geocode", { query: form.birthPlace });
-    if (response.data.status === "success") {
-      const { lat, lon, timezone } = response.data.data;
-      form.lat = Number(lat);
-      form.lon = Number(lon);
-      form.timezone = Number(timezone);
-      syncManualCoordsFromForm();
-      ElMessage.success("已获取坐标");
-      return;
-    }
-    ElMessage.error("没有找到对应地点");
-  } catch (error) {
-    console.error(error);
-    const response = (error as { response?: { status?: number; data?: { detail?: string } } })
-      ?.response;
-    const detail = response?.data?.detail;
-    if (response?.status === 404) {
-      ElMessage.error(detail || "没有找到对应地点，请输入更具体的地址");
-    } else if (response?.status === 502 || response?.status === 504) {
-      ElMessage.error(detail || "自动定位暂时不可用，请改用手动填写坐标");
-    } else {
-      ElMessage.error(detail || "获取坐标失败");
-    }
-  } finally {
-    geoLoading.value = false;
-  }
+    const r = await apiClient.post("/geocode", { query: form.birthPlace });
+    if (r.data.status === "success") {
+      form.lat = Number(r.data.data.lat); form.lon = Number(r.data.data.lon); form.timezone = Number(r.data.data.timezone);
+      syncManualCoordsFromForm(); ElMessage.success("已获取坐标");
+    } else { ElMessage.error("没有找到对应地点"); }
+  } catch { ElMessage.error("定位失败，请手动填写"); }
+  finally { geoLoading.value = false; }
 }
-
 function savePlaceSettings() {
-  if (!form.birthPlace) {
-    ElMessage.warning("请先设置出生地点");
-    return;
-  }
-  if (locationMode.value === "custom" && !syncFormCoordsFromManual()) {
-    return;
-  }
-  if (!hasCoordinates.value) {
-    ElMessage.warning("请先获取或填写坐标");
-    return;
-  }
-  if (!hasTimezone.value) {
-    ElMessage.warning(TIMEZONE_REQUIRED_WARNING);
-    return;
-  }
+  if (!form.birthPlace) { ElMessage.warning("请先设置出生地点"); return; }
+  if (locationMode.value === "custom") syncFormCoordsFromManual();
+  if (!hasCoordinates.value) { ElMessage.warning("请先获取或填写坐标"); return; }
   placeDialogOpen.value = false;
 }
-
 function resetForm() {
-  const profile = currentProfile() || DEFAULT_TEST_SUBJECT;
-  form.name = profile.name;
-  form.gender = profile.gender;
-  form.birthDatetime = profile.birthDatetime;
-  form.birthPlace = profile.birthPlace;
-  form.lat = profile.lat;
-  form.lon = profile.lon;
-  form.timezone = profile.timezone;
+  const key = typeof route.query.profile === "string" ? route.query.profile : undefined;
+  const p = (key ? getTestUserProfileByKey(key) : null) || DEFAULT;
+  Object.assign(form, p);
   syncManualCoordsFromForm();
   selectedOptions.value = [];
-  locationMode.value = "custom";
 }
-
 async function onSubmit() {
-  if (!analysis.value || !formRef.value) return;
-  const valid = await formRef.value.validate().catch(() => false);
-  if (!valid) return;
-
-  if (!hasCoordinates.value) {
-    ElMessage.warning("请先设置出生地点对应的坐标");
-    return;
-  }
-
-  if (!hasTimezone.value) {
-    ElMessage.warning(TIMEZONE_REQUIRED_WARNING);
-    return;
-  }
-
-  loading.value = true;
-  loadingStageIndex.value = 0;
-  loadingStageTimer = setInterval(() => {
-    if (loadingStageIndex.value < loadingStages.length - 1) {
-      loadingStageIndex.value++;
-    }
-  }, 1500);
-
+  if (!canSubmit.value) return;
+  loading.value = true; loadingStageIndex.value = 0;
+  loadingStageTimer = setInterval(() => { if (loadingStageIndex.value < loadingStages.length - 1) loadingStageIndex.value++; }, 1500);
   try {
-    const response = await apiClient.post<AnalysisResponse<Record<string, any>>>("/analyses", {
-      analysis_type: analysis.value.key,
-      subjects: [
-        {
-          name: form.name || undefined,
-          gender: form.gender,
-          birth_time: birthTimePayload.value,
-          lat: Number(form.lat),
-          lon: Number(form.lon),
-          timezone: Number(form.timezone),
-        },
-      ],
+    const birthTime = form.birthDatetime.length === 16 ? `${form.birthDatetime}:00` : form.birthDatetime;
+    const r = await apiClient.post("/analyses", {
+      analysis_type: String(route.params.type || "natal_blueprint"),
+      subjects: [{ name: form.name || undefined, gender: form.gender, birth_time: birthTime, lat: Number(form.lat), lon: Number(form.lon), timezone: Number(form.timezone) }],
     });
-
-    if (response.data.status === "success" && response.data.report_id) {
+    if (r.data.status === "success" && r.data.report_id) {
       loadingStageIndex.value = loadingStages.length;
-      const routeName = analysis.value.key === "monthly_lunar_return" ? "monthly-return" : "report";
-      setTimeout(() => {
-        router.push({
-          name: routeName,
-          params: { id: response.data.report_id },
-        });
-      }, 300);
-      return;
-    }
-
-    ElMessage.error("报告生成失败");
-  } catch (error) {
-    console.error(error);
-    const detail = (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
-    ElMessage.error(detail || "请求失败，请检查后端服务是否已启动");
-  } finally {
-    loading.value = false;
-    if (loadingStageTimer) {
-      clearInterval(loadingStageTimer);
-      loadingStageTimer = null;
-    }
-    loadingStageIndex.value = -1;
-  }
+      const target = String(route.params.type) === "monthly_lunar_return" ? "monthly-return" : "report";
+      setTimeout(() => router.push({ name: target, params: { id: r.data.report_id } }), 400);
+    } else { ElMessage.error("报告生成失败"); }
+  } catch { ElMessage.error("请求失败"); }
+  finally { loading.value = false; if (loadingStageTimer) { clearInterval(loadingStageTimer); loadingStageTimer = null; } loadingStageIndex.value = -1; }
 }
-
-async function loadCatalog() {
-  try {
-    const response = await apiClient.get<{ status: string; data: AnalysisDefinition[] }>(
-      "/analysis-types"
-    );
-    if (response.data?.status === "success" && response.data.data?.length) {
-      catalog.value = response.data.data;
-    }
-  } catch (error) {
-    console.error("Failed to load analysis catalog", error);
-  }
+function openExample(ex: typeof examples[0]) {
+  router.push({ name: "report", query: { example: ex.key, analysis: "natal_blueprint" } });
 }
-
-watch(placeDialogOpen, (open) => {
-  if (open) {
-    syncManualCoordsFromForm();
-  }
-});
-
-watch(
-  () => route.query.profile,
-  () => {
-    resetForm();
-  }
-);
-
-onMounted(() => {
-  resetForm();
-  loadCatalog();
-});
+watch(placeDialogOpen, (open) => { if (open) syncManualCoordsFromForm(); });
+watch(() => route.query.profile, resetForm);
+onMounted(resetForm);
 </script>
 
-<style scoped lang="less">
-.page {
-  position: relative;
-  min-height: calc(100vh - var(--h-footer));
-  padding: 40px 20px 80px;
-  background:
-    radial-gradient(circle at 12% 12%, rgba(212, 175, 55, 0.08), transparent 24%),
-    radial-gradient(circle at 88% 18%, rgba(42, 167, 184, 0.1), transparent 22%),
-    linear-gradient(180deg, #020617 0%, #07111f 100%);
-}
-
-.backdrop {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 42px 42px;
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.25), transparent 90%);
-  pointer-events: none;
-}
-
-.wrap {
-  position: relative;
-  z-index: 1;
-  max-width: var(--page-shell-max);
-  margin: 0 auto;
-}
-
-.hero,
-.contentGrid {
-  display: grid;
-  gap: 22px;
-}
-
-.hero {
-  grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.7fr);
-}
-
-.contentGrid {
-  margin-top: 22px;
-  grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
-  align-items: start;
-}
-
-.heroMain,
-.heroAside,
-.panel,
-.formCard,
-.stateCard {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 23, 42, 0.74);
-  backdrop-filter: blur(18px);
-  border-radius: 28px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
-}
-
-.heroMain,
-.heroAside,
-.panel,
-.stateCard {
-  padding: 28px;
-}
-
-.eyebrow,
-.panelEyebrow {
-  font-size: 12px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--gold);
-}
-
-.heroTop {
-  display: flex;
-  justify-content: space-between;
-  gap: 18px;
-  margin-top: 14px;
-}
-
-.title {
-  margin: 0;
-  color: var(--text);
-  font-size: 48px;
-  line-height: 1.04;
-  letter-spacing: -0.04em;
-  font-family: "Georgia", "Times New Roman", serif;
-}
-
-.tagline,
-.summary,
-.panelText,
-.stateText {
-  color: var(--text-secondary);
-  line-height: 1.8;
-}
-
-.tagline {
-  margin: 12px 0 0;
-  font-size: 18px;
-}
-
-.summary {
-  margin: 18px 0 0;
-}
-
-.statusBadge {
-  display: inline-flex;
-  align-items: center;
-  height: fit-content;
-  padding: 8px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-}
-
-.statusBadge.active {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.12);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.statusBadge.planned {
-  color: #f59e0b;
-  background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.2);
-}
-
-.metaGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 22px;
-}
-
-.metaCard {
-  padding: 14px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.metaCard span {
-  display: block;
-  color: var(--text-secondary);
-  font-size: 12px;
-}
-
-.metaCard strong {
-  display: block;
-  margin-top: 8px;
-  color: var(--text);
-  line-height: 1.5;
-}
-
-.panelTitle,
-.formTitle,
-.stateTitle {
-  margin: 10px 0 0;
-  color: var(--text);
-}
-
-.panelTitle,
-.formTitle {
-  font-size: 28px;
-  line-height: 1.2;
-}
-
-.moduleList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.moduleChip {
-  display: inline-flex;
-  align-items: center;
-  padding: 7px 12px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: var(--text-secondary);
-  font-size: 12px;
-}
-
-.panelText {
-  margin: 14px 0 0;
-}
-
-.list {
-  margin: 16px 0 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 10px;
-}
-
-.list li {
-  position: relative;
-  padding-left: 18px;
-  color: var(--text-secondary);
-  line-height: 1.7;
-}
-
-.list li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 11px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--gold);
-}
-
-.formCard {
-  padding: 10px;
-}
-
-.formCard :deep(.el-card__body) {
-  padding: 18px;
-}
-
-.formHeader {
-  display: grid;
-  gap: 14px;
-  margin-bottom: 12px;
-}
-
-.form :deep(.el-form-item__label) {
-  color: var(--text-secondary);
-  letter-spacing: 0.02em;
-}
-
-.form :deep(.el-input__wrapper),
-.form :deep(.el-select__wrapper),
-.form :deep(.el-textarea__inner) {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  box-shadow: none !important;
-  border-radius: 14px !important;
-}
-
-.form :deep(.el-input__inner),
-.form :deep(.el-select__selected-item) {
-  color: var(--text) !important;
-}
-
-.twoCol {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.twoCol.compact {
-  gap: 12px;
-}
-
-.manualCoordGrid {
-  display: grid;
-  gap: 12px;
-}
-
-.manualCoordCard {
-  padding: 14px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.manualCoordRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto 92px;
-  gap: 10px;
-  align-items: center;
-}
-
-.form :deep(.manualCoordRow .el-input-number) {
-  width: 100%;
-}
-
-.form :deep(.manualCoordRow .el-input-number .el-input__wrapper) {
-  width: 100%;
-}
-
-.coordDirection {
-  width: 92px;
-}
-
-.coordUnit {
-  color: var(--text-secondary);
-  font-size: 16px;
-  line-height: 1;
-}
-
-.manualCoordHint {
-  margin: 8px 0 0;
-  color: rgba(248, 250, 252, 0.82);
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-.timezoneHint {
-  margin-top: 10px;
-}
-
-.coordPreview {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin: 4px 0 10px;
-}
-
-.coordItem {
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.coordItem span {
-  display: block;
-  color: var(--text-secondary);
-  font-size: 12px;
-}
-
-.coordItem strong {
-  display: block;
-  margin-top: 8px;
-  color: var(--text);
-}
-
-.suffixIcon {
-  cursor: pointer;
-  color: var(--text-secondary);
-}
-
-.actions {
-  margin-top: 18px;
-  display: flex;
-  gap: 12px;
-}
-
-.primaryBtn {
-  min-width: 180px;
-}
-
-.ghostBtn {
-  min-width: 120px;
-}
-
-.dialogBody {
-  padding-top: 8px;
-}
-
-.tabBody {
-  padding-top: 8px;
-}
-
-.spaced {
-  margin-top: 16px;
-}
-
-.geoBtn {
-  margin-top: 4px;
-}
-
-.dialogFooter {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.errorCard {
-  border-color: rgba(244, 63, 94, 0.24);
-}
-
-/* ── 生成中动画 ── */
-.generatingOverlay {
-  margin-top: 24px;
-  padding: 28px 24px;
-  border-radius: 20px;
-  border: 1px solid rgba(212, 175, 55, 0.10);
-  background: rgba(15, 23, 42, 0.55);
-}
-.genStages {
-  display: grid;
-  gap: 16px;
-}
-.genStage {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  opacity: 0.3;
-  transition: opacity 0.5s;
-}
-.genStage.active {
-  opacity: 1;
-}
-.genDot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #475569;
-  flex-shrink: 0;
-  transition: background 0.3s;
-}
-.genStage.current .genDot {
-  background: #d4af37;
-  box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
-  animation: pulse-dot 1s ease-in-out infinite;
-}
-.genLabel {
-  color: #94a3b8;
-  font-size: 14px;
-}
-.genStage.current .genLabel {
-  color: #e2e8f0;
-}
-@keyframes pulse-dot {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.6); }
-}
-
-@media (max-width: 1100px) {
-  .hero,
-  .contentGrid,
-  .metaGrid,
-  .coordPreview {
-    grid-template-columns: 1fr;
-  }
-
-  .title {
-    font-size: 40px;
-  }
-}
-
-@media (max-width: 720px) {
-  .page {
-    padding-inline: 14px;
-  }
-
-  .manualCoordRow {
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto 78px;
-    gap: 8px;
-  }
-
-  .coordDirection {
-    width: 78px;
-  }
-
-  .heroTop,
-  .twoCol,
-  .actions {
-    grid-template-columns: 1fr;
-    display: grid;
-  }
-
-  .heroTop {
-    gap: 12px;
-  }
+<style scoped>
+.analysis-page {
+  min-height: calc(100vh - var(--h-header));
+  position: relative; overflow: hidden;
+  background: linear-gradient(180deg, #FFF5EE 0%, #FFEFD5 40%, #FFF0F5 80%, #F8F4FF 100%);
+}
+.glow { position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none; }
+.glow-a { width: 260px; height: 260px; top: -40px; right: -60px; background: rgba(255,154,139,0.10); }
+.glow-b { width: 200px; height: 200px; bottom: 60px; left: -80px; background: rgba(240,192,96,0.08); }
+
+.page-content { position: relative; z-index: 1; max-width: 440px; margin: 0 auto; padding: 36px 20px 60px; }
+
+/* ── 加载态 ── */
+.loading-view { text-align: center; padding: 80px 20px; }
+.loading-crystal {
+  width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 20px;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.8), rgba(200,180,220,0.35), rgba(150,120,200,0.15));
+  box-shadow: 0 0 40px rgba(180,150,220,0.2);
+  animation: orb-pulse 2s ease-in-out infinite;
+}
+@keyframes orb-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+.loading-title { font-size: 18px; font-weight: 700; color: #4a3728; margin: 0 0 24px; }
+.loading-stages { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.loading-stage { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #c4b5a5; opacity: 0.3; transition: all 0.4s; }
+.loading-stage.active { opacity: 1; }
+.loading-stage.current { color: #4a3728; font-weight: 600; }
+.stage-dot { width: 6px; height: 6px; border-radius: 50%; background: #c4b5a5; flex-shrink: 0; }
+.loading-stage.current .stage-dot { background: #ff9a8b; box-shadow: 0 0 8px rgba(255,154,139,0.5); animation: dot-pulse 1s ease-in-out infinite; }
+@keyframes dot-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.8)} }
+
+/* ── 表单头 ── */
+.form-view { display: flex; flex-direction: column; gap: 20px; }
+.form-header { text-align: center; }
+.form-emoji { font-size: 36px; display: block; margin-bottom: 8px; }
+.form-title { font-size: 24px; font-weight: 800; color: #4a3728; margin: 0 0 6px; letter-spacing: 0.03em; }
+.form-sub { font-size: 13px; color: #8b7355; margin: 0; }
+
+/* ── 表单卡片 ── */
+.form-card {
+  padding: 28px 24px; border-radius: 24px;
+  background: rgba(255,255,255,0.82); backdrop-filter: blur(12px);
+  border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+  display: flex; flex-direction: column; gap: 18px;
+}
+
+/* ── 字段 ── */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field-label { font-size: 13px; font-weight: 700; color: #6b5744; }
+.field-input {
+  padding: 12px 16px; border-radius: 14px; border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(0,0,0,0.02); font-size: 15px; color: #4a3728; outline: none; font-family: inherit;
+  transition: border-color 0.2s; width: 100%; box-sizing: border-box;
+}
+.field-input:focus { border-color: #ff9a8b; }
+.field-input::placeholder { color: #c4b5a5; }
+
+.field-row { display: grid; grid-template-columns: 1fr 120px; gap: 14px; }
+
+/* 性别切换 */
+.gender-toggle { display: flex; border-radius: 14px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); }
+.gender-toggle button {
+  flex: 1; padding: 10px 12px; border: none; background: transparent;
+  font-size: 14px; font-weight: 600; color: #a89880; cursor: pointer; font-family: inherit; transition: all 0.2s;
+}
+.gender-toggle button.active { background: rgba(255,154,139,0.12); color: #4a3728; }
+
+/* 地点 */
+.place-input {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-radius: 14px; border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(0,0,0,0.02); cursor: pointer; transition: border-color 0.2s;
+}
+.place-input:hover { border-color: #ff9a8b; }
+.place-text { font-size: 15px; color: #4a3728; }
+.place-placeholder { font-size: 15px; color: #c4b5a5; }
+.place-arrow { font-size: 16px; }
+.coord-preview { display: flex; gap: 8px; font-size: 12px; color: #a89880; }
+
+/* 提交按钮 */
+.submit-btn {
+  width: 100%; padding: 16px; border-radius: 18px; border: none;
+  background: linear-gradient(135deg, #ff9a8b, #ffb8a8);
+  color: #fff; font-size: 17px; font-weight: 700; cursor: pointer; font-family: inherit;
+  box-shadow: 0 4px 16px rgba(255,154,139,0.25); transition: all 0.25s;
+}
+.submit-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,154,139,0.3); }
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.submit-hint { text-align: center; font-size: 12px; color: #c4b5a5; margin: -8px 0 0; }
+
+/* 示例 */
+.demo-entry { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.demo-divider { font-size: 12px; color: #c4b5a5; }
+.demo-btn {
+  padding: 8px 18px; border-radius: 14px; border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(0,0,0,0.02); color: #8b7355; font-size: 13px; cursor: pointer; font-family: inherit; transition: all 0.2s;
+}
+.demo-btn:hover { border-color: rgba(255,154,139,0.2); background: rgba(255,154,139,0.04); }
+
+/* ── 弹窗内样式 ── */
+.place-dialog :deep(.el-tabs__item) { color: #6b5744; }
+.manual-grid { display: grid; gap: 12px; margin-bottom: 12px; }
+.manual-field label { display: block; font-size: 12px; color: #6b5744; margin-bottom: 4px; }
+.manual-row { display: flex; align-items: center; gap: 6px; }
+.manual-row span { color: #8b7355; font-size: 14px; }
+
+/* ── 覆盖 Element Plus date picker 暗色 → 暖色 ── */
+.analysis-page :deep(.el-input__wrapper) {
+  background: rgba(0,0,0,0.02) !important; border: 1px solid rgba(0,0,0,0.08) !important;
+  box-shadow: none !important; border-radius: 14px !important;
+}
+.analysis-page :deep(.el-input__inner) { color: #4a3728 !important; }
+.analysis-page :deep(.el-input__inner::placeholder) { color: #c4b5a5 !important; }
+.analysis-page :deep(.el-button--primary) {
+  background: linear-gradient(135deg, #ff9a8b, #ffb8a8) !important; border: none !important;
+}
+
+/* 响应式 */
+@media (max-width: 400px) {
+  .field-row { grid-template-columns: 1fr; }
+  .form-card { padding: 22px 16px; }
 }
 </style>

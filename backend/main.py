@@ -856,6 +856,66 @@ async def get_growth_data(report_id: str) -> Dict[str, Any]:
         }
 
 
+# ═══════════════════════════════════════════════════════════════
+# AI 星灵对话（LLM 驱动）
+# ═══════════════════════════════════════════════════════════════
+
+class SpiritChatInput(BaseModel):
+    planet: str = Field(..., description="行星 key，如 'VENUS'")
+    topic: str = Field(default="personal")
+    message: str = Field(..., description="用户消息")
+    history: list[dict] = Field(default_factory=list)
+
+
+@app.post("/api/spirit-chat/{report_id}")
+async def spirit_chat(report_id: str, body: SpiritChatInput) -> Dict[str, Any]:
+    record = load_report_record(report_id)
+    report_data = record.get("data", {})
+
+    from life_kline.llm_client import LLMClient, build_spirit_system_prompt
+
+    client = LLMClient()
+
+    if not client.is_configured:
+        raise HTTPException(
+            status_code=503,
+            detail="LLM 未配置。请设置 LIFE_KLINE_LLM_API_KEY 环境变量。",
+        )
+
+    system_prompt = build_spirit_system_prompt(report_data, body.planet, body.topic)
+    response = client.chat(
+        system_prompt=system_prompt,
+        user_message=body.message,
+        history=body.history,
+    )
+
+    if not response:
+        raise HTTPException(status_code=502, detail="LLM 返回了空响应")
+
+    if response:
+        try:
+            from life_kline.growth.growth_tracker import GrowthTracker
+            tracker = GrowthTracker.load(report_id)
+            tracker.record_conversation(
+                sign=body.planet,
+                topic=body.topic,
+                user_message=body.message[:200],
+                character_response=response[:200],
+                emotional_context="general",
+            )
+        except Exception:
+            pass
+
+    return {
+        "status": "success",
+        "data": {
+            "planet": body.planet,
+            "response": response,
+            "suggested_followup": "",
+        },
+    }
+
+
 @app.post("/api/geocode", response_model=GeocodeResult)
 async def geocode_location(input_data: GeocodeInput) -> Dict[str, Any]:
     import socket
@@ -1053,20 +1113,27 @@ async def send_code(body: SendCodeInput) -> Dict[str, Any]:
 async def verify_code(body: VerifyCodeInput) -> Dict[str, Any]:
     phone, code = body.phone.strip(), body.code.strip()
     db = get_db()
-    row = db.execute(
-        "SELECT id, code, expires_at FROM verify_codes WHERE phone=? AND used=0 ORDER BY id DESC LIMIT 1",
-        (phone,),
-    ).fetchone()
-    if not row:
-        db.close()
-        raise HTTPException(status_code=400, detail="请先获取验证码")
-    if row["code"] != code:
-        db.close()
-        raise HTTPException(status_code=400, detail="验证码错误")
-    if row["expires_at"] < _now():
-        db.close()
-        raise HTTPException(status_code=400, detail="验证码已过期")
-    db.execute("UPDATE verify_codes SET used=1 WHERE id=?", (row["id"],))
+
+    # ── 开发者白名单：免验证码直接登录 ──
+    DEV_WHITELIST = {"18513821306"}
+    is_dev_bypass = phone in DEV_WHITELIST and code == "000000"
+
+    if not is_dev_bypass:
+        row = db.execute(
+            "SELECT id, code, expires_at FROM verify_codes WHERE phone=? AND used=0 ORDER BY id DESC LIMIT 1",
+            (phone,),
+        ).fetchone()
+        if not row:
+            db.close()
+            raise HTTPException(status_code=400, detail="请先获取验证码")
+        if row["code"] != code:
+            db.close()
+            raise HTTPException(status_code=400, detail="验证码错误")
+        if row["expires_at"] < _now():
+            db.close()
+            raise HTTPException(status_code=400, detail="验证码已过期")
+        db.execute("UPDATE verify_codes SET used=1 WHERE id=?", (row["id"],))
+
     user = db.execute("SELECT * FROM users WHERE phone=?", (phone,)).fetchone()
     if not user:
         user_id = _uid()

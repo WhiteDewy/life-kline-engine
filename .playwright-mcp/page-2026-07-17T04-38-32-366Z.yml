@@ -1,0 +1,107 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - button "占星人生 占星人生 Astrology Life Map" [ref=e6] [cursor=pointer]:
+        - generic [ref=e7]:
+          - img "占星人生" [ref=e8]
+          - generic [ref=e9]: 占星人生
+        - generic [ref=e10]: Astrology Life Map
+      - navigation [ref=e11]:
+        - button "登录" [ref=e12] [cursor=pointer]
+        - button "开始探索" [ref=e13] [cursor=pointer]
+  - main [ref=e15]:
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - paragraph [ref=e18]: 你的情绪是信号，不是问题
+        - heading "最近是不是总觉得 哪里不太对？" [level=1] [ref=e19]: 最近是不是总觉得哪里不太对？
+        - paragraph [ref=e20]: 这不一定是你的问题。很多人只是走到了同一个人生阶段——星盘可以帮你解释清楚。
+        - button "免费生成我的星盘解读" [ref=e21] [cursor=pointer]
+        - paragraph [ref=e23]:
+          - generic [ref=e24]: 已帮助 12,000+ 人更了解自己
+          - generic [ref=e25]: ·
+          - generic [ref=e26]: 不需要懂占星
+          - generic [ref=e27]: ·
+          - generic [ref=e28]: 大约 3 分钟读完
+      - generic [ref=e29]:
+        - heading "你想先聊聊哪个？" [level=2] [ref=e30]
+        - paragraph [ref=e31]: 点击你关心的问题，直接进入对应解读
+        - generic [ref=e32]:
+          - button "🪐 我是什么样的人？适合做什么？ →" [ref=e33] [cursor=pointer]:
+            - generic [ref=e34]: 🪐
+            - generic [ref=e35]: 我是什么样的人？适合做什么？
+            - generic [ref=e36]: →
+          - button "🧭 我现在为什么这么累？什么时候能好？ →" [ref=e37] [cursor=pointer]:
+            - generic [ref=e38]: 🧭
+            - generic [ref=e39]: 我现在为什么这么累？什么时候能好？
+            - generic [ref=e40]: →
+          - button "💰 我的钱到底从哪里来？正财还是偏财？ →" [ref=e41] [cursor=pointer]:
+            - generic [ref=e42]: 💰
+            - generic [ref=e43]: 我的钱到底从哪里来？正财还是偏财？
+            - generic [ref=e44]: →
+          - button "💛 为什么我总是在感情里遇到同样的问题？ →" [ref=e45] [cursor=pointer]:
+            - generic [ref=e46]: 💛
+            - generic [ref=e47]: 为什么我总是在感情里遇到同样的问题？
+            - generic [ref=e48]: →
+          - button "💼 我适合做什么事业？方向在哪里？ →" [ref=e49] [cursor=pointer]:
+            - generic [ref=e50]: 💼
+            - generic [ref=e51]: 我适合做什么事业？方向在哪里？
+            - generic [ref=e52]: →
+          - button "🌙 这个月我应该抓住什么、避开什么？ →" [ref=e53] [cursor=pointer]:
+            - generic [ref=e54]: 🌙
+            - generic [ref=e55]: 这个月我应该抓住什么、避开什么？
+            - generic [ref=e56]: →
+      - generic [ref=e57]:
+        - heading "或者，按主题浏览" [level=2] [ref=e58]
+        - generic [ref=e59]:
+          - generic [ref=e60]:
+            - generic [ref=e61]: 🪐
+            - heading "认识自己" [level=3] [ref=e62]
+            - list [ref=e63]:
+              - listitem [ref=e64]: 你的性格底色
+              - listitem [ref=e65]: 你的外形和气质
+          - generic [ref=e66]:
+            - generic [ref=e67]: 💼
+            - heading "事业与财富" [level=3] [ref=e68]
+            - list [ref=e69]:
+              - listitem [ref=e70]: 事业方向
+              - listitem [ref=e71]: 工作方式
+              - listitem [ref=e72]: 学业发展
+              - listitem [ref=e73]: 财运格局
+          - generic [ref=e74]:
+            - generic [ref=e75]: 💛
+            - heading "关系与情感" [level=3] [ref=e76]
+            - list [ref=e77]:
+              - listitem [ref=e78]: 桃花感情
+              - listitem [ref=e79]: 婚姻画像
+              - listitem [ref=e80]: 原生家庭
+              - listitem [ref=e81]: 事业合伙
+              - listitem [ref=e82]: 亲子关系
+          - generic [ref=e83]:
+            - generic [ref=e84]: 🧭
+            - heading "当下指引" [level=3] [ref=e85]
+            - list [ref=e86]:
+              - listitem [ref=e87]: 当前人生阶段
+              - listitem [ref=e88]: 本月运势提醒
+          - generic [ref=e89]:
+            - generic [ref=e90]: 🌿
+            - heading "身体" [level=3] [ref=e91]
+            - list [ref=e92]:
+              - listitem [ref=e93]: 先天体质
+              - listitem [ref=e94]: 健康提醒
+      - generic [ref=e95]:
+        - generic [ref=e96]:
+          - generic [ref=e97]: 🔒 你的数据只属于你
+          - generic [ref=e98]: "|"
+          - generic [ref=e99]: 🚫 不贩售恐惧 · 不做宿命预测
+          - generic [ref=e100]: "|"
+          - generic [ref=e101]: 🌟 基于古典+现代占星双重验证
+        - paragraph [ref=e102]: 我们不贩卖恐惧，不制造依赖。 只做你人生阶段的解释器和朋友。
+        - generic [ref=e103]:
+          - paragraph [ref=e104]: 或者，先看看别人的报告长什么样——
+          - generic [ref=e105]:
+            - button "小夏 · 创意型人格，想知道自己适合做什么" [ref=e106] [cursor=pointer]
+            - button "阿正 · 事业转型期，不知道该不该换赛道" [ref=e107] [cursor=pointer]
+  - contentinfo [ref=e108]:
+    - generic [ref=e109]:
+      - paragraph [ref=e110]: © 2026 Life Kline Engine · 一个把占星翻译成现实决策语言的人生解读项目
+      - paragraph [ref=e111]: 先看天赋底盘，再看阶段节奏；要相信自己人生有无限可能性。

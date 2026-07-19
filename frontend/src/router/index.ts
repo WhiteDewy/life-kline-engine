@@ -31,5 +31,25 @@ export default createRouter({
       name: "history",
       component: () => import("@/views/History/index.vue"),
     },
+    {
+      path: "/login",
+      name: "login",
+      component: () => import("@/views/Login/index.vue"),
+    },
+    {
+      path: "/onboarding",
+      name: "onboarding",
+      component: () => import("@/views/Onboarding/index.vue"),
+    },
+    {
+      path: "/spirit-garden",
+      name: "spirit-garden",
+      component: () => import("@/views/Wanxiang/index.vue"),
+    },
+    {
+      path: "/spirit-garden/:planet",
+      name: "spirit-detail",
+      component: () => import("@/views/Wanxiang/index.vue"),
+    },
   ],
 });

@@ -1,0 +1,115 @@
+- main [ref=f18e4]:
+  - generic [ref=f18e5]:
+    - button "🔇" [ref=f18e10] [cursor=pointer]
+    - generic [ref=f18e11]:
+      - button "☉" [ref=f18e12] [cursor=pointer]
+      - button "🎨" [ref=f18e16] [cursor=pointer]
+    - navigation [ref=f18e17]:
+      - button "🌸 花园" [ref=f18e18] [cursor=pointer]:
+        - generic [ref=f18e19]: 🌸
+        - generic [ref=f18e20]: 花园
+      - button "💫 今夜，星光为你低语" [ref=f18e21] [cursor=pointer]:
+        - generic [ref=f18e22]: 💫
+        - generic [ref=f18e23]: 今夜，星光为你低语
+      - button "🔮 星灵议会" [ref=f18e24] [cursor=pointer]:
+        - generic [ref=f18e25]: 🔮
+        - generic [ref=f18e26]: 星灵议会
+    - generic [ref=f18e28]:
+      - button [ref=f18e29] [cursor=pointer]
+      - generic [ref=f18e31]:
+        - heading "⭐ 星灵议会" [level=2] [ref=f18e32]
+        - generic [ref=f18e33]:
+          - button "🌌 十位 · 星灵" [ref=f18e34] [cursor=pointer]
+          - button "🎭 十二星座" [ref=f18e35] [cursor=pointer]
+        - paragraph [ref=f18e36]: 选择一位星灵开始对话——每颗行星都是你内在的不同声音
+        - generic [ref=f18e37]:
+          - generic [ref=f18e38] [cursor=pointer]:
+            - generic [ref=f18e39]:
+              - generic [ref=f18e40]: ☉
+              - generic [ref=f18e43]: 常驻
+            - generic [ref=f18e44]:
+              - generic [ref=f18e45]: 太阳
+              - generic [ref=f18e46]: 主角
+              - generic [ref=f18e47]: 双鱼座 · 平
+            - generic [ref=f18e48]: 轻触对话
+          - generic [ref=f18e49] [cursor=pointer]:
+            - generic [ref=f18e50]:
+              - generic [ref=f18e51]: ☽
+              - generic [ref=f18e54]: 💤
+            - generic [ref=f18e55]:
+              - generic [ref=f18e56]: 月亮
+              - generic [ref=f18e57]: 照料者
+              - generic [ref=f18e58]: 双子座 · 平
+            - generic [ref=f18e59]: 轻触对话
+          - generic [ref=f18e60] [cursor=pointer]:
+            - generic [ref=f18e61]:
+              - generic [ref=f18e62]: ☿
+              - generic [ref=f18e65]: 💤
+            - generic [ref=f18e66]:
+              - generic [ref=f18e67]: 水星
+              - generic [ref=f18e68]: 信使
+              - generic [ref=f18e69]: 白羊座 · 平
+            - generic [ref=f18e70]: 轻触对话
+          - generic [ref=f18e71] [cursor=pointer]:
+            - generic [ref=f18e72]:
+              - generic [ref=f18e73]: ♀
+              - generic [ref=f18e76]: 💤
+            - generic [ref=f18e77]:
+              - generic [ref=f18e78]: 金星
+              - generic [ref=f18e79]: 调和者
+              - generic [ref=f18e80]: 金牛座 · 入庙
+            - generic [ref=f18e81]: 轻触对话
+          - generic [ref=f18e82] [cursor=pointer]:
+            - generic [ref=f18e83]:
+              - generic [ref=f18e84]: ♂
+              - generic [ref=f18e87]: 💤
+            - generic [ref=f18e88]:
+              - generic [ref=f18e89]: 火星
+              - generic [ref=f18e90]: 战士
+              - generic [ref=f18e91]: 双子座 · 平
+            - generic [ref=f18e92]: 轻触对话
+          - generic [ref=f18e93] [cursor=pointer]:
+            - generic [ref=f18e94]:
+              - generic [ref=f18e95]: ♃
+              - generic [ref=f18e98]: 💤
+            - generic [ref=f18e99]:
+              - generic [ref=f18e100]: 木星
+              - generic [ref=f18e101]: 导师
+              - generic [ref=f18e102]: 狮子座 · 平
+            - generic [ref=f18e103]: 轻触对话
+          - generic [ref=f18e104] [cursor=pointer]:
+            - generic [ref=f18e105]:
+              - generic [ref=f18e106]: ♄
+              - generic [ref=f18e109]: 💤
+            - generic [ref=f18e110]:
+              - generic [ref=f18e111]: 土星
+              - generic [ref=f18e112]: 建筑师
+              - generic [ref=f18e113]: 水瓶座 · 入庙
+            - generic [ref=f18e114]: 轻触对话
+          - generic [ref=f18e115] [cursor=pointer]:
+            - generic [ref=f18e116]:
+              - generic [ref=f18e117]: ♅
+              - generic [ref=f18e120]: 💤
+            - generic [ref=f18e121]:
+              - generic [ref=f18e122]: 天王星
+              - generic [ref=f18e123]: 革新者
+              - generic [ref=f18e124]: 摩羯座 · 平
+            - generic [ref=f18e125]: 轻触对话
+          - generic [ref=f18e126] [cursor=pointer]:
+            - generic [ref=f18e127]:
+              - generic [ref=f18e128]: ♆
+              - generic [ref=f18e131]: 💤
+            - generic [ref=f18e132]:
+              - generic [ref=f18e133]: 海王星
+              - generic [ref=f18e134]: 梦想家
+              - generic [ref=f18e135]: 摩羯座 · 落陷
+            - generic [ref=f18e136]: 轻触对话
+          - generic [ref=f18e137] [cursor=pointer]:
+            - generic [ref=f18e138]:
+              - generic [ref=f18e139]: ♇
+              - generic [ref=f18e142]: 💤
+            - generic [ref=f18e143]:
+              - generic [ref=f18e144]: 冥王星
+              - generic [ref=f18e145]: 转化者
+              - generic [ref=f18e146]: 天蝎座 · 入庙
+            - generic [ref=f18e147]: 轻触对话

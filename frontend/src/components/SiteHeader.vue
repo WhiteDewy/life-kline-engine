@@ -65,7 +65,7 @@ function goExplore() {
   height: var(--h-header);
   background: rgba(2, 6, 23, 0.7);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
 }
 
 .content {
@@ -141,7 +141,7 @@ function goExplore() {
   color: var(--gold);
 }
 .navPremium {
-  color: #d4af37;
+  color: #ff9a8b;
   font-weight: 600;
 }
 

@@ -220,8 +220,8 @@ const majorPeriods = computed(() => {
   padding: 36px 32px 32px;
   border-radius: 24px;
   background:
-    radial-gradient(ellipse at 50% 0%, rgba(212, 175, 55, 0.05), transparent 55%),
-    linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.6));
+    radial-gradient(ellipse at 50% 0%, rgba(255,154,139, 0.05), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255, 0.9), rgba(255,255,255, 0.6));
   border: 1px solid rgba(255, 255, 255, 0.07);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3);
 }
@@ -234,7 +234,7 @@ const majorPeriods = computed(() => {
   transform: translateX(-50%);
   width: 140px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255,154,139, 0.3), transparent);
 }
 
 .insight-card--empty {
@@ -243,7 +243,7 @@ const majorPeriods = computed(() => {
 }
 
 .empty-text {
-  color: #64748b;
+  color: #a89880;
   font-size: 14px;
   margin: 0;
 }
@@ -251,7 +251,7 @@ const majorPeriods = computed(() => {
 /* ── 标题 ── */
 .insight-headline {
   margin: 0 0 18px;
-  color: #f8fafc;
+  color: #4a3728;
   font-size: 20px;
   font-weight: 600;
   line-height: 1.6;
@@ -265,13 +265,13 @@ const majorPeriods = computed(() => {
 
 .insight-para {
   margin: 0 0 8px;
-  color: #cbd5e1;
+  color: #5c4a3a;
   font-size: 15px;
   line-height: 1.85;
 }
 
 .insight-advice {
-  color: #e2e8f0;
+  color: #4a3728;
 }
 
 /* ── 时间感 ── */
@@ -293,13 +293,13 @@ const majorPeriods = computed(() => {
 }
 
 .time-text {
-  color: #e2e8f0;
+  color: #4a3728;
   font-size: 14px;
   font-weight: 500;
 }
 
 .time-note {
-  color: #64748b;
+  color: #a89880;
   font-size: 13px;
 }
 
@@ -311,7 +311,7 @@ const majorPeriods = computed(() => {
 
 .bias-text {
   margin: 0 0 10px;
-  color: #94a3b8;
+  color: #8b7355;
   font-size: 14px;
   line-height: 1.7;
 }
@@ -330,7 +330,7 @@ const majorPeriods = computed(() => {
 
 .bias-label {
   font-size: 12px;
-  color: #64748b;
+  color: #a89880;
   flex-shrink: 0;
   width: 56px;
 }
@@ -341,11 +341,11 @@ const majorPeriods = computed(() => {
 }
 
 .bias-value--favor {
-  color: #f8fafc;
+  color: #4a3728;
 }
 
 .bias-value--patience {
-  color: #94a3b8;
+  color: #8b7355;
 }
 
 .bias-why {
@@ -353,14 +353,14 @@ const majorPeriods = computed(() => {
   padding: 0;
   background: none;
   border: none;
-  color: #64748b;
+  color: #a89880;
   font-size: 12px;
   cursor: pointer;
   transition: color 0.2s;
 }
 
 .bias-why:hover {
-  color: #94a3b8;
+  color: #8b7355;
 }
 
 .bias-evidence {
@@ -368,12 +368,12 @@ const majorPeriods = computed(() => {
   padding: 14px 16px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.02);
-  border-left: 2px solid rgba(212, 175, 55, 0.2);
+  border-left: 2px solid rgba(255,154,139, 0.2);
 }
 
 .evidence-text {
   margin: 0 0 8px;
-  color: #94a3b8;
+  color: #8b7355;
   font-size: 13px;
   line-height: 1.75;
 }
@@ -387,7 +387,7 @@ const majorPeriods = computed(() => {
   margin-top: 16px;
   padding: 16px 20px;
   border-radius: 18px;
-  background: rgba(15, 23, 42, 0.4);
+  background: rgba(255,255,255, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.04);
 }
 
@@ -397,7 +397,7 @@ const majorPeriods = computed(() => {
   gap: 4px;
   background: none;
   border: none;
-  color: #94a3b8;
+  color: #8b7355;
   font-size: 13px;
   cursor: pointer;
   padding: 0;
@@ -406,7 +406,7 @@ const majorPeriods = computed(() => {
 }
 
 .rhythm-toggle:hover {
-  color: #e2e8f0;
+  color: #4a3728;
 }
 
 .rhythm-strip {
@@ -435,7 +435,7 @@ const majorPeriods = computed(() => {
 .rhythm-dot-wrap--current .rhythm-dot {
   width: 14px;
   height: 14px;
-  box-shadow: 0 0 14px rgba(212, 175, 55, 0.5);
+  box-shadow: 0 0 14px rgba(255,154,139, 0.5);
 }
 
 .rhythm-age {
@@ -444,7 +444,7 @@ const majorPeriods = computed(() => {
 }
 
 .rhythm-dot-wrap--current .rhythm-age {
-  color: #94a3b8;
+  color: #8b7355;
   font-weight: 700;
 }
 
@@ -458,7 +458,7 @@ const majorPeriods = computed(() => {
 .rhythm-chapter {
   padding: 14px 16px;
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(255,255,255, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.04);
   transition: all 0.2s;
 }
@@ -468,8 +468,8 @@ const majorPeriods = computed(() => {
 }
 
 .rhythm-chapter--current {
-  border-color: color-mix(in srgb, var(--planet-color, #d4af37) 25%, transparent);
-  background: color-mix(in srgb, var(--planet-color, #d4af37) 6%, rgba(15, 23, 42, 0.9));
+  border-color: color-mix(in srgb, var(--planet-color, #ff9a8b) 25%, transparent);
+  background: color-mix(in srgb, var(--planet-color, #ff9a8b) 6%, rgba(255,255,255, 0.9));
 }
 
 .rhythm-chapter-head {
@@ -486,19 +486,19 @@ const majorPeriods = computed(() => {
 .rhythm-chapter-name {
   font-size: 14px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: #4a3728;
 }
 
 .rhythm-chapter-age {
   font-size: 12px;
-  color: #64748b;
+  color: #a89880;
   margin-left: auto;
 }
 
 .rhythm-chapter-now {
   padding: 2px 8px;
   border-radius: 999px;
-  background: #d4af37;
+  background: #ff9a8b;
   color: #020617;
   font-size: 10px;
   font-weight: 800;
@@ -506,7 +506,7 @@ const majorPeriods = computed(() => {
 
 .rhythm-chapter-summary {
   margin: 8px 0 0;
-  color: #94a3b8;
+  color: #8b7355;
   font-size: 12px;
   line-height: 1.7;
 }

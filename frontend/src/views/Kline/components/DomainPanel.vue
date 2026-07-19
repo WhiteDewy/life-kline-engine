@@ -82,7 +82,7 @@ const structureParagraphs = computed(() => {
 }
 .domain-bridge {
   margin: 0 0 18px;
-  color: #94a3b8;
+  color: #8b7355;
   font-size: 14px;
   font-style: italic;
   line-height: 1.7;
@@ -92,7 +92,7 @@ const structureParagraphs = computed(() => {
 }
 .domain-theme {
   margin: 0;
-  color: #f8fafc;
+  color: #4a3728;
   font-size: 22px;
   font-weight: 700;
   line-height: 1.4;
@@ -105,7 +105,7 @@ const structureParagraphs = computed(() => {
 /* ── 结构段落 ── */
 .domain-text {
   margin: 0;
-  color: #cbd5e1;
+  color: #5c4a3a;
   line-height: 1.9;
   font-size: 15px;
   padding: 8px 12px;
@@ -113,14 +113,14 @@ const structureParagraphs = computed(() => {
   transition: background 0.2s;
 }
 .domain-text--first {
-  color: #e2e8f0;
+  color: #4a3728;
   font-size: 15.5px;
-  border-left: 2px solid rgba(212, 175, 55, 0.3);
+  border-left: 2px solid rgba(255,154,139, 0.3);
   padding-left: 14px;
-  background: rgba(255, 255, 255, 0.012);
+  background: rgba(0,0,0,0.02);
 }
 .domain-text--alt {
-  background: rgba(255, 255, 255, 0.01);
+  background: rgba(0,0,0,0.02);
 }
 
 /* ── 心理层面 ── */
@@ -128,23 +128,23 @@ const structureParagraphs = computed(() => {
   margin-top: 10px;
   padding: 18px 18px 16px;
   border-radius: 16px;
-  border-left: 3px solid rgba(99, 102, 241, 0.35);
-  background: rgba(99, 102, 241, 0.05);
+  border-left: 3px solid rgba(155,196,208, 0.35);
+  background: rgba(155,196,208, 0.05);
 }
 .psych-badge {
   display: inline-block;
   margin-bottom: 8px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(99, 102, 241, 0.15);
-  color: #a5b4fc;
+  background: rgba(155,196,208, 0.15);
+  color: #4a7a8a;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
 .psych-text {
   margin: 0;
-  color: #c7d2fe;
+  color: #4a3728;
   line-height: 1.8;
   font-size: 14px;
 }
@@ -154,16 +154,16 @@ const structureParagraphs = computed(() => {
   margin-top: 10px;
   padding: 18px 18px 16px;
   border-radius: 16px;
-  background: rgba(212, 175, 55, 0.05);
-  border: 1px solid rgba(212, 175, 55, 0.1);
+  background: rgba(255,154,139, 0.05);
+  border: 1px solid rgba(255,154,139, 0.1);
 }
 .suggestion-badge {
   display: inline-block;
   margin-bottom: 8px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: rgba(212, 175, 55, 0.12);
-  color: #d4af37;
+  background: rgba(255,154,139, 0.12);
+  color: #ff9a8b;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -194,7 +194,7 @@ const structureParagraphs = computed(() => {
 }
 .hook-text {
   margin: 0;
-  color: #94a3b8;
+  color: #8b7355;
   font-size: 14px;
   line-height: 1.6;
 }
@@ -205,13 +205,13 @@ const structureParagraphs = computed(() => {
 /* ── 高亮标记（scoped 穿透） ── */
 :deep(mark.hl-pain)     { background: linear-gradient(180deg, transparent 55%, rgba(248,113,113,0.18) 55%); color: #fca5a5; }
 :deep(mark.hl-need)     { background: linear-gradient(180deg, transparent 55%, rgba(167,139,250,0.18) 55%); color: #c4b5fd; }
-:deep(mark.hl-gift)     { background: linear-gradient(180deg, transparent 55%, rgba(212,175,55,0.22) 55%); color: #f8fafc; }
-:deep(mark.hl-honest)   { background: linear-gradient(180deg, transparent 55%, rgba(148,163,184,0.12) 55%); color: #cbd5e1; font-style: italic; }
-:deep(mark.hl-correct)  { color: #a5b4fc; font-weight: 500; }
-:deep(mark.hl-insight)  { color: #d4af37; font-weight: 500; }
+:deep(mark.hl-gift)     { background: linear-gradient(180deg, transparent 55%, rgba(212,175,55,0.22) 55%); color: #4a3728; }
+:deep(mark.hl-honest)   { background: linear-gradient(180deg, transparent 55%, rgba(148,163,184,0.12) 55%); color: #5c4a3a; font-style: italic; }
+:deep(mark.hl-correct)  { color: #4a7a8a; font-weight: 500; }
+:deep(mark.hl-insight)  { color: #ff9a8b; font-weight: 500; }
 :deep(mark.hl-contrast) { background: linear-gradient(180deg, transparent 55%, rgba(212,175,55,0.1) 55%); }
-:deep(mark.hl-ease)     { color: #6ee7b7; }
+:deep(mark.hl-ease)     { color: #4a8a6a; }
 :deep(mark.hl-warn)     { color: #fbbf24; border-bottom: 1px dashed rgba(251,191,36,0.25); }
-:deep(mark.hl-action)   { color: #f8fafc; font-weight: 600; }
+:deep(mark.hl-action)   { color: #4a3728; font-weight: 600; }
 :deep(mark)             { background: transparent; border-radius: 2px; padding: 0 2px; }
 </style>

@@ -1,0 +1,16 @@
+- generic [ref=f6e3]:
+  - banner [ref=f6e4]:
+    - generic [ref=f6e5]:
+      - button "占星人生 占星人生 Astrology Life Map" [ref=f6e6] [cursor=pointer]:
+        - generic [ref=f6e7]:
+          - img "占星人生" [ref=f6e8]
+          - generic [ref=f6e9]: 占星人生
+        - generic [ref=f6e10]: Astrology Life Map
+      - navigation [ref=f6e11]:
+        - button "登录" [ref=f6e12] [cursor=pointer]
+        - button "开始探索" [ref=f6e13] [cursor=pointer]
+  - main [ref=f6e15]
+  - contentinfo [ref=f6e16]:
+    - generic [ref=f6e17]:
+      - paragraph [ref=f6e18]: © 2026 Life Kline Engine · 一个把占星翻译成现实决策语言的人生解读项目
+      - paragraph [ref=f6e19]: 先看天赋底盘，再看阶段节奏；要相信自己人生有无限可能性。

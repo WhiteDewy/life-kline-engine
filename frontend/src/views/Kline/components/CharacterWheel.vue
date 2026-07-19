@@ -90,6 +90,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { SIGN_EMOJI_MAP } from '@/config/zodiac'
 
 export interface CharacterWheelSegment {
   sign: string
@@ -122,12 +123,7 @@ defineEmits<{
   select: [sign: string]
 }>()
 
-const SIGN_SYMBOLS: Record<string, string> = {
-  ARIES: '♈', TAURUS: '♉', GEMINI: '♊',
-  CANCER: '♋', LEO: '♌', VIRGO: '♍',
-  LIBRA: '♎', SCORPIO: '♏', SAGITTARIUS: '♐',
-  CAPRICORN: '♑', AQUARIUS: '♒', PISCES: '♓',
-}
+const SIGN_SYMBOLS = SIGN_EMOJI_MAP
 
 const SIGN_ORDER = [
   'ARIES', 'TAURUS', 'GEMINI', 'CANCER',

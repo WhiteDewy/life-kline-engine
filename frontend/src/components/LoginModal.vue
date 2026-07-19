@@ -109,13 +109,13 @@ async function doLogin() {
   padding: 30px 28px;
   border-radius: 24px;
   background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(0,0,0,0.06);
   display: grid;
   gap: 16px;
 }
 .title {
   margin: 0;
-  color: #f8fafc;
+  color: #4a3728;
   font-size: 22px;
 }
 .hint,

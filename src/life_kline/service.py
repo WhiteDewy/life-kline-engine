@@ -672,6 +672,8 @@ class LifeKlineService:
         output_data["hero"] = enriched.get("hero", {})
         output_data["domains"] = enriched.get("domains", {})
         output_data["_analysis_evidence"] = enriched.get("_analysis_evidence", {})
+        output_data["characters"] = enriched.get("characters", {})
+        output_data["planet_characters"] = enriched.get("planet_characters", {})
         output_data["_transits"] = transits
         output_data["_transits_fast"] = transits_fast
         output_data["_transits_slow"] = transits_slow

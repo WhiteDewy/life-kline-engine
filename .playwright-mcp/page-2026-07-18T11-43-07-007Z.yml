@@ -1,0 +1,16 @@
+- main [ref=f9e4]:
+  - generic [ref=f9e5]:
+    - generic [ref=f9e10]:
+      - button "☉" [ref=f9e11] [cursor=pointer]
+      - button "🎨" [ref=f9e15] [cursor=pointer]
+    - navigation:
+      - generic [ref=f9e16]:
+        - button "🌸 花园" [ref=f9e17] [cursor=pointer]:
+          - generic [ref=f9e18]: 🌸
+          - generic [ref=f9e19]: 花园
+        - button "💫 今夜，星光为你低语" [ref=f9e20] [cursor=pointer]:
+          - generic [ref=f9e21]: 💫
+          - generic [ref=f9e22]: 今夜，星光为你低语
+        - button "🔮 星灵议会" [ref=f9e23] [cursor=pointer]:
+          - generic [ref=f9e24]: 🔮
+          - generic [ref=f9e25]: 星灵议会

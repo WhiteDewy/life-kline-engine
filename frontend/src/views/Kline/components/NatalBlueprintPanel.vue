@@ -582,10 +582,10 @@ function formatFitScore(value: number) {
   margin: 14px 0 0;
   padding: 18px;
   border-radius: 22px;
-  border: 1px solid rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(255,154,139, 0.12);
   background:
-    radial-gradient(circle at top left, rgba(212, 175, 55, 0.08), transparent 38%),
-    rgba(255, 255, 255, 0.03);
+    radial-gradient(circle at top left, rgba(255,154,139, 0.08), transparent 38%),
+    rgba(0,0,0,0.02);
   color: var(--text);
   font-size: 16px;
 }
@@ -621,9 +621,9 @@ function formatFitScore(value: number) {
 .focusCard,
 .careerCard {
   border-radius: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(0,0,0,0.02);
   background:
-    radial-gradient(circle at top left, rgba(212, 175, 55, 0.07), transparent 36%),
+    radial-gradient(circle at top left, rgba(255,154,139, 0.07), transparent 36%),
     rgba(2, 6, 23, 0.5);
 }
 
@@ -655,7 +655,7 @@ function formatFitScore(value: number) {
   min-width: 34px;
   height: 34px;
   border-radius: 999px;
-  background: rgba(212, 175, 55, 0.12);
+  background: rgba(255,154,139, 0.12);
   color: var(--gold);
   font-size: 12px;
   font-weight: 700;
@@ -686,8 +686,8 @@ function formatFitScore(value: number) {
 .questionBlock {
   padding: 14px;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0,0,0,0.02);
+  background: rgba(0,0,0,0.02);
 }
 
 .compactList {
@@ -702,8 +702,8 @@ function formatFitScore(value: number) {
 .supportFold {
   margin-top: 16px;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0,0,0,0.02);
+  background: rgba(0,0,0,0.02);
 }
 
 .questionEvidenceFold {
@@ -808,7 +808,7 @@ function formatFitScore(value: number) {
   min-width: 34px;
   height: 34px;
   border-radius: 999px;
-  background: rgba(212, 175, 55, 0.12);
+  background: rgba(255,154,139, 0.12);
   color: var(--gold);
   font-size: 12px;
   font-weight: 700;
@@ -844,8 +844,8 @@ function formatFitScore(value: number) {
   align-items: center;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0,0,0,0.02);
+  border: 1px solid rgba(0,0,0,0.02);
   color: var(--text-secondary);
   font-size: 12px;
 }
@@ -939,8 +939,8 @@ function formatFitScore(value: number) {
   min-height: 30px;
   padding: 0 12px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0,0,0,0.02);
+  background: rgba(0,0,0,0.02);
   color: var(--text-secondary);
   font-size: 12px;
   white-space: nowrap;
@@ -958,12 +958,12 @@ function formatFitScore(value: number) {
 .careerTheoryFold {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(0,0,0,0.02);
 }
 
 .careerTheory {
   padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(0,0,0,0.02);
 }
 
 .careerTheoryFold .careerTheory {
@@ -987,8 +987,8 @@ function formatFitScore(value: number) {
 .theoryFold {
   display: block;
   border-radius: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(0,0,0,0.02);
+  background: rgba(0,0,0,0.02);
 }
 
 .supportFold {
@@ -1046,7 +1046,7 @@ function formatFitScore(value: number) {
   height: 7px;
   border-radius: 50%;
   background: var(--gold);
-  box-shadow: 0 0 16px rgba(212, 175, 55, 0.28);
+  box-shadow: 0 0 16px rgba(255,154,139, 0.28);
 }
 
 @media (max-width: 1100px) {

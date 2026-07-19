@@ -374,6 +374,7 @@ export interface LifeReport {
     [key: string]: any;
   } | null;
   characters?: CharacterProfilesData | null;
+  planet_characters?: PlanetCharacterProfilesData | null;
 }
 
 export interface AngleView {
@@ -619,4 +620,109 @@ export interface GrowthData {
     character_response: string;
     emotional_context: string;
   }>;
+}
+
+// ── v2.0 行星人格角色系统 (对标万象有灵十神模型) ──
+
+export interface PlanetPersona {
+  planet: string;
+  name_zh: string;
+  archetype_zh: string;
+  element: string;
+  nature: string;
+  domain_zh: string;
+  essence: string;
+  personality: string;
+  voice_tone: string;
+  social_mask: string;
+  comfort_zone: string;
+  stress_response: string;
+  expertise_domains: string[];
+  greeting_style: string;
+  advice_approach: string;
+  gift_to_user: string;
+  challenge_to_user: string;
+  keywords: string[];
+  visual_color: string;
+  symbol: string;
+  ruling_signs_zh: string;
+}
+
+export interface SignFlavorOverlay {
+  sign: string;
+  sign_name: string;
+  element: string;
+  modality: string;
+  polarity: string;
+  voice_tone: string;
+  personality_snippet: string;
+  visual_color: string;
+  keywords: string[];
+}
+
+export interface HouseContext {
+  house: number;
+  title: string;
+  domain: string;
+  topic: string;
+}
+
+export interface PlanetCharacterProfile {
+  planet: string;
+  persona: PlanetPersona;
+  core_strength: number;
+  sign: string;
+  sign_label: string;
+  house: number;
+  house_label: string;
+  dignity_code: string;
+  dignity_label: string;
+  role_tag: string;
+  sign_flavor: SignFlavorOverlay;
+  house_context: HouseContext;
+  is_chart_ruler: boolean;
+  personalized_greeting: string;
+  linked_domains: string[];
+}
+
+export interface PlanetCharacterProfilesData {
+  planet_characters: Record<string, PlanetCharacterProfile>;
+  main_character: PlanetCharacterProfile;
+  sorted_by_strength: Array<{
+    planet: string;
+    name_zh: string;
+    archetype_zh: string;
+    core_strength: number;
+    role_tag: string;
+    symbol: string;
+  }>;
+  core_planets: Array<{
+    planet: string;
+    name_zh: string;
+    core_strength: number;
+    role_tag: string;
+  }>;
+}
+
+export interface FeaturedPlanet {
+  planet: string;
+  name_zh: string;
+  archetype_zh: string;
+  symbol: string;
+  sign: string;
+  activation_score: number;
+  reason: string;
+  daily_message: string;
+  suggested_topic: string;
+  visual_color: string;
+}
+
+export interface PlanetDailyActivation {
+  date: string;
+  activation_scores: Record<string, number>;
+  featured_planets: FeaturedPlanet[];
+  main_character: FeaturedPlanet;
+  daily_theme: string;
+  lunar_note: string;
+  firdaria_note: string;
 }

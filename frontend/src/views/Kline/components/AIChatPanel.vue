@@ -52,6 +52,7 @@
 <script setup lang="ts">
 import { ref, nextTick, watch, computed } from "vue";
 import { apiClient } from "@/config/api";
+import { SIGN_EMOJI_MAP } from "@/config/zodiac";
 
 const props = defineProps<{
   greeting?: string;
@@ -76,11 +77,7 @@ const userMessageCount = ref(0);
 const remainingMessages = ref(props.freeMessages ?? 2);
 
 // 角色头像
-const SIGN_EMOJIS: Record<string, string> = {
-  ARIES: '♈', TAURUS: '♉', GEMINI: '♊', CANCER: '♋',
-  LEO: '♌', VIRGO: '♍', LIBRA: '♎', SCORPIO: '♏',
-  SAGITTARIUS: '♐', CAPRICORN: '♑', AQUARIUS: '♒', PISCES: '♓',
-};
+const SIGN_EMOJIS = SIGN_EMOJI_MAP
 
 const avatarEmoji = computed(() => {
   if (props.characterSign) {
@@ -196,8 +193,8 @@ function scrollToBottom() {
   flex-direction: column;
   height: 420px;
   border-radius: 20px;
-  border: 1px solid rgba(99, 102, 241, 0.12);
-  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(155,196,208, 0.12);
+  background: rgba(255,255,255, 0.6);
   backdrop-filter: blur(12px);
   overflow: hidden;
 }
@@ -227,7 +224,7 @@ function scrollToBottom() {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(99, 102, 241, 0.15);
+  background: rgba(155,196,208, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -237,15 +234,15 @@ function scrollToBottom() {
   padding: 12px 16px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(0,0,0,0.06);
 }
 .chat-msg--user .msg-bubble {
-  background: rgba(99, 102, 241, 0.12);
-  border-color: rgba(99, 102, 241, 0.18);
+  background: rgba(155,196,208, 0.12);
+  border-color: rgba(155,196,208, 0.18);
 }
 .msg-text {
   margin: 0;
-  color: #e2e8f0;
+  color: #4a3728;
   font-size: 14px;
   line-height: 1.7;
 }
@@ -276,19 +273,19 @@ function scrollToBottom() {
   30% { transform: translateY(-4px); opacity: 1; }
 }
 .chat-input-row {
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(0,0,0,0.06);
   padding: 14px 18px;
 }
 .free-hint {
   text-align: center;
-  color: #64748b;
+  color: #a89880;
   font-size: 12px;
   margin-bottom: 10px;
 }
 .upgrade-link {
   background: none;
   border: none;
-  color: #d4af37;
+  color: #ff9a8b;
   cursor: pointer;
   font-size: 12px;
   padding: 0;
@@ -302,21 +299,21 @@ function scrollToBottom() {
   flex: 1;
   padding: 10px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(0,0,0,0.06);
   background: rgba(255, 255, 255, 0.03);
-  color: #e2e8f0;
+  color: #4a3728;
   font-size: 14px;
   outline: none;
 }
 .chat-input:focus {
-  border-color: rgba(99, 102, 241, 0.3);
+  border-color: rgba(155,196,208, 0.3);
 }
 .chat-input::placeholder { color: #475569; }
 .send-btn {
   padding: 10px 20px;
   border-radius: 999px;
   border: none;
-  background: rgba(99, 102, 241, 0.2);
+  background: rgba(155,196,208, 0.2);
   color: #a5b4fc;
   font-size: 13px;
   font-weight: 600;
@@ -324,7 +321,7 @@ function scrollToBottom() {
   transition: all 0.2s;
 }
 .send-btn:hover:not(:disabled) {
-  background: rgba(99, 102, 241, 0.35);
+  background: rgba(155,196,208, 0.35);
 }
 .send-btn:disabled {
   opacity: 0.3;

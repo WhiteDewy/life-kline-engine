@@ -80,7 +80,7 @@ const truncatedText = computed(() => {
 }
 .preview-bridge {
   margin: 0 0 16px;
-  color: #94a3b8;
+  color: #8b7355;
   font-size: 13px;
   font-style: italic;
   line-height: 1.7;
@@ -93,15 +93,15 @@ const truncatedText = computed(() => {
 }
 .preview-theme {
   margin: 0;
-  color: #f8fafc;
+  color: #4a3728;
   font-size: 20px;
   font-weight: 700;
 }
 .preview-badge {
   padding: 3px 10px;
   border-radius: 999px;
-  background: rgba(212, 175, 55, 0.12);
-  color: #d4af37;
+  background: rgba(255,154,139, 0.12);
+  color: #ff9a8b;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -115,11 +115,11 @@ const truncatedText = computed(() => {
   overflow: hidden;
 }
 .preview-text {
-  color: #cbd5e1;
+  color: #5c4a3a;
   line-height: 1.9;
   font-size: 15px;
   padding: 8px 14px;
-  border-left: 2px solid rgba(212, 175, 55, 0.25);
+  border-left: 2px solid rgba(255,154,139, 0.25);
   background: rgba(255, 255, 255, 0.012);
   border-radius: 6px;
   margin: 0;
@@ -137,8 +137,8 @@ const truncatedText = computed(() => {
   margin-top: 20px;
   padding: 24px 20px;
   border-radius: 16px;
-  border: 1px solid rgba(212, 175, 55, 0.12);
-  background: linear-gradient(135deg, rgba(212, 175, 55, 0.04), rgba(212, 175, 55, 0.01));
+  border: 1px solid rgba(255,154,139, 0.12);
+  background: linear-gradient(135deg, rgba(255,154,139, 0.04), rgba(255,154,139, 0.01));
   text-align: center;
 }
 .locked-icon {
@@ -147,13 +147,13 @@ const truncatedText = computed(() => {
 }
 .locked-title {
   margin: 0 0 6px;
-  color: #f8fafc;
+  color: #4a3728;
   font-size: 16px;
   font-weight: 600;
 }
 .locked-desc {
   margin: 0 0 18px;
-  color: #94a3b8;
+  color: #8b7355;
   font-size: 13px;
   line-height: 1.6;
 }
@@ -170,7 +170,7 @@ const truncatedText = computed(() => {
 .unlock-all-btn {
   font-weight: 500;
   min-width: 220px;
-  color: #94a3b8;
+  color: #8b7355;
   border-color: rgba(255,255,255,0.08);
 }
 </style>

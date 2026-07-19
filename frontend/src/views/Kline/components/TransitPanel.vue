@@ -71,7 +71,7 @@ const displayTransits = computed(() => {
 .transit-panel {
   margin: 32px 0;
   padding: 24px 0 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(0,0,0,0.06);
 }
 
 .transit-header {
@@ -83,12 +83,12 @@ const displayTransits = computed(() => {
 
 .transit-title {
   margin: 0;
-  color: #f8fafc;
+  color: #4a3728;
   font-size: 18px;
 }
 
 .transit-sub {
-  color: #64748b;
+  color: #a89880;
   font-size: 12px;
 }
 
@@ -100,12 +100,12 @@ const displayTransits = computed(() => {
 .transit-card {
   padding: 14px 16px;
   border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255, 0.5);
 
   &.high {
-    border-color: rgba(212, 175, 55, 0.2);
-    background: rgba(212, 175, 55, 0.06);
+    border-color: rgba(255,154,139, 0.2);
+    background: rgba(255,154,139, 0.06);
   }
 }
 
@@ -118,11 +118,11 @@ const displayTransits = computed(() => {
 
 .transit-planets {
   font-size: 14px;
-  color: #e2e8f0;
+  color: #4a3728;
 }
 
 .transit-planets strong {
-  color: #f8fafc;
+  color: #4a3728;
 }
 
 .transit-aspect {
@@ -130,33 +130,33 @@ const displayTransits = computed(() => {
   padding: 2px 8px;
   border-radius: 999px;
   font-size: 11px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #94a3b8;
+  background: rgba(0,0,0,0.06);
+  color: #8b7355;
 }
 
 .transit-orb {
   font-size: 11px;
-  color: #64748b;
+  color: #a89880;
 }
 
 .transit-text {
   margin: 0 0 10px;
   font-size: 13px;
-  color: #94a3b8;
+  color: #8b7355;
   line-height: 1.7;
 }
 
 .transit-bar-wrap {
   height: 3px;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(0,0,0,0.06);
   overflow: hidden;
 }
 
 .transit-bar {
   height: 100%;
   border-radius: 2px;
-  background: linear-gradient(90deg, rgba(212, 175, 55, 0.5), rgba(212, 175, 55, 0.9));
+  background: linear-gradient(90deg, rgba(255,154,139, 0.5), rgba(255,154,139, 0.9));
   transition: width 0.4s;
 }
 </style>

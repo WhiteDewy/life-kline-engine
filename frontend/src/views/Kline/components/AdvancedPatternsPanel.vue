@@ -337,8 +337,8 @@ function visibleLinks(links: unknown, limit = 3) {
   align-self: center;
   padding: 7px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0,0,0,0.02);
+  background: rgba(0,0,0,0.02);
   color: var(--text-secondary);
   font-size: 12px;
   white-space: nowrap;
@@ -347,8 +347,8 @@ function visibleLinks(links: unknown, limit = 3) {
 .patternsFold[open] .foldBadge,
 .innerFold[open] .foldBadge {
   color: var(--text);
-  border-color: rgba(212, 175, 55, 0.24);
-  background: rgba(212, 175, 55, 0.08);
+  border-color: rgba(255,154,139, 0.24);
+  background: rgba(255,154,139, 0.08);
 }
 
 .readingBlock,
@@ -362,8 +362,8 @@ function visibleLinks(links: unknown, limit = 3) {
 
 .innerFold {
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(0,0,0,0.02);
+  background: rgba(0,0,0,0.02);
 }
 
 .innerSummary {
@@ -398,8 +398,8 @@ function visibleLinks(links: unknown, limit = 3) {
   align-items: center;
   padding: 7px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(0,0,0,0.02);
+  background: rgba(0,0,0,0.02);
   color: var(--text-secondary);
   font-size: 12px;
 }
@@ -420,9 +420,9 @@ function visibleLinks(links: unknown, limit = 3) {
 .derivedCard {
   padding: 16px;
   border-radius: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(0,0,0,0.02);
   background:
-    radial-gradient(circle at top left, rgba(212, 175, 55, 0.08), transparent 36%),
+    radial-gradient(circle at top left, rgba(255,154,139, 0.08), transparent 36%),
     rgba(2, 6, 23, 0.5);
 }
 
@@ -454,16 +454,16 @@ function visibleLinks(links: unknown, limit = 3) {
   align-items: center;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0,0,0,0.02);
+  border: 1px solid rgba(0,0,0,0.02);
   color: var(--text-secondary);
   font-size: 12px;
 }
 
 .toneChip {
   color: var(--text);
-  border-color: rgba(212, 175, 55, 0.24);
-  background: rgba(212, 175, 55, 0.08);
+  border-color: rgba(255,154,139, 0.24);
+  background: rgba(255,154,139, 0.08);
   white-space: nowrap;
 }
 
@@ -477,7 +477,7 @@ function visibleLinks(links: unknown, limit = 3) {
 
 .rulerSummary,
 .readingSummary {
-  color: #f8fafc;
+  color: #4a3728;
   font-weight: 600;
 }
 
@@ -512,8 +512,8 @@ function visibleLinks(links: unknown, limit = 3) {
 .derivedItem {
   padding: 14px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0,0,0,0.02);
+  border: 1px solid rgba(0,0,0,0.02);
 }
 
 .rulerColumn.danger {
@@ -571,13 +571,13 @@ function visibleLinks(links: unknown, limit = 3) {
   height: 7px;
   border-radius: 50%;
   background: var(--gold);
-  box-shadow: 0 0 16px rgba(212, 175, 55, 0.28);
+  box-shadow: 0 0 16px rgba(255,154,139, 0.28);
 }
 
 .inlineFold {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(0,0,0,0.02);
 }
 
 .inlineSummary {

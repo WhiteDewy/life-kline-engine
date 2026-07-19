@@ -10,7 +10,7 @@ body {
   place-items: flex-start; /* Changed from center to allow scrolling */
   min-width: 320px;
   min-height: 100vh;
-  background-color: var(--bg);
+  background-color: var(--bg-main);
   color: var(--text);
   font-family: var(--font-sans);
 }
@@ -73,11 +73,11 @@ button:hover {
 
 /* Global Dialog Styles - Glassmorphism */
 .el-dialog {
-  background: rgba(11, 15, 25, 0.85) !important; /* Midnight Void Glass */
+  background: rgba(255,255,255,0.9) !important; /* Midnight Void Glass */
   backdrop-filter: blur(24px) !important;
   border: 1px solid var(--border) !important;
   border-radius: var(--radius) !important;
-  box-shadow: 0 24px 48px rgba(0,0,0,0.5) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08) !important;
 }
 
 .el-dialog__header {
@@ -107,7 +107,7 @@ button:hover {
 .el-button--primary {
   background-color: var(--primary) !important;
   border-color: var(--primary) !important;
-  color: #000 !important; /* Contrast text on gold */
+  color: #fff !important; /* Contrast text on gold */
   font-weight: 600 !important;
 }
 .el-button--primary:hover, .el-button--primary:focus {

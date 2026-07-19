@@ -1,468 +1,359 @@
 <template>
-  <div class="page">
-    <div class="glow glow-a"></div>
-    <div class="glow glow-b"></div>
-    <div class="glow glow-c"></div>
+  <div class="main-page" :data-theme="currentTheme">
+    <!-- ═══ 视频全屏背景 ═══ -->
+    <div class="video-layer">
+      <transition name="video-cross" mode="out-in">
+        <video
+          v-if="homeData.currentSignVideo.value"
+          ref="videoRef"
+          :key="homeData.currentSignVideo.value"
+          :src="homeData.currentSignVideo.value"
+          class="bg-video"
+          autoplay loop playsinline
+          :muted="videoMuted"
+        />
+      </transition>
+      <!-- 渐变遮罩 -->
+      <div class="video-overlay-top"></div>
+      <div class="video-overlay-bottom"></div>
+      <!-- 声音切换 -->
+      <button class="sound-toggle" @click="toggleSound" :title="videoMuted ? '开启声音' : '静音'">
+        {{ videoMuted ? '🔇' : '🔊' }}
+      </button>
+    </div>
 
-    <!-- ═══ Hero：情绪驱动 ═══ -->
-    <section class="hero">
-      <p class="heroEyebrow">你的情绪是信号，不是问题</p>
-      <h1 class="title">最近是不是总觉得<br />哪里不太对？</h1>
-      <p class="subtitle">
-        这不一定是你的问题。很多人只是走到了同一个人生阶段——<br />星盘可以帮你解释清楚。
-      </p>
-      <el-button class="cta" type="primary" size="large" round @click="startExplore">
-        免费生成我的星盘解读
-      </el-button>
-      <p class="ctaHint">
-        <span class="ctaTrust">已帮助 12,000+ 人更了解自己</span>
-        <span class="ctaDot">·</span>
-        <span>不需要懂占星</span>
-        <span class="ctaDot">·</span>
-        <span>大约 3 分钟读完</span>
-      </p>
+    <GardenScene transparent />
+
+    <!-- ═══ 加载态 ═══ -->
+    <section v-if="homeData.loading.value" class="garden-state">
+      <div class="state-icon">🌸</div>
+      <h2 class="state-title">星灵花园正在打开...</h2>
+      <p class="state-sub">正在连接你的星盘，邀请星灵们登场</p>
+      <div class="state-spinner">
+        <span v-for="i in 10" :key="i" class="spinner-dot"
+          :style="{ animationDelay: i * 0.12 + 's', background: planetColors[i - 1] }"
+        ></span>
+      </div>
     </section>
 
-    <!-- ═══ 快速入口问题：替代分析类型选择 ═══ -->
-    <section class="questions">
-      <h2 class="questionsTitle">你想先聊聊哪个？</h2>
-      <p class="questionsSub">点击你关心的问题，直接进入对应解读</p>
+    <!-- ═══ 错误态 ═══ -->
+    <section v-else-if="homeData.error.value" class="garden-state">
+      <div class="state-icon">🪐</div>
+      <h2 class="state-title">花园暂时打不开</h2>
+      <p class="state-sub">{{ homeData.error.value }}</p>
+      <el-button round size="large" class="retry-btn" @click="homeData.refreshData()">重新尝试</el-button>
+    </section>
 
-      <div class="questionGrid">
-        <button
-          v-for="q in quickQuestions"
-          :key="q.key"
-          class="questionCard"
-          @click="openQuestion(q)"
-        >
-          <span class="questionIcon">{{ q.icon }}</span>
-          <span class="questionText">{{ q.text }}</span>
-          <span class="questionArrow">→</span>
+    <!-- ═══ 主内容 ═══ -->
+    <template v-else>
+      <!-- 顶栏：悬浮于视频之上 -->
+      <div class="top-bar" v-if="homeData.hasProfile.value">
+        <button class="avatar-trigger" @click="showProfile = true">
+          <SpiritAvatar planet="SUN" :sign="homeData.sunSign.value" :gender="homeData.userGender.value" size="sm" />
         </button>
+        <ThemeSwitcher :current="currentTheme" @select="(k: string) => currentTheme = k" />
       </div>
-    </section>
 
-    <!-- ═══ 按主题浏览（降级） ═══ -->
-    <section class="groups">
-      <h2 class="groupTitle">或者，按主题浏览</h2>
+      <!-- ═══ 底部导航栏 ═══ -->
+      <HomeTabBar
+        v-if="homeData.hasProfile.value"
+        :chat-cta-text="homeData.chatCtaText.value"
+        @garden="goGarden"
+        @chat="openChat"
+        @council="showCouncil = true"
+      />
 
-      <div class="groupGrid">
-        <div class="groupCard" v-for="g in groups" :key="g.key">
-          <div class="groupIcon">{{ g.icon }}</div>
-          <h3 class="groupName">{{ g.name }}</h3>
-          <ul class="groupItems">
-            <li v-for="item in g.items" :key="item">{{ item }}</li>
-          </ul>
+      <!-- ═══ Profile 浮层 ═══ -->
+      <ProfileOverlay
+        :visible="showProfile"
+        :display-name="homeData.userName.value"
+        :sun-sign="homeData.sunSign.value"
+        :sun-sign-emoji="homeData.sunSignEmoji.value"
+        :sun-sign-label="homeData.sunSignLabel.value"
+        :asc-sign-label="homeData.ascSignLabel.value"
+        :moon-sign-label="homeData.moonSignLabel.value"
+        :gender="homeData.userGender.value"
+        @close="showProfile = false"
+        @go-garden="goGarden"
+        @go-history="goHistory"
+        @go-onboarding="goOnboarding"
+        @logout="doLogout"
+      />
+
+      <!-- ═══ 聊天浮层 ═══ -->
+      <transition name="overlay-fade">
+        <div v-if="chatVisible" class="overlay-backdrop" @click.self="chatVisible = false">
+          <div class="overlay-content">
+            <SpiritChatBubble
+              :visible="chatVisible"
+              :planet="chatPlanet"
+              :symbol="chatSymbol"
+              :name="chatName"
+              :archetype="chatArchetype"
+              :color="chatColor"
+              :greeting="chatGreeting"
+              :report-id="homeData.reportId.value"
+              @close="chatVisible = false"
+            />
+          </div>
         </div>
-      </div>
-    </section>
+      </transition>
 
-    <!-- ═══ 信任与社交证明 ═══ -->
-    <section class="bottom">
-      <div class="trustBar">
-        <span class="trustItem">🔒 你的数据只属于你</span>
-        <span class="trustDivider">|</span>
-        <span class="trustItem">🚫 不贩售恐惧 · 不做宿命预测</span>
-        <span class="trustDivider">|</span>
-        <span class="trustItem">🌟 基于古典+现代占星双重验证</span>
-      </div>
-
-      <p class="belief">
-        我们不贩卖恐惧，不制造依赖。<br />
-        只做你人生阶段的解释器和朋友。
-      </p>
-
-      <div v-if="showExamples" class="examples">
-        <p class="exampleHint">或者，先看看别人的报告长什么样——</p>
-        <div class="exampleRow">
-          <button
-            class="examplePill"
-            v-for="ex in examples"
-            :key="ex.key"
-            @click="openExample(ex)"
-          >
-            {{ ex.name }} · {{ ex.tagline }}
-          </button>
-        </div>
-      </div>
-    </section>
+      <!-- ═══ 星灵议会 浮层 ═══ -->
+      <HomeCouncil
+        :visible="showCouncil"
+        :planet-list="homeData.councilPlanetList.value"
+        :sign-list="homeData.councilSignList.value"
+        :gender="homeData.userGender.value"
+        :active-planet="homeData.activePlanet.value"
+        :active-sign="homeData.activeSign.value"
+        @close="showCouncil = false"
+        @chat-with-planet="onCouncilPlanetChat"
+        @chat-with-sign="onCouncilSignChat"
+        @select-planet="homeData.setActivePlanet"
+        @select-sign="homeData.setActiveSign"
+      />
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
-import { FEATURED_EXAMPLES, HOMEPAGE_EXAMPLE_VISIBLE } from "@/config/examples";
+import { useHomeData } from "@/composables/useHomeData";
+import { PLANET_COLORS } from "@/config/zodiac";
+import GardenScene from "@/views/Wanxiang/components/GardenScene.vue";
+import SpiritAvatar from "@/views/Wanxiang/components/SpiritAvatar.vue";
+import SpiritChatBubble from "@/views/Wanxiang/components/SpiritChatBubble.vue";
+import ThemeSwitcher from "@/views/Wanxiang/components/ThemeSwitcher.vue";
+import HomeTabBar from "./HomeTabBar.vue";
+import ProfileOverlay from "./ProfileOverlay.vue";
+import HomeCouncil from "./HomeCouncil.vue";
 
 const router = useRouter();
-const showExamples = HOMEPAGE_EXAMPLE_VISIBLE;
-const examples = FEATURED_EXAMPLES;
+const homeData = useHomeData();
 
-const quickQuestions = [
-  {
-    key: "natal_blueprint",
-    icon: "🪐",
-    text: "我是什么样的人？适合做什么？",
-    analysis: "natal_blueprint",
-  },
-  {
-    key: "phase_navigation",
-    icon: "🧭",
-    text: "我现在为什么这么累？什么时候能好？",
-    analysis: "phase_navigation",
-  },
-  {
-    key: "finance",
-    icon: "💰",
-    text: "我的钱到底从哪里来？正财还是偏财？",
-    analysis: "phase_navigation",
-  },
-  {
-    key: "romance",
-    icon: "💛",
-    text: "为什么我总是在感情里遇到同样的问题？",
-    analysis: "natal_blueprint",
-  },
-  {
-    key: "career",
-    icon: "💼",
-    text: "我适合做什么事业？方向在哪里？",
-    analysis: "natal_blueprint",
-  },
-  {
-    key: "monthly",
-    icon: "🌙",
-    text: "这个月我应该抓住什么、避开什么？",
-    analysis: "monthly_lunar_return",
-  },
-];
+// ── 主题 ──
+const currentTheme = ref(localStorage.getItem("spirit_garden_theme") || "cream");
 
-const groups = [
-  {
-    key: "self",
-    icon: "🪐",
-    name: "认识自己",
-    items: ["你的性格底色", "你的外形和气质"],
-  },
-  {
-    key: "work",
-    icon: "💼",
-    name: "事业与财富",
-    items: ["事业方向", "工作方式", "学业发展", "财运格局"],
-  },
-  {
-    key: "rel",
-    icon: "💛",
-    name: "关系与情感",
-    items: ["桃花感情", "婚姻画像", "原生家庭", "事业合伙", "亲子关系"],
-  },
-  {
-    key: "now",
-    icon: "🧭",
-    name: "当下指引",
-    items: ["当前人生阶段", "本月运势提醒"],
-  },
-  {
-    key: "body",
-    icon: "🌿",
-    name: "身体",
-    items: ["先天体质", "健康提醒"],
-  },
-];
+// ── 视频声音 ──
+const videoRef = ref<HTMLVideoElement | null>(null);
+const videoMuted = ref(true); // 默认静音以兼容 autoplay 策略
 
-function startExplore() {
-  router.push({ name: "analysis", params: { type: "natal_blueprint" } });
+function toggleSound() {
+  videoMuted.value = !videoMuted.value;
+  if (!videoMuted.value && videoRef.value) {
+    videoRef.value.muted = false;
+    videoRef.value.play().catch(() => {
+      // 浏览器阻止有声播放，回退静音
+      videoMuted.value = true;
+    });
+  }
 }
 
-function openQuestion(q: (typeof quickQuestions)[0]) {
-  router.push({ name: "analysis", params: { type: q.analysis } });
-}
-
-function openExample(ex: (typeof examples)[0]) {
-  router.push({
-    name: "report",
-    query: { example: ex.key, analysis: "natal_blueprint" },
+// 视频切换后尝试有声播放
+watch(() => homeData.currentSignVideo.value, () => {
+  nextTick(() => {
+    if (videoRef.value && !videoMuted.value) {
+      videoRef.value.muted = false;
+      videoRef.value.play().catch(() => {});
+    }
   });
+});
+
+// ── 色板 (spinner 用) ──
+const planetColors = PLANET_COLORS;
+
+// ── UI 浮层状态 ──
+const showProfile = ref(false);
+const showCouncil = ref(false);
+const chatVisible = ref(false);
+
+// ── 聊天目标 ──
+const chatPlanet = ref("SUN");
+const chatSymbol = ref("☉");
+const chatName = ref("太阳");
+const chatArchetype = ref("");
+const chatColor = ref("#F2A900");
+const chatGreeting = ref("");
+
+// ═══════════════════════════════════════
+// 视频随星灵动态切换
+// ═══════════════════════════════════════
+
+function openChat() {
+  const sp = homeData.sunProfile.value;
+  chatPlanet.value = "SUN";
+  chatSymbol.value = sp?.persona?.symbol || "☉";
+  chatName.value = homeData.sunName.value;
+  chatArchetype.value = homeData.sunArchetype.value;
+  chatColor.value = homeData.sunColor.value;
+  chatGreeting.value = sp?.personalized_greeting || "";
+  homeData.setActivePlanet("SUN");
+  chatVisible.value = true;
 }
+
+function onCouncilPlanetChat(p: any) {
+  chatPlanet.value = p.planet;
+  chatSymbol.value = p.symbol;
+  chatName.value = p.shortName;
+  chatArchetype.value = p.archetypeShort;
+  chatColor.value = p.color;
+  chatGreeting.value = p.greeting;
+  // 切换视频到该星灵落座星座
+  homeData.setActivePlanet(p.planet);
+  showCouncil.value = false;
+  chatVisible.value = true;
+}
+
+function onCouncilSignChat(s: any) {
+  chatPlanet.value = "SUN";
+  chatSymbol.value = s.emoji;
+  chatName.value = s.name;
+  chatArchetype.value = `${s.element}象 · ${s.hasPlanets ? '已有星体落座' : '潜在能量'}`;
+  chatColor.value = s.color;
+  chatGreeting.value = s.hasPlanets
+    ? `你好呀，我是${s.name}——你的星盘里有一些行星落在我这里，让我跟你聊聊这意味着什么。`
+    : `虽然你的星盘里暂时没有行星落在${s.name}，但这不代表你没有这份能量。让我告诉你${s.name}的本质，也许你会发现你早就拥有了它。`;
+  homeData.setActiveSign(s.key);
+  showCouncil.value = false;
+  chatVisible.value = true;
+}
+
+// ═══════════════════════════════════════
+// 导航
+// ═══════════════════════════════════════
+
+function goGarden() {
+  const rid = homeData.reportId.value || "";
+  router.push({ name: "spirit-garden", query: rid ? { id: rid } : {} });
+}
+function goHistory() { router.push("/history"); }
+function goOnboarding() { router.push("/onboarding"); }
+function doLogout() {
+  homeData.logout();
+  homeData.clearData();
+  showProfile.value = false;
+}
+
+onMounted(() => homeData.refreshData());
 </script>
 
-<style scoped lang="less">
-.page {
-  min-height: calc(100vh - var(--h-footer));
-  position: relative;
-  overflow: hidden;
-  padding: 60px 20px 80px;
-  background: linear-gradient(180deg, #020617 0%, #0a1122 50%, #0f172a 100%);
+<style scoped>
+/* ═══════════════ 主题变量 ═══════════════ */
+.main-page[data-theme="cream"] {
+  --garden-bg-1: #FFF5EE;
+  --garden-bg-2: #FFF0F5;
+  --garden-card-bg: rgba(255,255,255,0.75);
+  --garden-text: #4A3728;
+  --garden-text-soft: #8B7355;
+  --garden-accent: #FF9A8B;
+}
+.main-page[data-theme="night"] {
+  --garden-bg-1: #1a1a2e;
+  --garden-bg-2: #16213e;
+  --garden-card-bg: rgba(30,30,60,0.75);
+  --garden-text: #E8E0F0;
+  --garden-text-soft: #A098B8;
+  --garden-accent: #9B8EC4;
+}
+.main-page[data-theme="sakura"] {
+  --garden-bg-1: #FFF0F5;
+  --garden-bg-2: #FDE8EF;
+  --garden-card-bg: rgba(255,255,255,0.75);
+  --garden-text: #5C3D4A;
+  --garden-text-soft: #9B7B8A;
+  --garden-accent: #F4A7B9;
 }
 
-/* ── 氛围光 ── */
-.glow {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.35;
-  pointer-events: none;
-}
-.glow-a {
-  width: 340px;
-  height: 340px;
-  top: -80px;
-  left: -120px;
-  background: rgba(212, 175, 55, 0.10);
-}
-.glow-b {
-  width: 420px;
-  height: 420px;
-  right: -180px;
-  top: 200px;
-  background: rgba(99, 102, 241, 0.08);
-}
-.glow-c {
-  width: 260px;
-  height: 260px;
-  left: 30%;
-  bottom: -80px;
-  background: rgba(16, 185, 129, 0.06);
+.main-page {
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  background: var(--garden-bg-1);
+  transition: background 0.6s ease;
 }
 
-/* ── Hero ── */
-.hero {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-  padding: 30px 0 20px;
+/* ═══════════════ 视频全屏层 ═══════════════ */
+.video-layer {
+  position: fixed; inset: 0; z-index: 0;
 }
-.heroEyebrow {
-  color: #d4af37;
-  font-size: 13px;
-  letter-spacing: 0.14em;
-  margin: 0 0 18px;
-  opacity: 0.8;
+.bg-video {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
 }
-.title {
-  color: #f8fafc;
-  font-size: 48px;
-  line-height: 1.18;
-  letter-spacing: -0.03em;
-  font-family: "Georgia", "Times New Roman", serif;
-  margin: 0;
+/* 渐变遮罩 */
+.video-overlay-top {
+  position: absolute; top: 0; left: 0; right: 0; height: 35%;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.45), transparent);
 }
-.subtitle {
-  margin: 18px 0 0;
-  color: #94a3b8;
-  font-size: 16px;
-  line-height: 1.8;
-  max-width: 560px;
-  margin-left: auto;
-  margin-right: auto;
+.video-overlay-bottom {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
+  background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
 }
-.cta {
-  margin-top: 32px;
-  font-weight: 700;
-  min-width: 240px;
-  font-size: 16px;
-  height: 48px;
-}
-.ctaHint {
-  margin-top: 14px;
-  color: #64748b;
-  font-size: 13px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.ctaTrust {
-  color: #d4af37;
-  font-weight: 600;
-}
-.ctaDot {
-  color: #334155;
-}
-
-/* ── 快速入口问题 ── */
-.questions {
-  position: relative;
-  z-index: 1;
-  max-width: 720px;
-  margin: 56px auto 0;
-  text-align: center;
-}
-.questionsTitle {
-  color: #f1f5f9;
-  font-size: 22px;
-  margin: 0 0 8px;
-}
-.questionsSub {
-  color: #64748b;
-  font-size: 14px;
-  margin: 0 0 24px;
-}
-.questionGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-}
-.questionCard {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 18px 20px;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(15, 23, 42, 0.55);
-  backdrop-filter: blur(10px);
-  text-align: left;
-  cursor: pointer;
+/* 声音切换按钮 */
+.sound-toggle {
+  position: absolute; bottom: 120px; right: 20px; z-index: 10;
+  width: 40px; height: 40px; border-radius: 50%;
+  border: none; background: rgba(0,0,0,0.3); backdrop-filter: blur(8px);
+  color: #fff; font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
   transition: all 0.25s;
 }
-.questionCard:hover {
-  border-color: rgba(212, 175, 55, 0.25);
-  background: rgba(212, 175, 55, 0.04);
-  transform: translateY(-1px);
+.sound-toggle:hover { background: rgba(0,0,0,0.5); transform: scale(1.08); }
+
+/* 视频交叉淡入淡出 */
+.video-cross-enter-active,
+.video-cross-leave-active {
+  transition: opacity 0.8s ease;
 }
-.questionIcon {
-  font-size: 22px;
-  flex-shrink: 0;
-}
-.questionText {
-  color: #cbd5e1;
-  font-size: 15px;
-  line-height: 1.5;
-  flex: 1;
-}
-.questionArrow {
-  color: #475569;
-  font-size: 14px;
-  flex-shrink: 0;
-  transition: all 0.2s;
-}
-.questionCard:hover .questionArrow {
-  color: #d4af37;
-  transform: translateX(3px);
+.video-cross-enter-from,
+.video-cross-leave-to {
+  opacity: 0;
 }
 
-/* ── 按主题浏览 ── */
-.groups {
-  position: relative;
-  z-index: 1;
-  max-width: 960px;
-  margin: 56px auto 0;
-}
-.groupTitle {
-  text-align: center;
-  color: #64748b;
-  font-size: 16px;
-  margin: 0 0 18px;
-  font-weight: 400;
-}
-.groupGrid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
-}
-.groupCard {
-  padding: 20px 16px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(15, 23, 42, 0.40);
-  backdrop-filter: blur(10px);
-  transition: border-color 0.2s;
-}
-.groupCard:hover {
-  border-color: rgba(255, 255, 255, 0.10);
-}
-.groupIcon {
-  font-size: 22px;
-}
-.groupName {
-  margin: 8px 0 0;
-  color: #e2e8f0;
-  font-size: 15px;
-}
-.groupItems {
-  margin: 10px 0 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 5px;
-}
-.groupItems li {
-  color: #94a3b8;
-  font-size: 13px;
-  line-height: 1.5;
-}
+/* ═══════════════ 加载/错误态 ═══════════════ */
+.garden-state { position: relative; z-index: 1; text-align: center; padding: 120px 20px; }
+.state-icon { font-size: 52px; margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.state-title { font-size: 22px; font-weight: 700; color: #4a3728; margin: 0 0 8px; }
+.state-sub { font-size: 14px; color: #8b7355; margin: 0 0 24px; }
+.state-spinner { display: flex; justify-content: center; gap: 10px; }
+.spinner-dot { width: 10px; height: 10px; border-radius: 50%; animation: dot-bounce 1.2s ease-in-out infinite; }
+@keyframes dot-bounce { 0%,100%{transform:translateY(0);opacity:0.4} 50%{transform:translateY(-16px);opacity:1} }
+.retry-btn { background: rgba(255,154,139,0.2) !important; border-color: rgba(255,154,139,0.3) !important; color: #4a3728 !important; }
 
-/* ── 底部 ── */
-.bottom {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-  margin-top: 56px;
+/* ═══════════════ 顶栏：悬浮于视频之上 ═══════════════ */
+.top-bar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 16px 20px;
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
 }
-.trustBar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-bottom: 28px;
+.avatar-trigger {
+  width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.25); cursor: pointer; padding: 0; overflow: hidden;
+  transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(8px);
 }
-.trustItem {
-  color: #64748b;
-  font-size: 13px;
-}
-.trustDivider {
-  color: #1e293b;
-}
-.belief {
-  color: #64748b;
-  font-size: 14px;
-  line-height: 1.8;
-}
-.examples {
-  margin-top: 24px;
-}
-.exampleHint {
-  color: #64748b;
-  font-size: 13px;
-  margin: 0 0 10px;
-}
-.exampleRow {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.examplePill {
-  display: inline-flex;
-  align-items: center;
-  padding: 9px 18px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
-  color: #94a3b8;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.examplePill:hover {
-  border-color: rgba(212, 175, 55, 0.25);
-  color: #cbd5e1;
-  background: rgba(212, 175, 55, 0.04);
-}
+.avatar-trigger:hover { border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.4); transform: scale(1.05); }
 
-/* ── 响应式 ── */
-@media (max-width: 900px) {
-  .groupGrid { grid-template-columns: repeat(3, 1fr); }
-  .questionGrid { grid-template-columns: 1fr; }
-  .title { font-size: 36px; }
+/* ═══════════════ Chat Overlay ═══════════════ */
+.overlay-backdrop {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.3); backdrop-filter: blur(6px);
+  display: flex; align-items: center; justify-content: center; padding: 20px;
 }
-@media (max-width: 560px) {
-  .groupGrid { grid-template-columns: 1fr 1fr; }
-  .title { font-size: 28px; }
-  .subtitle { font-size: 14px; }
-  .questionCard { padding: 14px 16px; }
-  .questionText { font-size: 14px; }
+.overlay-content {
+  width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;
+  border-radius: 28px;
 }
+.overlay-content::-webkit-scrollbar { width: 4px; }
+.overlay-fade-enter-active { transition: all 0.3s ease; }
+.overlay-fade-leave-active { transition: all 0.2s ease; }
+.overlay-fade-enter-from { opacity: 0; }
+.overlay-fade-enter-from .overlay-content { transform: scale(0.95) translateY(20px); }
+.overlay-fade-leave-to { opacity: 0; }
+
 </style>

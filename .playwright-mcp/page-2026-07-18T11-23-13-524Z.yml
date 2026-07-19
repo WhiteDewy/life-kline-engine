@@ -1,0 +1,29 @@
+- main [ref=e4]:
+  - generic [ref=e5]:
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - button "☉" [ref=e12] [cursor=pointer]
+        - button "🎨" [ref=e16] [cursor=pointer]
+      - generic [ref=e17]:
+        - generic [ref=e18]: 【日双鱼座】11宫
+        - generic [ref=e20]:
+          - generic [ref=e21]: ☉
+          - generic [ref=e24]: 常驻
+        - heading "太阳" [level=2] [ref=e25]
+        - generic [ref=e26]: 主角 / 自我定义者
+        - paragraph [ref=e27]: "\"我是你想成为的那个人——你的核心意志和生命方向。\""
+      - generic [ref=e32]:
+        - generic [ref=e33]: 🌙
+        - heading "每日星语" [level=2] [ref=e34]
+        - paragraph [ref=e35]: 今天是思考和连接主导的一天——双子座、巨蟹座是你今天最值得倾听的声音。
+        - paragraph [ref=e36]: 2026年7月18日 · 星期六
+    - navigation [ref=e37]:
+      - button "🌸 花园" [ref=e38] [cursor=pointer]:
+        - generic [ref=e39]: 🌸
+        - generic [ref=e40]: 花园
+      - button "💫 今夜，星光为你低语" [ref=e41] [cursor=pointer]:
+        - generic [ref=e42]: 💫
+        - generic [ref=e43]: 今夜，星光为你低语
+      - button "🔮 星灵议会" [ref=e44] [cursor=pointer]:
+        - generic [ref=e45]: 🔮
+        - generic [ref=e46]: 星灵议会

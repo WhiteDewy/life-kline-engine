@@ -90,14 +90,14 @@ const plans = computed(() => [
 }
 .pricing-title {
   margin: 0 0 8px;
-  color: #f8fafc;
+  color: #4a3728;
   font-size: 22px;
   font-weight: 700;
 }
 .pricing-sub {
   margin: 0 auto 28px;
   max-width: 480px;
-  color: #94a3b8;
+  color: #8b7355;
   font-size: 14px;
   line-height: 1.7;
 }
@@ -112,15 +112,15 @@ const plans = computed(() => [
   position: relative;
   padding: 28px 20px 22px;
   border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255, 0.55);
   backdrop-filter: blur(10px);
   text-align: center;
   transition: all 0.25s;
 }
 .pricing-card.featured {
-  border-color: rgba(212, 175, 55, 0.25);
-  background: rgba(212, 175, 55, 0.04);
+  border-color: rgba(255,154,139, 0.25);
+  background: rgba(255,154,139, 0.04);
 }
 .plan-badge {
   position: absolute;
@@ -129,7 +129,7 @@ const plans = computed(() => [
   transform: translateX(-50%);
   padding: 3px 12px;
   border-radius: 999px;
-  background: #d4af37;
+  background: #ff9a8b;
   color: #020617;
   font-size: 11px;
   font-weight: 700;
@@ -145,9 +145,9 @@ const plans = computed(() => [
 .plan-price {
   margin-bottom: 16px;
 }
-.price-symbol { color: #94a3b8; font-size: 18px; }
-.price-value { color: #f8fafc; font-size: 36px; font-weight: 700; }
-.price-unit { color: #64748b; font-size: 14px; }
+.price-symbol { color: #8b7355; font-size: 18px; }
+.price-value { color: #4a3728; font-size: 36px; font-weight: 700; }
+.price-unit { color: #a89880; font-size: 14px; }
 .plan-features {
   list-style: none;
   padding: 0;
@@ -157,7 +157,7 @@ const plans = computed(() => [
   gap: 8px;
 }
 .plan-features li {
-  color: #94a3b8;
+  color: #8b7355;
   font-size: 13px;
   line-height: 1.5;
 }
@@ -171,7 +171,7 @@ const plans = computed(() => [
 }
 .pricing-trust {
   margin-top: 18px;
-  color: #64748b;
+  color: #a89880;
   font-size: 12px;
 }
 

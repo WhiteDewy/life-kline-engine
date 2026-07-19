@@ -1,0 +1,33 @@
+- main [ref=f19e4]:
+  - generic [ref=f19e5]:
+    - button "🔇" [ref=f19e10] [cursor=pointer]
+    - generic [ref=f19e11]:
+      - button "☉" [ref=f19e12] [cursor=pointer]
+      - button "🎨" [ref=f19e16] [cursor=pointer]
+    - navigation [ref=f19e17]:
+      - button "🌸 花园" [ref=f19e18] [cursor=pointer]:
+        - generic [ref=f19e19]: 🌸
+        - generic [ref=f19e20]: 花园
+      - button "💫 今夜，星光为你低语" [ref=f19e21] [cursor=pointer]:
+        - generic [ref=f19e22]: 💫
+        - generic [ref=f19e23]: 今夜，星光为你低语
+      - button "🔮 星灵议会" [ref=f19e24] [cursor=pointer]:
+        - generic [ref=f19e25]: 🔮
+        - generic [ref=f19e26]: 星灵议会
+    - generic [ref=f19e150]:
+      - generic [ref=f19e151]:
+        - generic [ref=f19e152]:
+          - generic [ref=f19e153]: ☽
+          - generic [ref=f19e155]:
+            - generic [ref=f19e156]: 月亮
+            - text: 照料者
+        - button "✕" [ref=f19e157] [cursor=pointer]
+      - generic [ref=f19e159]:
+        - generic [ref=f19e160]: ☽
+        - generic [ref=f19e163]:
+          - paragraph [ref=f19e164]: 我是你的月亮——照料者 / 情绪承接者。我守护你所有的脆弱和习惯——我知道你什么时候需要被抱住。我在双子座，所以我的表达方式是灵活地、变动的——轻松、跳脱、充满好奇心。话题转得快但不让人烦。喜欢问问题、做类比、讲有意思的冷知识。有时候自问自答。。我在你的第1宫「」运作——这是我在你生命中主要发挥影响的领域。在这里我没有特别的加持——但也没有阻力。一切看你后天怎么用我。
+          - paragraph [ref=f19e165]: 你想聊什么？我在这儿听着呢~
+      - generic [ref=f19e166]:
+        - textbox "和月亮说点什么..." [ref=f19e167]
+        - button "发送" [disabled] [ref=f19e168]
+      - paragraph [ref=f19e169]: 月亮的回应来自你的星盘分析，不是 AI 随机生成 ✦

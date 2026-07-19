@@ -61,8 +61,8 @@ const items = computed(() =>
   margin: 14px 0;
   padding: 16px 18px;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(15, 23, 42, 0.40);
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255, 0.40);
 }
 .ftb-header {
   display: flex;
@@ -71,12 +71,12 @@ const items = computed(() =>
   margin-bottom: 12px;
 }
 .ftb-title {
-  color: #f8fafc;
+  color: #4a3728;
   font-size: 14px;
   font-weight: 600;
 }
 .ftb-sub {
-  color: #64748b;
+  color: #a89880;
   font-size: 12px;
 }
 .ftb-scroll {
@@ -99,7 +99,7 @@ const items = computed(() =>
   flex-shrink: 0;
 }
 .ftb-planet {
-  color: #e2e8f0;
+  color: #4a3728;
   font-size: 13px;
   font-weight: 600;
 }
@@ -108,17 +108,17 @@ const items = computed(() =>
   padding: 1px 6px;
   border-radius: 999px;
 }
-.asp-conj { background: rgba(212,175,55,0.15); color: #d4af37; }
+.asp-conj { background: rgba(212,175,55,0.15); color: #ff9a8b; }
 .asp-sext { background: rgba(99,102,241,0.12); color: #a5b4fc; }
 .asp-sq  { background: rgba(244,63,94,0.12); color: #fca5a5; }
 .asp-tri { background: rgba(16,185,129,0.12); color: #6ee7b7; }
 .asp-opp { background: rgba(251,191,36,0.12); color: #fbbf24; }
 .ftb-target {
-  color: #94a3b8;
+  color: #8b7355;
   font-size: 13px;
 }
 .ftb-highlight {
-  color: #64748b;
+  color: #a89880;
   font-size: 12px;
   max-width: 120px;
   overflow: hidden;

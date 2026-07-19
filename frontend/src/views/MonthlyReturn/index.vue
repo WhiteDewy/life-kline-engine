@@ -231,9 +231,9 @@ watch(
   position: relative;
   overflow: hidden;
   background:
-    radial-gradient(circle at top left, rgba(212, 175, 55, 0.08), transparent 24%),
+    radial-gradient(circle at top left, rgba(255,154,139, 0.08), transparent 24%),
     radial-gradient(circle at 80% 20%, rgba(56, 189, 248, 0.12), transparent 22%),
-    linear-gradient(180deg, #020617 0%, #07111f 100%);
+    linear-gradient(180deg, #FFF5EE 0%, #FFF0F5 100%);
 }
 
 .halo {
@@ -249,7 +249,7 @@ watch(
   height: 320px;
   top: 40px;
   left: -60px;
-  background: rgba(212, 175, 55, 0.12);
+  background: rgba(255,154,139, 0.12);
 }
 
 .halo-b {
@@ -279,8 +279,8 @@ watch(
 .heroAside,
 .panel,
 .stateCard {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(0,0,0,0.06);
+  background: rgba(255,255,255, 0.72);
   backdrop-filter: blur(18px);
   border-radius: 24px;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.24);
@@ -336,7 +336,7 @@ watch(
   align-items: center;
   padding: 7px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(0,0,0,0.06);
   background: rgba(255, 255, 255, 0.04);
   color: var(--text-secondary);
   font-size: 12px;
@@ -393,7 +393,7 @@ watch(
 .dataTable th,
 .dataTable td {
   padding: 12px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
   text-align: left;
 }
 
@@ -444,11 +444,11 @@ watch(
 
 .ftPlanets {
   font-size: 14px;
-  color: #e2e8f0;
+  color: #4a3728;
 }
 
 .ftPlanets strong {
-  color: #f8fafc;
+  color: #4a3728;
 }
 
 .ftAspect {
@@ -462,20 +462,20 @@ watch(
 
 .ftOrb {
   font-size: 11px;
-  color: #64748b;
+  color: #a89880;
 }
 
 .ftText {
   margin: 0 0 10px;
   font-size: 13px;
-  color: #94a3b8;
+  color: #8b7355;
   line-height: 1.7;
 }
 
 .ftBar {
   height: 3px;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(0,0,0,0.06);
   overflow: hidden;
 }
 
