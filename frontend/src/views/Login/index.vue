@@ -24,7 +24,7 @@
         <h1 class="brand-title">
           <span v-for="(c, i) in '星灵花园'" :key="i" class="brand-char" :style="{ animationDelay: 0.3 + i * 0.07 + 's' }">{{ c }}</span>
         </h1>
-        <p class="brand-sub">七颗星辰，在你的花园里苏醒</p>
+        <p class="brand-sub">十颗星辰，在你的花园里苏醒</p>
       </div>
 
       <!-- ── 一键登录 ── -->
@@ -35,9 +35,9 @@
           <input v-model="phone" class="phone-inp" type="tel" maxlength="11" placeholder="请输入手机号" @input="onPhoneInput" />
         </div>
 
-        <button class="main-btn" :class="{ 'main-btn--dev': isWhitelisted }" :disabled="!canOneClick || oneClicking" @click="doOneClickLogin">
+        <button class="main-btn" :class="{ 'main-btn--dev': isDevBypass }" :disabled="!canOneClick || oneClicking" @click="doOneClickLogin">
           <span v-if="oneClicking" class="loader"></span>
-          <span v-else>{{ isWhitelisted ? '进入花园' : '一键登录' }}</span>
+          <span v-else>{{ isDevBypass ? '进入花园' : '一键登录' }}</span>
         </button>
 
         <button class="link-btn" @click="loginMode = 'sms'">其他方式登录</button>
@@ -52,13 +52,13 @@
         </div>
 
         <div class="code-row">
-          <input v-model="code" class="code-inp" type="text" maxlength="6" placeholder="验证码" :disabled="isWhitelisted" @keyup.enter="doSmsLogin" />
-          <button class="send-btn" :disabled="!canSend || countdown > 0 || isWhitelisted" @click="doSendCode">
+          <input v-model="code" class="code-inp" type="text" maxlength="6" placeholder="验证码" :disabled="isDevBypass" @keyup.enter="doSmsLogin" />
+          <button class="send-btn" :disabled="!canSend || countdown > 0 || isDevBypass" @click="doSendCode">
             {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
           </button>
         </div>
 
-        <button v-if="isWhitelisted" class="main-btn main-btn--dev" :disabled="!agreed || verifying" @click="devDirectLogin">
+        <button v-if="isDevBypass" class="main-btn main-btn--dev" :disabled="!agreed || verifying" @click="devDirectLogin">
           直接进入花园
         </button>
         <button v-else class="main-btn" :disabled="!canLogin || verifying" @click="doSmsLogin">
@@ -69,10 +69,38 @@
       </div>
 
       <!-- ── 协议 ── -->
-      <div class="agree" @click="agreed = !agreed">
-        <div class="agree-dot" :class="{ on: agreed }"><span v-if="agreed">✓</span></div>
-        <span class="agree-text">同意<span class="agree-link">《用户协议》</span>和<span class="agree-link">《隐私政策》</span></span>
+      <div class="agree">
+        <div class="agree-dot" :class="{ on: agreed }" @click="agreed = !agreed"><span v-if="agreed">✓</span></div>
+        <span class="agree-text">同意
+          <span class="agree-link" @click.stop="showAgreement('user')">《用户协议》</span>和
+          <span class="agree-link" @click.stop="showAgreement('privacy')">《隐私政策》</span>
+        </span>
       </div>
+
+      <!-- ── 协议弹窗 ── -->
+      <Teleport to="body">
+        <transition name="modal">
+          <div v-if="agreementType" class="modal-mask" @click.self="agreementType = ''">
+            <div class="modal-card agreement-card">
+              <div class="modal-icon">{{ agreementType === 'user' ? '📋' : '🔒' }}</div>
+              <div class="modal-title">{{ agreementType === 'user' ? '用户协议' : '隐私政策' }}</div>
+              <div class="agreement-body">
+                <p v-if="agreementType === 'user'">
+                  用户协议内容将在后续版本完善。<br /><br />
+                  使用星灵花园即表示你同意遵守相关服务条款。<br />
+                  我们致力于保护你的数据安全和隐私权利。
+                </p>
+                <p v-else>
+                  隐私政策内容将在后续版本完善。<br /><br />
+                  我们仅收集必要的用户信息用于提供占星分析服务。<br />
+                  你的数据不会分享给第三方。
+                </p>
+              </div>
+              <button class="link-btn" @click="agreementType = ''">关闭</button>
+            </div>
+          </div>
+        </transition>
+      </Teleport>
     </div>
 
     <!-- ── 运营商弹窗 ── -->
@@ -95,11 +123,19 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-import { useRouter } from "vue-router";
-import { useAuth } from "@/utils/auth";
+import { useRouter, useRoute } from "vue-router";
+import { useAuth, isDevBypassPhone } from "@/utils/auth";
 
 const router = useRouter();
+const route = useRoute();
 const { sendCode, verifyCode } = useAuth();
+/** 登录后先进入 Onboarding 完善档案（已有档案则回主页） */
+const redirectPath = computed(() => {
+  if (localStorage.getItem("spirit_profile_completed") === "1") {
+    return (route.query.redirect as string) || "/";
+  }
+  return "/onboarding";
+});
 
 const loginMode = ref<"oneclick" | "sms">("oneclick");
 const phone = ref("");
@@ -110,29 +146,31 @@ const oneClicking = ref(false);
 const verifying = ref(false);
 const sending = ref(false);
 const showCarrierDialog = ref(false);
+const agreementType = ref<"" | "user" | "privacy">("");
+
+function showAgreement(type: "user" | "privacy") { agreementType.value = type; }
 
 const canOneClick = computed(() => phone.value.length === 11 && agreed.value);
 const canSend = computed(() => phone.value.length === 11);
 const canLogin = computed(() => phone.value.length === 11 && code.value.length >= 4 && agreed.value);
-const isWhitelisted = computed(() => phone.value === "18513821306");
+const isDevBypass = computed(() => isDevBypassPhone(phone.value));
 const maskedPhone = computed(() => { const p = phone.value; return p.length < 11 ? p : p.slice(0, 3) + " **** " + p.slice(-4); });
 
 function onPhoneInput() { phone.value = phone.value.replace(/\D/g, "").slice(0, 11); }
 
-const DEV_BYPASS_CODE = "000000";
 function doOneClickLogin() {
   if (!canOneClick.value) return;
-  if (isWhitelisted.value) { devDirectLogin(); return; }
+  if (isDevBypass.value) { devDirectLogin(); return; }
   showCarrierDialog.value = true;
 }
 async function devDirectLogin() {
   oneClicking.value = true;
-  try { await verifyCode(phone.value, DEV_BYPASS_CODE); router.replace("/onboarding"); } catch { loginMode.value = "sms"; }
+  try { await verifyCode(phone.value, "000000"); router.replace(redirectPath.value); } catch { loginMode.value = "sms"; }
   oneClicking.value = false;
 }
 async function confirmOneClick() {
   showCarrierDialog.value = false; oneClicking.value = true;
-  try { await verifyCode(phone.value, "888888"); router.replace("/onboarding"); } catch { loginMode.value = "sms"; }
+  try { await verifyCode(phone.value, "888888"); router.replace(redirectPath.value); } catch { loginMode.value = "sms"; }
   oneClicking.value = false;
 }
 let timer: any = null;
@@ -144,7 +182,7 @@ async function doSendCode() {
 }
 async function doSmsLogin() {
   if (!canLogin.value) return; verifying.value = true;
-  try { await verifyCode(phone.value, code.value); router.replace("/onboarding"); } catch {}
+  try { await verifyCode(phone.value, code.value); router.replace(redirectPath.value); } catch {}
   verifying.value = false;
 }
 
@@ -328,4 +366,9 @@ function sparkStyle(i: number) { const a = (i / 6) * 360; return { '--a': a + 'd
 .modal-enter-from { opacity: 0; }
 .modal-enter-from .modal-card { transform: scale(0.93) translateY(10px); }
 .modal-leave-to { opacity: 0; }
+
+/* ── 协议弹窗 ── */
+.agreement-card { max-width: 320px; }
+.agreement-body { font-size: 13px; color: #8b6f5f; line-height: 1.8; text-align: left; padding: 0 4px; margin: 12px 0 16px; }
+.agreement-body p { margin: 0; }
 </style>

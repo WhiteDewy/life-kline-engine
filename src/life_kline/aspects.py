@@ -22,6 +22,17 @@ from .constants import (
 from .models import ChartData, PlanetInfo, Aspect
 
 
+# 流年相位容许度配置（比本命相位更紧的容许度，流年为快速触发事件）
+TRANSIT_ASPECT_CONFIG: Dict[AspectType, Dict[str, float]] = {
+    AspectType.CONJUNCTION: {"angle": 0.0, "orb": 3.0, "strength": 1.0},
+    AspectType.OPPOSITION: {"angle": 180.0, "orb": 3.0, "strength": 0.8},
+    AspectType.SQUARE: {"angle": 90.0, "orb": 2.5, "strength": 0.8},
+    AspectType.TRINE: {"angle": 120.0, "orb": 2.5, "strength": 0.9},
+    AspectType.SEXTILE: {"angle": 60.0, "orb": 2.0, "strength": 0.6},
+    AspectType.QUINCUNX: {"angle": 150.0, "orb": 1.0, "strength": 0.3},
+}
+
+
 # ============================================================================
 # 1. 相位检测函数
 # ============================================================================
@@ -570,25 +581,16 @@ def compute_aspect_features_for_planet(
     # 获取所有相位
     natal_aspects = get_all_aspects_for_planet(planet, chart_data)
     
-    # 如果有流年行星，也计算流年相位
-    transit_aspects = []
-    if transits:
-        # 这里简化处理：只计算流年行星与本命行星的相位
-        # 实际实现可能需要更复杂的逻辑
-        pass
-    
-    # 合并所有相位
-    all_aspects = natal_aspects + transit_aspects
-    
     benefic_total = 0.0
     malefic_total = 0.0
-    
+
     print(f"\n计算 {planet.value} 的相位特征:")
     print("-" * 40)
-    
-    for aspect in all_aspects:
+
+    # 处理本命相位
+    for aspect in natal_aspects:
         strength = aspect.strength
-        
+
         # 判断吉凶
         if is_benefic_aspect(aspect, chart_data.is_day_chart, chart_data.mode):
             benefic_total += strength
@@ -599,20 +601,88 @@ def compute_aspect_features_for_planet(
         else:
             nature = "中"
             # 中性相位不计入总分
-        
+
         # 调试输出
         other_planet = aspect.planet2 if aspect.planet1 == planet else aspect.planet1
         print(f"  {nature}相位: {planet.value} {aspect.aspect_type.value} {other_planet.value} "
               f"(强度: {strength:.2f}, 容许度: {aspect.orb:.2f}°)")
-    
+
+    # 如果有流年行星，也计算流年相位
+    transit_aspects = []
+    if transits:
+        natal_info = chart_data.get_planet_info(planet)
+        if natal_info:
+            for t_planet, t_info in transits.items():
+                if t_planet == planet:
+                    continue  # 跳过自身
+
+                # 直接计算流年行星与本命行星之间的角度差
+                angle = deg_diff(t_info.longitude, natal_info.longitude)
+
+                # 检查所有流年相位类型（使用更紧的容许度）
+                best_aspect = None
+                best_orb = float('inf')
+
+                for aspect_type, config in TRANSIT_ASPECT_CONFIG.items():
+                    current_orb = abs(angle - config["angle"])
+                    if current_orb <= config["orb"] and current_orb < best_orb:
+                        best_orb = current_orb
+                        best_aspect = (aspect_type, config, current_orb)
+
+                if best_aspect:
+                    aspect_type, config, current_orb = best_aspect
+                    # 简化的形成/分离判断：比较运行速度
+                    is_applying = (t_info.speed or 0) > (natal_info.speed or 0)
+
+                    # 计算相位强度（容许度越小，强度越大）
+                    if config["orb"] > 0:
+                        precision = 1.0 - (current_orb / config["orb"])
+                        precision = clamp(precision, 0.0, 1.0)
+                    else:
+                        precision = 1.0
+
+                    strength = config["strength"] * precision
+                    strength = clamp(strength, 0.0, 1.0)
+
+                    transit_aspects.append(Aspect(
+                        planet1=t_planet,
+                        planet2=planet,
+                        aspect_type=aspect_type,
+                        exact_angle=config["angle"],
+                        actual_angle=angle,
+                        orb=round(current_orb, 2),
+                        strength=round(strength, 2),
+                        is_applying=is_applying,
+                        is_separating=not is_applying,
+                    ))
+
+        # 处理流年相位（权重为本命相位的0.6倍）
+        TRANSIT_WEIGHT = 0.6
+        for aspect in transit_aspects:
+            strength = aspect.strength * TRANSIT_WEIGHT
+
+            if is_benefic_aspect(aspect, chart_data.is_day_chart, chart_data.mode):
+                benefic_total += strength
+                nature = "吉"
+            elif is_malefic_aspect(aspect, chart_data.is_day_chart, chart_data.mode):
+                malefic_total += strength
+                nature = "凶"
+            else:
+                nature = "中"
+
+            print(f"  流年{nature}相位: {aspect.planet1.value} {aspect.aspect_type.value} "
+                  f"{aspect.planet2.value} (强度: {strength:.2f}, 容许度: {aspect.orb:.2f}°)")
+
+        print(f"  流年相位合计: {len(transit_aspects)} 个")
+
     # 归一化（根据PRD，达到4视为极强）
     MAX_STRENGTH = 4.0
     benefic_norm = clamp(benefic_total / MAX_STRENGTH, 0.0, 1.0)
     malefic_norm = clamp(malefic_total / MAX_STRENGTH, 0.0, 1.0)
-    
+
     print(f"吉相位原始总分: {benefic_total:.2f}, 归一化: {benefic_norm:.3f}")
     print(f"凶相位原始总分: {malefic_total:.2f}, 归一化: {malefic_norm:.3f}")
-    
+
     return benefic_norm, malefic_norm
 
 

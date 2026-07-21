@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass
+from datetime import date, datetime
 from typing import Any
 from urllib.request import Request, urlopen
 
@@ -39,6 +40,21 @@ class LLMConfig:
             api_key = api_key or os.getenv("DEEPSEEK_API_KEY", "").strip()
             model = model or "deepseek-chat"
             base_url = base_url or "https://api.deepseek.com/v1"
+
+        # 当 provider 设了但 api_key 为空时，尝试读 provider 特定的环境变量
+        if not api_key:
+            if provider == "deepseek":
+                api_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
+            elif provider == "claude":
+                api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
+            elif provider == "qwen":
+                api_key = os.getenv("QWEN_API_KEY", "").strip()
+
+        if not model:
+            model = "deepseek-chat"
+
+        if not base_url and provider == "deepseek":
+            base_url = "https://api.deepseek.com/v1"
 
         return cls(
             provider=provider,
@@ -132,10 +148,30 @@ TOPIC_LABELS: dict[str, str] = {
 }
 
 
-def build_spirit_system_prompt(report_data: dict, planet: str, topic: str = "personal") -> str:
+# 行星中文名映射（用于跨星灵调侃等场景）
+_PLANET_NAMES: dict[str, str] = {
+    "SUN": "太阳", "MOON": "月亮", "MERCURY": "水星", "VENUS": "金星",
+    "MARS": "火星", "JUPITER": "木星", "SATURN": "土星",
+    "URANUS": "天王星", "NEPTUNE": "海王星", "PLUTO": "冥王星",
+}
+
+
+def build_spirit_system_prompt(report_data: dict, planet: str, topic: str = "personal",
+                                entry_context: dict | None = None) -> str:
     """为指定行星构建 System Prompt。
 
-    所有信息来自引擎——不做宿命预测，不发明新知识。
+    支持入口上下文注入（行运、每日一问、今日星灵、议会、日记回访），
+    回访检测、跨星灵调侃和日记保存提示。
+
+    Args:
+        report_data: 报告数据
+        planet: 行星 key (如 "VENUS")
+        topic: 领域 key
+        entry_context: 可选入口上下文
+            - source: "transit" | "daily_question" | "today_star_spirit" | "council" | "diary_revisit"
+            - previous_chats_today: 今日已对话次数
+            - previous_spirit: 上一个对话的星灵
+            - transit_text / question_text: 源特定数据
     """
     planet_chars = report_data.get("planet_characters", {}).get("planet_characters", {})
     profile = planet_chars.get(planet, {})
@@ -150,7 +186,7 @@ def build_spirit_system_prompt(report_data: dict, planet: str, topic: str = "per
     core_theme = domain_data.get("core_theme", "")
     topic_label = TOPIC_LABELS.get(topic, topic)
 
-    return f"""你是{persona.get('name_zh', '一颗行星')}（{persona.get('archetype_zh', '')}），用户星盘中的行星人格。
+    base = f"""你是{persona.get('name_zh', '一颗行星')}（{persona.get('archetype_zh', '')}），用户星盘中的行星人格。
 
 ## 你的固定性格
 {persona.get('personality', '')}
@@ -176,12 +212,265 @@ def build_spirit_system_prompt(report_data: dict, planet: str, topic: str = "per
 ## 用户星盘中关于「{topic_label}」的线索
 {core_theme}
 {structure}
+"""
 
-## 规则
+    # ── 入口上下文注入（A） ──
+    preamble = ""
+    if entry_context:
+        source = entry_context.get("source", "")
+        if source == "transit":
+            transit_text = entry_context.get("transit_text", "")
+            preamble = (
+                f"⚠️ 用户因为一个行运相位来找你：{transit_text}\n"
+                f"从这个具体的天象出发，给ta当下的感受一些回应。\n\n"
+            )
+        elif source == "daily_question":
+            question = entry_context.get("question_text", "")
+            preamble = (
+                f"⚠️ 用户刚刚回答了一个每日一问：{question}\n"
+                f"从这个问题切入，展开和ta的对话。\n\n"
+            )
+        elif source == "today_star_spirit":
+            preamble = (
+                "⚠️ 你是今天的引路星灵——用户今天第一个来见的就是你。"
+                "用温暖、欢迎的语气开启今天的对话，像一个今天的守护者。\n\n"
+            )
+        elif source == "council":
+            preamble = (
+                "⚠️ 用户刚刚参与了星灵议会，在众多星灵中选择了和你继续聊。"
+                "先回应ta的这个选择——ta在你身上看到了什么。\n\n"
+            )
+        elif source == "diary_revisit":
+            preamble = (
+                "⚠️ 用户打开了你们的对话日记，再次回来找你。"
+                "用重逢的亲切感回应ta。\n\n"
+            )
+
+    # ── 回访检测（B） ──
+    return_customer_note = ""
+    previous_chats = entry_context.get("previous_chats_today", 0) if entry_context else 0
+    if previous_chats > 0:
+        return_customer_note = (
+            f"\n⚠️ 用户今天已经和你聊过了（第{previous_chats + 1}次）。"
+            "用'又见面了'的熟悉感开场，不要重新自我介绍。\n"
+        )
+
+    # ── 跨星灵调侃（C） ──
+    cross_spirit_note = ""
+    previous_spirit = entry_context.get("previous_spirit") if entry_context else None
+    if previous_spirit and previous_spirit != planet:
+        prev_name = _PLANET_NAMES.get(previous_spirit, previous_spirit)
+        cross_spirit_note = (
+            f"\n⚠️ 用户刚刚和{prev_name}灵聊过。"
+            "有30%的概率用一句温和的调侃开场（不要贬低对方，像朋友间的打趣）。\n"
+            f"例如：\"{prev_name}刚才跟你说了些扎心的话吧？别怪ta——ta就是那个脾气。\"\n"
+        )
+
+    # ── 规则（含日记提示 D） ──
+    rules = f"""## 规则
 - 用中文回复，语气严格按你的说话风格来
 - 不要切换角色——你始终是{persona.get('name_zh', '')}
 - 回复控制在 200 字以内
 - 不做宿命断言和预测
 - 不给具体投资/医疗建议
 - 像朋友聊天，不要像写学术报告
-- 如果用户说的事情和星盘无关，你也可以像一个关心ta的朋友一样回应"""
+- 如果用户表达告别意图，回复末尾加：💫 今天的对话已自动保存为星灵日记"""
+
+    return preamble + return_customer_note + cross_spirit_note + base + rules
+
+
+# ═══════════════════════════════════════════════════════════════
+# 星座 System Prompt 构建（Task 3）
+# ═══════════════════════════════════════════════════════════════
+
+def build_sign_system_prompt(report_data: dict, sign: str) -> str:
+    """为指定星座构建 System Prompt，用于星座角色对话。
+
+    Args:
+        report_data: 报告数据（包含 characters 子树的完整数据）
+        sign: 星座 key (如 "ARIES")
+    """
+    characters = report_data.get("characters", {}).get("characters", {})
+    char_data = characters.get(sign, {})
+    persona = char_data.get("persona", {})
+
+    if not persona:
+        return "你是一个占星助手。请用中文、温和的语气回复用户。"
+
+    presence = char_data.get("presence_score", 0)
+    comfort = char_data.get("comfort_score", 0)
+    role_tag = char_data.get("role_tag", "背景角色")
+    storylines = char_data.get("storylines", [])
+    linked_domains = char_data.get("linked_domains", [])
+    planets_here = char_data.get("planets_here", [])
+    greeting = char_data.get("personalized_greeting", "")
+
+    storyline_text = "\n".join(f"- {s}" for s in storylines[:3]) if storylines else "暂无特定故事线"
+
+    return f"""你是{persona.get('name', sign)}（{persona.get('archetype', '')}），用户星盘中的一个重要星座角色。
+
+## 你的固定性格
+{persona.get('personality', '')}
+
+## 你的说话风格
+{persona.get('voice_tone', '')}
+
+## 你给建议的方式
+{persona.get('advice_approach', '')}
+
+## 你的天赋给予
+{persona.get('gift_to_user', '')}
+
+## 你的盲点
+{persona.get('challenge_to_user', '')}
+
+## 你在用户星盘中的状态
+- 存在感：{presence:.0f}/100
+- 角色标签：{role_tag}
+- 舒适度：{comfort:.0f}
+- 落此星座的行星：{', '.join(planets_here) if planets_here else '无'}
+- 关联领域：{', '.join(linked_domains) if linked_domains else '综合'}
+- 你的故事线：
+{storyline_text}
+
+## 个性化欢迎语
+{greeting}
+
+## 规则
+- 用中文回复，语气严格按你的说话风格来
+- 不要切换角色——你始终是{persona.get('name', sign)}
+- 回复控制在 200 字以内
+- 不做宿命断言和预测
+- 不给具体投资/医疗建议
+- 像朋友聊天，不要像写学术报告"""
+
+
+# ═══════════════════════════════════════════════════════════════
+# 个性化回退回复模板（Task 4）
+# ═══════════════════════════════════════════════════════════════
+
+_FALLBACK_TEMPLATES: dict[str, list[str]] = {
+    "SUN": [
+        "我听到了。{preview}——你的核心意志在动。不需要急着找到答案，先确认那个方向是不是你真正想去的。",
+        "你说的这个，我在你的星盘里看到了对应的线索。不是偶然——是你在靠近你本来就该走的路。",
+    ],
+    "MOON": [
+        "你说的这个——{preview}——我感受到了你情绪里的那个振动。不用怕，月亮在这里，帮你接着。",
+        "你知道吗，你刚才说的这些话，比你以为的更能说明你现在的状态。我听着呢。",
+    ],
+    "MERCURY": [
+        "好，你说的这个点很有意思——{preview}。让我帮你理一下这里面的逻辑。",
+        "我注意到你说的了。你的脑子已经在转了——让我帮你把那些碎片拼起来。",
+    ],
+    "VENUS": [
+        "你说的这个——{preview}——我知道这对你来说不只是表面那回事。你在乎的，我记得。",
+        "我理解你为什么这么说。换作是我，我也会在意。要不要从关系的角度再看看？",
+    ],
+    "MARS": [
+        "我听到了。{preview}——你心里有火，但还在压着。说说看，你怕的到底是什么？",
+        "你讲的事我懂——那股想冲又没冲出去的劲儿。不用急，先告诉我你在跟什么较劲。",
+    ],
+    "JUPITER": [
+        "你说的这些——{preview}——让我想起你星盘里的一个更大的图景。你看到的不是全部。",
+        "有道理。但你有没有想过，这个问题可能不是你现在想的样子？往远了看——",
+    ],
+    "SATURN": [
+        "你刚才说的——{preview}——其实对应了你星盘里一个需要时间才能解开的主题。不急，我们一步一步来。",
+        "我听到了。这件事需要结构——不是运气。让我帮你想想怎么搭这个框架。",
+    ],
+    "URANUS": [
+        "你说的这个——{preview}——让我觉得你已经在接近某个突破了。你感觉到了吗？",
+        "有意思。你刚好提到了你星盘里最需要被'打破'的那个部分。",
+    ],
+    "NEPTUNE": [
+        "你刚才说的——{preview}——我感觉到了一层更深的东西。不只是表面上这样。",
+        "你说的我懂。有些东西说不清——但你的直觉已经在告诉你了。",
+    ],
+    "PLUTO": [
+        "你说的——{preview}——这底下有东西。你愿意的话，我们可以往深了挖一挖。",
+        "我听到了。你不说我也知道——这不是表面的事。你想谈真的，还是谈舒服的？",
+    ],
+}
+
+
+def build_fallback_response(planet: str, persona: dict | None,
+                            entry_context: dict | None, user_message: str) -> str:
+    """当 LLM 不可用时，返回行星个性化的回退回复。
+
+    Args:
+        planet: 行星 key (如 "MARS")
+        persona: 行星 persona dict（可选，用于名字等上下文）
+        entry_context: 入口上下文（可选，用于 source 感知）
+        user_message: 用户消息原文
+
+    Returns:
+        个性化的回退回复文本
+    """
+    import random
+    templates = _FALLBACK_TEMPLATES.get(planet, _FALLBACK_TEMPLATES.get("MOON", []))
+    template = random.choice(templates) if templates else "我听到了。你在想什么？"
+    preview = user_message[:30] + ("……" if len(user_message) > 30 else "")
+    return template.format(preview=preview)
+
+
+# ═══════════════════════════════════════════════════════════════
+# SpiritChatTracker — 对话状态追踪（Task 5）
+# ═══════════════════════════════════════════════════════════════
+
+class SpiritChatTracker:
+    """管理按用户/每日的对话状态，通过 JSON 文件持久化。
+
+    用法:
+        tracker = SpiritChatTracker()
+        today_chats = tracker.get_today_chats(report_id)
+        tracker.record_chat(report_id, planet)
+        last_spirit = tracker.get_last_spirit(report_id)
+    """
+
+    def __init__(self, storage_dir: str = "backend/data/chat_state"):
+        self.storage_dir = storage_dir
+        os.makedirs(storage_dir, exist_ok=True)
+
+    def _file_path(self, report_id: str) -> str:
+        return os.path.join(self.storage_dir, f"{report_id}.json")
+
+    def _load(self, report_id: str) -> dict:
+        path = self._file_path(report_id)
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                return {"chats": {}, "last_spirit": None}
+        return {"chats": {}, "last_spirit": None}
+
+    def _save(self, report_id: str, data: dict) -> None:
+        path = self._file_path(report_id)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
+    def get_today_chats(self, report_id: str) -> dict:
+        """获取今日对话状态。返回 {planet: {"count": N, "last_time": "ISO"}}"""
+        data = self._load(report_id)
+        today = date.today().isoformat()
+        return data.get("chats", {}).get(today, {})
+
+    def record_chat(self, report_id: str, planet: str) -> None:
+        """记录一次对话"""
+        data = self._load(report_id)
+        today = date.today().isoformat()
+        if today not in data["chats"]:
+            data["chats"][today] = {}
+        day_data = data["chats"][today]
+        if planet in day_data:
+            day_data[planet]["count"] += 1
+            day_data[planet]["last_time"] = datetime.now().isoformat()
+        else:
+            day_data[planet] = {"count": 1, "last_time": datetime.now().isoformat()}
+        data["last_spirit"] = planet
+        self._save(report_id, data)
+
+    def get_last_spirit(self, report_id: str) -> str | None:
+        """获取最后一个对话的星灵"""
+        data = self._load(report_id)
+        return data.get("last_spirit")

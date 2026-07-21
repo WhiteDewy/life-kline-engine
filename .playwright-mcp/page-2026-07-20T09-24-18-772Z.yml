@@ -1,0 +1,82 @@
+- main [ref=e4]:
+  - generic [ref=e5]:
+    - button "🔇" [ref=e8] [cursor=pointer]
+    - generic [ref=e25]:
+      - button "☉" [ref=e26] [cursor=pointer]
+      - generic [ref=e29] [cursor=pointer]:
+        - generic [ref=e30]: ♃
+        - generic [ref=e33]:
+          - generic [ref=e34]: 今日星灵
+          - generic [ref=e35]: 木星 · 狮子座
+      - button "📡 今日走向" [ref=e36] [cursor=pointer]:
+        - generic [ref=e37]: 📡
+        - generic [ref=e38]: 今日走向
+      - button "🎨" [ref=e40] [cursor=pointer]
+    - navigation [ref=e41]:
+      - button "🌸 花园" [ref=e42] [cursor=pointer]:
+        - generic [ref=e43]: 🌸
+        - generic [ref=e44]: 花园
+      - button "📅 每日一问" [ref=e45] [cursor=pointer]:
+        - generic [ref=e46]: 📅
+        - generic [ref=e47]: 每日一问
+      - button "🌟 星灵议会" [ref=e48] [cursor=pointer]:
+        - generic [ref=e49]: 🌟
+        - generic [ref=e50]: 星灵议会
+    - generic [ref=e53]:
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - generic [ref=e56]: ☉
+          - generic [ref=e59]:
+            - generic [ref=e60]: 太阳
+            - text: 主角
+        - button "✕" [ref=e61] [cursor=pointer]
+      - generic [ref=e62]:
+        - generic [ref=e63]:
+          - generic [ref=e64]: ☉
+          - generic [ref=e67]:
+            - paragraph [ref=e68]: 我是你的太阳——主角 / 自我定义者。我是你想成为的那个人——你的核心意志和生命方向。我在双鱼座，所以我的表达方式是敏感地、变动的——柔软、诗意、有灵性。说话像一个在做梦的人——'我有个感觉，不一定对，但是……'。用'感觉'、'画面'、'好像'这类模糊但。我在你的第11宫「」运作——这是我在你生命中主要发挥影响的领域。在这里我没有特别的加持——但也没有阻力。一切看你后天怎么用我。
+            - paragraph [ref=e69]: 你想聊什么？我在这儿听着呢~
+            - button "🎤" [ref=e71] [cursor=pointer]
+        - generic [ref=e77]: 最近工作压力很大
+        - generic [ref=e79]:
+          - generic [ref=e80]: ☉
+          - generic [ref=e83]:
+            - paragraph [ref=e84]: （笑）又见面了——冥王星刚才是不是又把你往深渊里推了一把？别怪ta，ta就那个脾气，非要把你的压力翻出来晒一晒。 你知道吗，压力这件事，落在你身上不是坏事。你的10宫主土星在水瓶座庙旺——你的事业不是靠冲劲堆出来的，是靠时间磨出来的。你现在觉得喘不过气，是因为你在积累别人看不见的东西。 别急。你不需要跟任何人比速度。你的节奏，是你自己的。
+            - button "🎤" [ref=e86] [cursor=pointer]
+            - generic [ref=e88]:
+              - generic [ref=e89] [cursor=pointer]:
+                - generic [ref=e90]: ─
+                - generic [ref=e91]: 查看星盘依据
+                - generic [ref=e92]: ▾
+              - generic [ref=e93]:
+                - generic [ref=e94]:
+                  - generic [ref=e95]: •
+                  - generic [ref=e96]: 【落宫落座】太阳落双鱼座第11宫「」
+                - generic [ref=e97]:
+                  - generic [ref=e98]: •
+                  - generic [ref=e99]: 【尊贵】平
+                - generic [ref=e100]:
+                  - generic [ref=e101]: •
+                  - generic [ref=e102]: 【掌宫】太阳掌管第4宫「家庭与根基」
+                - generic [ref=e103]:
+                  - generic [ref=e104]: •
+                  - generic [ref=e105]: 【飞星】第4宫主星飞入第11宫「社群与愿景」
+                - generic [ref=e106]:
+                  - generic [ref=e107]: •
+                  - generic [ref=e108]: 【相位·吉】太阳 六合 月亮
+                - generic [ref=e109]:
+                  - generic [ref=e110]: •
+                  - generic [ref=e111]: 【相位·吉】太阳 三合 木星
+                - generic [ref=e112]:
+                  - generic [ref=e113]: •
+                  - generic [ref=e114]: 【接纳】太阳接纳木星
+                - generic [ref=e115]:
+                  - generic [ref=e116]: •
+                  - generic [ref=e117]: 【互溶】太阳 与 木星 互溶
+                - generic [ref=e118]:
+                  - generic [ref=e119]: •
+                  - generic [ref=e120]: 【核心议题】事业靠积累而非爆发，把时间当朋友
+      - generic [ref=e73]:
+        - textbox "和太阳说点什么..." [ref=e74]
+        - button "发送" [disabled] [ref=e75]
+      - paragraph [ref=e76]: 太阳的回应来自你的星盘分析，不是 AI 随机生成 ✦

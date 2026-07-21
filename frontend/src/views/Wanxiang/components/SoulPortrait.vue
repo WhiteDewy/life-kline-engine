@@ -2,7 +2,7 @@
   <div class="portrait-section">
     <div class="portrait-header">
       <h2 class="portrait-title">🎨 灵魂画像</h2>
-      <p class="portrait-desc">你的七行星内在能量分布——每一条光线都是一个维度的你</p>
+      <p class="portrait-desc">你的十颗行星内在能量分布——每一条光线都是一个维度的你</p>
     </div>
 
     <!-- SVG 星盘图 -->

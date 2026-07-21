@@ -7,6 +7,12 @@ import { apiClient } from "@/config/api";
 const TOKEN_KEY = "lk_token";
 const USER_KEY = "lk_user";
 
+/** 开发环境调试手机号（环境变量 VITE_DEV_BYPASS_PHONE），非空且匹配时跳过验证码 */
+const DEV_BYPASS_PHONE = import.meta.env.VITE_DEV_BYPASS_PHONE?.trim() || "";
+export function isDevBypassPhone(phone: string): boolean {
+  return !!DEV_BYPASS_PHONE && phone === DEV_BYPASS_PHONE;
+}
+
 const token = ref(localStorage.getItem(TOKEN_KEY) || "");
 const user = ref<any>(_loadJson(USER_KEY));
 const profiles = ref<any[]>([]);
@@ -57,6 +63,12 @@ export function useAuth() {
       }
     } catch {
       logout();
+      // 非登录页面时提示
+      if (!window.location.pathname.startsWith("/login")) {
+        import("@/utils/toast").then(({ toast }) => {
+          toast.error("登录已过期，请重新登录");
+        });
+      }
     }
   }
 

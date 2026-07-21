@@ -11,6 +11,7 @@ import random
 import hashlib
 import time as _time
 from datetime import datetime, timedelta, timezone
+from dataclasses import asdict
 from typing import Any, Dict, Optional
 
 from fastapi import FastAPI, HTTPException, Header, Request
@@ -176,6 +177,86 @@ def get_geocode_unavailable_detail(timeout: bool) -> str:
         f"{action} For more stable mainland China lookups, set "
         "LIFE_KLINE_AMAP_KEY in backend/.env."
     )
+
+
+def _geocode_place(query: str) -> tuple[float, float]:
+    """Geocode a place name. Returns (lat, lon) or (0.0, 0.0) on any failure."""
+    import socket
+    import urllib.error
+    import urllib.parse
+    import urllib.request
+
+    if not query or not query.strip():
+        return (0.0, 0.0)
+
+    query = query.strip()
+
+    def is_timeout_error(exc: Exception) -> bool:
+        if isinstance(exc, (TimeoutError, socket.timeout)):
+            return True
+        if isinstance(exc, urllib.error.URLError):
+            reason = exc.reason
+            if isinstance(reason, (TimeoutError, socket.timeout)):
+                return True
+            return "timed out" in str(reason).lower()
+        return "timed out" in str(exc).lower()
+
+    def fetch_json(url: str) -> Any:
+        request = urllib.request.Request(
+            url,
+            headers={
+                "User-Agent": "LifeKline-Geocoder/1.0 (contact: dev@lifekline.local)",
+                "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+            },
+        )
+        with urllib.request.urlopen(request, timeout=GEOCODE_TIMEOUT_SECONDS) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+    try:
+        encoded_query = urllib.parse.quote(query)
+        providers: list[Dict[str, Any]] = []
+        if AMAP_KEY:
+            amap_query = urllib.parse.urlencode({"address": query, "key": AMAP_KEY})
+            providers.append(
+                {
+                    "name": "amap",
+                    "url": f"https://restapi.amap.com/v3/geocode/geo?{amap_query}",
+                    "parser": parse_amap_geocode_result,
+                }
+            )
+
+        providers.extend(
+            [
+                {
+                    "name": "nominatim_global",
+                    "url": f"https://nominatim.openstreetmap.org/search?q={encoded_query}&format=json&limit=1",
+                    "parser": parse_public_geocode_result,
+                },
+                {
+                    "name": "nominatim_cn",
+                    "url": f"https://nominatim.openstreetmap.org/search?q={encoded_query}&format=json&limit=1&countrycodes=cn",
+                    "parser": parse_public_geocode_result,
+                },
+                {
+                    "name": "maps_co",
+                    "url": f"https://geocode.maps.co/search?q={encoded_query}&format=json&limit=1",
+                    "parser": parse_public_geocode_result,
+                },
+            ]
+        )
+
+        for provider in providers:
+            try:
+                provider_data = fetch_json(provider["url"])
+                normalized_result = provider["parser"](provider_data, query)
+                if normalized_result:
+                    return (normalized_result["lat"], normalized_result["lon"])
+            except Exception:
+                continue
+    except Exception:
+        pass
+
+    return (0.0, 0.0)
 
 
 class FlexibleModel(BaseModel):
@@ -368,9 +449,12 @@ class ProfileInput(FlexibleModel):
     name: str = ""
     gender: str = ""
     birth_time: str
-    lat: float
-    lon: float
+    lat: float = 0.0
+    lon: float = 0.0
     timezone: float = 8.0
+    birth_place: str = ""
+    house_system: str = "B"
+    daylight_saving: bool = False
 
 
 app = FastAPI(
@@ -469,6 +553,7 @@ def run_analysis(input_data: AnalysisRequest, user_id: str = "", profile_id: str
             "analysis": analysis_definition,
             "request": input_data.model_dump(),
             "report": report,
+            "user_id": user_id,
             "stored_at": datetime.utcnow().isoformat(),
         }
         save_report_record(report_id, record)
@@ -857,7 +942,254 @@ async def get_growth_data(report_id: str) -> Dict[str, Any]:
 
 
 # ═══════════════════════════════════════════════════════════════
-# AI 星灵对话（LLM 驱动）
+# 今日星灵 & 每日一问
+# ═══════════════════════════════════════════════════════════════
+
+
+def _reconstruct_chart_from_user_info(user_info: dict):
+    """从 user_info 重建本命盘 ChartData"""
+    from life_kline.ephemeris import EphemerisEngine
+
+    engine = EphemerisEngine()
+    birth_time = datetime.fromisoformat(
+        user_info.get("birth_time_utc", user_info.get("birth_time_local", ""))
+    )
+    lat = user_info.get("lat", 0.0)
+    lon = user_info.get("lon", 0.0)
+    chart = engine.calculate_chart(birth_time, lat, lon)
+    chart.location = {"lat": lat, "lon": lon}
+    return chart
+
+
+@app.get("/api/today-star-spirit/{report_id}")
+async def get_today_star_spirit(report_id: str) -> Dict[str, Any]:
+    """获取用户今日引路星灵"""
+    record = load_report_record(report_id)
+    user_info = record.get("data", {}).get("user_info", {})
+    if not user_info:
+        raise HTTPException(status_code=400, detail="User info missing from report")
+
+    try:
+        from life_kline.today_engine import TodayStarSpiritEngine
+
+        chart = _reconstruct_chart_from_user_info(user_info)
+        spirit_engine = TodayStarSpiritEngine(service)
+        result = spirit_engine.compute_today_star_spirit(chart)
+
+        return {
+            "status": "success",
+            "report_id": report_id,
+            "data": result.to_dict(),
+        }
+    except Exception as exc:
+        import traceback
+
+        traceback.print_exc()
+        # 优雅回退：返回月亮
+        return {
+            "status": "success",
+            "report_id": report_id,
+            "data": {
+                "planet": "MOON",
+                "planet_label": "月亮",
+                "symbol": "☽",
+                "reason": f"计算暂时不可用，月亮为你默默引路。（{exc}）",
+                "confidence": 20.0,
+                "sign": "UNKNOWN",
+                "sign_label": "未知",
+            },
+        }
+
+
+@app.get("/api/daily-question/{report_id}")
+async def get_daily_question(report_id: str) -> Dict[str, Any]:
+    """获取每日一问"""
+    record = load_report_record(report_id)
+    user_info = record.get("data", {}).get("user_info", {})
+    if not user_info:
+        raise HTTPException(status_code=400, detail="User info missing from report")
+
+    try:
+        from life_kline.today_engine import TodayStarSpiritEngine
+        from life_kline.daily_question_engine import DailyQuestionEngine
+        from life_kline.llm_client import LLMClient
+
+        chart = _reconstruct_chart_from_user_info(user_info)
+        spirit_engine = TodayStarSpiritEngine(service)
+        today_spirit = spirit_engine.compute_today_star_spirit(chart)
+
+        llm_client = LLMClient()
+        question_engine = DailyQuestionEngine(llm_client=llm_client)
+
+        transits = service.compute_transits(chart)
+        question = question_engine.generate(
+            today_spirit=today_spirit,
+            chart=chart,
+            transits=transits,
+        )
+
+        return {
+            "status": "success",
+            "report_id": report_id,
+            "data": question.to_dict(),
+        }
+    except Exception as exc:
+        import traceback
+
+        traceback.print_exc()
+        return {
+            "status": "success",
+            "report_id": report_id,
+            "data": {
+                "question": "今天你照顾好自己了吗？",
+                "spirit_planet": "MOON",
+                "spirit_planet_label": "月亮",
+                "context_note": "暂时无法读取你的星灵数据，月亮代你问候。",
+                "voice_text": "月亮想知道：今天你照顾好自己了吗？",
+                "generated_at": datetime.utcnow().isoformat(),
+            },
+        }
+
+
+class DiaryInput(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    chat_context: Optional[str] = Field(default=None, description="用户对话上下文")
+    spirit_planet: Optional[str] = Field(default=None, description="关联星灵")
+    mood_emoji: Optional[str] = Field(default=None, description="情绪 emoji")
+
+
+DIARY_DIR = os.path.join(os.path.dirname(__file__), "data", "diary")
+
+
+@app.post("/api/spirit-diary/{report_id}/entry")
+async def create_diary_entry(report_id: str, body: DiaryInput) -> Dict[str, Any]:
+    """创建星灵日记条目"""
+    try:
+        from life_kline.diary_engine import DiaryEngine
+
+        engine = DiaryEngine(diary_dir=DIARY_DIR)
+        entry = engine.extract_and_generate(
+            report_id=report_id,
+            chat_context=body.chat_context or "",
+            spirit_planet=body.spirit_planet or "",
+            mood_emoji=body.mood_emoji or "",
+        )
+
+        return {
+            "status": "success",
+            "report_id": report_id,
+            "data": entry.to_dict(),
+        }
+    except Exception as exc:
+        import traceback
+
+        traceback.print_exc()
+        return {
+            "status": "error",
+            "report_id": report_id,
+            "detail": f"Failed to create diary entry: {exc}",
+        }
+
+
+@app.get("/api/spirit-diary/{report_id}")
+async def get_diary_timeline(
+    report_id: str,
+    limit: int = 30,
+    offset: int = 0,
+) -> Dict[str, Any]:
+    """获取星灵日记时间线"""
+    try:
+        from life_kline.diary_engine import DiaryEngine
+
+        engine = DiaryEngine(diary_dir=DIARY_DIR)
+        entries = engine.get_timeline(
+            report_id=report_id,
+            limit=limit,
+            offset=offset,
+        )
+
+        return {
+            "status": "success",
+            "report_id": report_id,
+            "data": {
+                "entries": [e.to_dict() for e in entries],
+                "total": len(entries),
+            },
+        }
+    except Exception as exc:
+        import traceback
+
+        traceback.print_exc()
+        return {
+            "status": "error",
+            "report_id": report_id,
+            "detail": f"Failed to load diary entries: {exc}",
+        }
+
+
+# ═══════════════════════════════════════════════════════════════
+# 定价与权限
+# ═══════════════════════════════════════════════════════════════
+
+@app.get("/api/pricing")
+async def get_pricing() -> Dict[str, Any]:
+    """获取完整的定价信息"""
+    from life_kline.pricing import get_pricing_info
+    return {"status": "success", "data": get_pricing_info()}
+
+
+@app.get("/api/access/{user_id}")
+async def get_user_access(user_id: str) -> Dict[str, Any]:
+    """获取用户当前的权限状态"""
+    from life_kline.pricing import AccessChecker, is_test_user
+    # 从存储加载用户状态（暂时用空状态 = 新用户）
+    state = load_user_state(user_id)
+    checker = AccessChecker(state)
+    engine_check = checker.check_engine_chat("SUN")
+    ai_check = checker.check_ai_chat()
+    council_check = checker.check_council()
+    return {
+        "status": "success",
+        "data": {
+            "user_id": user_id,
+            "is_test_user": is_test_user(user_id),
+            "is_vip": checker._is_vip_active(),
+            "coins": state.get("coins", 0),
+            "engine": engine_check.to_dict(),
+            "ai": ai_check.to_dict(),
+            "council": council_check.to_dict(),
+        },
+    }
+
+
+def load_user_state(user_id: str) -> dict:
+    """加载用户状态（JSON 文件），补充数据库中的手机号"""
+    import json, os
+    path = os.path.join("backend", "data", "user_state", f"{user_id}.json")
+    state = None
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                state = json.load(f)
+        except Exception:
+            pass
+    if state is None:
+        state = {"user_id": user_id, "coins": 0, "is_vip": False}
+    # 从数据库补全手机号（用于测试用户匹配）
+    if "phone" not in state:
+        try:
+            db = get_db()
+            row = db.execute("SELECT phone FROM users WHERE id=?", (user_id,)).fetchone()
+            db.close()
+            if row and row["phone"]:
+                state["phone"] = row["phone"]
+        except Exception:
+            pass
+    return state
+
+
+# ═══════════════════════════════════════════════════════════════
+# AI 星灵对话（引擎 + LLM 双层）
 # ═══════════════════════════════════════════════════════════════
 
 class SpiritChatInput(BaseModel):
@@ -865,53 +1197,167 @@ class SpiritChatInput(BaseModel):
     topic: str = Field(default="personal")
     message: str = Field(..., description="用户消息")
     history: list[dict] = Field(default_factory=list)
+    entry_context: dict | None = None
 
 
 @app.post("/api/spirit-chat/{report_id}")
-async def spirit_chat(report_id: str, body: SpiritChatInput) -> Dict[str, Any]:
+async def spirit_chat(report_id: str, body: SpiritChatInput, request: Request) -> Dict[str, Any]:
+    """星灵对话 — 引擎占星师 + AI 增强双层架构。
+
+    引擎层（永远在线）：路由意图 → 读取星盘证据 → 渲染结构化回复。
+    AI 层（可选增强）：拿到引擎的结构化输出后，做语音翻译美化。
+
+    权限：引擎对话有免费额度，AI 对话消耗星币或 VIP 额度。
+    必须携带 Authorization header 以识别用户身份。
+    """
     record = load_report_record(report_id)
     report_data = record.get("data", {})
 
-    from life_kline.llm_client import LLMClient, build_spirit_system_prompt
-
-    client = LLMClient()
-
-    if not client.is_configured:
-        raise HTTPException(
-            status_code=503,
-            detail="LLM 未配置。请设置 LIFE_KLINE_LLM_API_KEY 环境变量。",
-        )
-
-    system_prompt = build_spirit_system_prompt(report_data, body.planet, body.topic)
-    response = client.chat(
-        system_prompt=system_prompt,
-        user_message=body.message,
-        history=body.history,
+    from life_kline.llm_client import (
+        LLMClient, build_spirit_system_prompt,
+        SpiritChatTracker,
     )
+    from life_kline.engine_astrologer import EngineAstrologer
+    from life_kline.pricing import AccessChecker
 
-    if not response:
-        raise HTTPException(status_code=502, detail="LLM 返回了空响应")
+    # ── 用户认证 ──
+    auth_header = request.headers.get("Authorization", "")
+    user_id = ""
+    if auth_header.startswith("Bearer "):
+        user_id = _parse_token(auth_header[7:]) or ""
+    # 无 token 时作为游客（严格限额），有 token 则按用户定价检查
+    if not user_id:
+        user_id = request.headers.get("X-User-Id", "") or record.get("user_id", "")
+    state = load_user_state(user_id)
+    access_checker = AccessChecker(state)
+    engine_access = access_checker.check_engine_chat(body.planet)
+    if not engine_access.allowed:
+        return {
+            "status": "error",
+            "error_code": "QUOTA_EXCEEDED",
+            "data": {
+                "message": engine_access.reason,
+                "access": engine_access.to_dict(),
+            },
+        }
 
-    if response:
+    # ── 对话追踪 ──
+    chat_tracker = SpiritChatTracker()
+    today_chats = chat_tracker.get_today_chats(report_id)
+    previous_chats_today = 0
+    if body.planet in today_chats:
+        previous_chats_today = today_chats[body.planet].get("count", 0)
+    previous_spirit = chat_tracker.get_last_spirit(report_id)
+
+    # 构建 entry_context
+    entry_context = body.entry_context or {}
+    if previous_chats_today > 0:
+        entry_context["previous_chats_today"] = previous_chats_today
+    if previous_spirit and previous_spirit != body.planet:
+        entry_context["previous_spirit"] = previous_spirit
+
+    # ── 第 1 层：引擎占星师（永远运行） ──
+    engine = EngineAstrologer(report_data)
+    engine_response = engine.consult(
+        report_id=report_id,
+        planet=body.planet,
+        user_message=body.message,
+        topic_hint=body.topic,
+        history=body.history,
+        entry_context=entry_context,
+    )
+    engine_dict = engine_response.to_dict()
+
+    # ── 第 2 层：AI 增强（可选） ──
+    client = LLMClient()
+    final_response = engine_response.full_text
+    source = "engine"
+    ai_access_info = None
+
+    if client.is_configured:
+        # ── AI 权限检查 ──
+        ai_access = access_checker.check_ai_chat()
+        ai_access_info = ai_access.to_dict()
+        if ai_access.allowed:
+            # 用引擎的结构化输出作为 AI 的上下文
+            try:
+                engine_hint = (
+                    f"[引擎占星师已分析]\n"
+                    f"领域：{engine_response.domain_label}\n"
+                    f"情绪：{engine_response.emotional_state}\n"
+                    f"星盘证据：{'; '.join(engine_response.evidence[:4])}\n"
+                    f"引擎回答（参考）：{engine_response.full_text[:300]}\n"
+                    f"\n请基于以上引擎分析，用你的方式自然地回复用户。"
+                    f"保持引擎的占星学准确性，但可以让语言更温暖流畅。"
+                )
+
+                system_prompt = build_spirit_system_prompt(
+                    report_data, body.planet, engine_response.domain,
+                    entry_context=entry_context,
+                )
+                system_prompt = engine_hint + "\n\n" + system_prompt
+
+                ai_response = client.chat(
+                    system_prompt=system_prompt,
+                    user_message=body.message,
+                    history=body.history,
+                )
+                if ai_response:
+                    final_response = ai_response
+                    source = "llm_enhanced"
+            except Exception:
+                pass  # AI 失败 → 降级到引擎输出
+
+    # ── 记录对话到成长追踪器 ──
+    try:
+        from life_kline.growth.growth_tracker import GrowthTracker
+        tracker = GrowthTracker.load(report_id)
+        tracker.record_conversation(
+            sign=body.planet,
+            topic=engine_response.domain,
+            user_message=body.message[:200],
+            character_response=final_response[:200],
+            emotional_context=engine_response.emotional_state,
+        )
+    except Exception:
+        pass
+
+    # ── 追踪 AI 使用量 ──
+    if source == "llm_enhanced":
         try:
-            from life_kline.growth.growth_tracker import GrowthTracker
-            tracker = GrowthTracker.load(report_id)
-            tracker.record_conversation(
-                sign=body.planet,
-                topic=body.topic,
-                user_message=body.message[:200],
-                character_response=response[:200],
-                emotional_context="general",
-            )
+            import json, os
+            state_path = os.path.join("backend", "data", "user_state", f"{user_id}.json")
+            if os.path.exists(state_path):
+                with open(state_path, "r", encoding="utf-8") as f:
+                    us = json.load(f)
+            else:
+                us = {}
+            us["ai_usage_today"] = us.get("ai_usage_today", 0) + 1
+            os.makedirs(os.path.dirname(state_path), exist_ok=True)
+            with open(state_path, "w", encoding="utf-8") as f:
+                json.dump(us, f, ensure_ascii=False)
         except Exception:
             pass
+
+    # ── 记录追踪 ──
+    chat_tracker.record_chat(report_id, body.planet)
 
     return {
         "status": "success",
         "data": {
             "planet": body.planet,
-            "response": response,
-            "suggested_followup": "",
+            "response": final_response,
+            "domain": engine_response.domain,
+            "emotional_state": engine_response.emotional_state,
+            "engine_reading": {
+                "acknowledgment": engine_response.acknowledgment,
+                "mirroring": engine_response.mirroring,
+                "guidance": engine_response.guidance,
+                "evidence": engine_response.evidence,
+            },
+            "source": source,
+            "ai_access": ai_access_info,
+            "suggested_followup": getattr(engine_response, "suggested_followup", "") or "",
         },
     }
 
@@ -1079,11 +1525,33 @@ async def get_current_transit() -> Dict[str, Any]:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
+@app.get("/api/daily-transits/{report_id}")
+async def get_daily_transits(report_id: str) -> Dict[str, Any]:
+    """Get layered daily transit report for a user's natal chart."""
+    record = load_report_record(report_id)
+    report_data = record.get("data", {})
+    user_info = report_data.get("user_info", {})
+    if not user_info:
+        raise HTTPException(status_code=400, detail="User info missing from report")
+
+    chart = _reconstruct_chart_from_user_info(user_info)
+
+    from life_kline.transit_engine import DailyTransitEngine
+    from life_kline.ephemeris import EphemerisEngine
+
+    engine = DailyTransitEngine(EphemerisEngine())
+    report = engine.compute_daily_transits(chart)
+
+    return {"status": "success", "report_id": report_id, "data": asdict(report)}
+
+
 # ── 用户系统路由 ──────────────────────────────────────────
 
 @app.on_event("startup")
 async def startup_event() -> None:
     init_db()
+    from backend.database import migrate_db
+    migrate_db()
     global service
     service = LifeKlineService()
     provider_names = ["nominatim_global", "nominatim_cn", "maps_co"]
@@ -1146,6 +1614,16 @@ async def verify_code(body: VerifyCodeInput) -> Dict[str, Any]:
     return {"status": "success", "token": _make_token(user_id), "user_id": user_id}
 
 
+@app.get("/api/auth/check")
+async def auth_check(authorization: str = Header(default="")) -> Dict[str, Any]:
+    """Check if the current token is valid. Returns user_id if valid."""
+    token = authorization.replace("Bearer ", "")
+    uid = _parse_token(token)
+    if not uid:
+        raise HTTPException(status_code=401, detail="Token invalid or expired")
+    return {"status": "success", "user_id": uid}
+
+
 @app.get("/api/me")
 async def get_me(authorization: str = Header(default="")) -> Dict[str, Any]:
     uid = _parse_token(authorization.replace("Bearer ", ""))
@@ -1163,12 +1641,24 @@ async def create_profile(body: ProfileInput, authorization: str = Header(default
     uid = _parse_token(authorization.replace("Bearer ", ""))
     if not uid:
         raise HTTPException(status_code=401, detail="请先登录")
+
+    lat = body.lat
+    lon = body.lon
+    # Auto-geocode if birth_place is set and coordinates are empty/zero
+    if body.birth_place and (lat == 0.0 and lon == 0.0):
+        geo_lat, geo_lon = _geocode_place(body.birth_place)
+        if geo_lat != 0.0 or geo_lon != 0.0:
+            lat, lon = geo_lat, geo_lon
+
     pid = _uid()
     db = get_db()
-    db.execute("INSERT INTO profiles (id, user_id, name, gender, birth_time, lat, lon, timezone, is_default, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (pid, uid, body.name, body.gender, body.birth_time, body.lat, body.lon, body.timezone, 0, _now()))
+    db.execute(
+        "INSERT INTO profiles (id, user_id, name, gender, birth_time, lat, lon, timezone, birth_place, house_system, daylight_saving, is_default, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        (pid, uid, body.name, body.gender, body.birth_time, lat, lon, body.timezone, body.birth_place, body.house_system, 1 if body.daylight_saving else 0, 0, _now()),
+    )
     db.commit()
     db.close()
-    return {"status": "success", "profile_id": pid}
+    return {"status": "success", "profile_id": pid, "geocoded": (lat != body.lat or lon != body.lon)}
 
 
 @app.get("/api/profiles")
@@ -1180,6 +1670,133 @@ async def list_profiles(authorization: str = Header(default="")) -> Dict[str, An
     rows = db.execute("SELECT * FROM profiles WHERE user_id=? ORDER BY created_at DESC", (uid,)).fetchall()
     db.close()
     return {"status": "success", "profiles": [dict(r) for r in rows]}
+
+
+@app.put("/api/profiles/{profile_id}")
+async def update_profile(profile_id: str, body: ProfileInput, authorization: str = Header(default="")) -> Dict[str, Any]:
+    uid = _parse_token(authorization.replace("Bearer ", ""))
+    if not uid:
+        raise HTTPException(status_code=401, detail="请先登录")
+
+    db = get_db()
+    existing = db.execute("SELECT * FROM profiles WHERE id=? AND user_id=?", (profile_id, uid)).fetchone()
+    if not existing:
+        db.close()
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    # Partial update: only override fields that were explicitly sent
+    # (Pydantic's default values tell us which fields were not provided —
+    #  we check model_dump(exclude_unset=True) for true partial update)
+    update_data = body.model_dump(exclude_unset=True)
+
+    # Auto-geocode if birth_place changed and coordinates are empty/zero
+    lat = float(update_data.get("lat", existing["lat"]))
+    lon = float(update_data.get("lon", existing["lon"]))
+    birth_place = update_data.get("birth_place", existing["birth_place"] or "")
+    if birth_place and (lat == 0.0 and lon == 0.0):
+        geo_lat, geo_lon = _geocode_place(birth_place)
+        if geo_lat != 0.0 or geo_lon != 0.0:
+            lat, lon = geo_lat, geo_lon
+            update_data["lat"] = lat
+            update_data["lon"] = lon
+
+    # Build SET clause dynamically
+    field_map = {
+        "name": "name",
+        "gender": "gender",
+        "birth_time": "birth_time",
+        "lat": "lat",
+        "lon": "lon",
+        "timezone": "timezone",
+        "birth_place": "birth_place",
+        "house_system": "house_system",
+        "daylight_saving": "daylight_saving",
+    }
+    set_parts = []
+    values = []
+    for body_key, col_name in field_map.items():
+        if body_key in update_data:
+            val = update_data[body_key]
+            # Convert bool to int for SQLite
+            if body_key == "daylight_saving":
+                val = 1 if val else 0
+            set_parts.append(f"{col_name}=?")
+            values.append(val)
+
+    if not set_parts:
+        db.close()
+        return {"status": "success", "profile_id": profile_id, "updated": []}
+
+    values.append(profile_id)
+    db.execute(f"UPDATE profiles SET {', '.join(set_parts)} WHERE id=?", values)
+    db.commit()
+    updated_profile = db.execute("SELECT * FROM profiles WHERE id=?", (profile_id,)).fetchone()
+    db.close()
+
+    return {
+        "status": "success",
+        "profile_id": profile_id,
+        "updated": list(update_data.keys()),
+        "profile": dict(updated_profile) if updated_profile else None,
+    }
+
+
+@app.get("/api/users/chart")
+async def get_user_chart(
+    profile_id: str = "",
+    house_system: str = "B",
+    daylight_saving: Optional[bool] = None,
+    authorization: str = Header(default=""),
+) -> Dict[str, Any]:
+    """Get natal chart for the user's profile with the specified house system."""
+    uid = _parse_token(authorization.replace("Bearer ", ""))
+    if not uid:
+        raise HTTPException(status_code=401, detail="请先登录")
+
+    db = get_db()
+    if profile_id:
+        profile = db.execute("SELECT * FROM profiles WHERE id=? AND user_id=?", (profile_id, uid)).fetchone()
+    else:
+        # Use default profile, or the first one
+        profile = db.execute(
+            "SELECT * FROM profiles WHERE user_id=? ORDER BY is_default DESC, created_at DESC LIMIT 1",
+            (uid,),
+        ).fetchone()
+    db.close()
+
+    if not profile:
+        raise HTTPException(status_code=404, detail="No profile found. Create one first.")
+
+    # Use query params to override profile settings
+    hs = house_system or profile["house_system"] or "B"
+    ds = daylight_saving if daylight_saving is not None else bool(profile["daylight_saving"])
+
+    if service is None:
+        raise HTTPException(status_code=503, detail="Engine not initialized")
+
+    try:
+        report = service.generate_report(
+            birth_time_iso=profile["birth_time"],
+            lat=profile["lat"],
+            lon=profile["lon"],
+            timezone_offset=profile["timezone"],
+            gender=profile["gender"],
+            house_system=hs,
+            daylight_saving=ds,
+        )
+        return {
+            "status": "success",
+            "profile_id": profile["id"],
+            "house_system": hs,
+            "daylight_saving": ds,
+            "data": report.get("natal_chart", {}),
+        }
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=f"Invalid input: {exc}") from exc
+    except Exception as exc:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Chart generation failed: {exc}") from exc
 
 
 if __name__ == "__main__":

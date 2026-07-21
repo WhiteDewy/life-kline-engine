@@ -5,26 +5,25 @@
       <span class="tab-label">花园</span>
     </button>
 
-    <button class="tab-btn tab-btn--chat" @click="$emit('chat')">
-      <span class="tab-icon">💫</span>
-      <span class="tab-label">{{ chatCtaText }}</span>
+    <button class="tab-btn tab-btn--chat" @click="$emit('daily-question')">
+      <span class="tab-icon">📅</span>
+      <span class="tab-label">每日一问</span>
     </button>
 
     <button class="tab-btn" @click="$emit('council')">
-      <span class="tab-icon">🔮</span>
+      <span class="tab-icon">🌟</span>
       <span class="tab-label">星灵议会</span>
     </button>
   </nav>
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  chatCtaText: string
-}>()
+
+
 
 defineEmits<{
   garden: []
-  chat: []
+  'daily-question': []
   council: []
 }>()
 </script>

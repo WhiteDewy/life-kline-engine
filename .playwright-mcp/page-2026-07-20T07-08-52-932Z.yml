@@ -1,0 +1,33 @@
+- main [ref=e4]:
+  - generic [ref=e5]:
+    - button "🔇" [ref=e10] [cursor=pointer]
+    - generic [ref=e27]:
+      - button "☉" [ref=e28] [cursor=pointer]
+      - generic [ref=e31] [cursor=pointer]:
+        - generic [ref=e32]: ♃
+        - generic [ref=e35]:
+          - generic [ref=e36]: 今日星灵
+          - generic [ref=e37]: 木星 · 狮子座
+      - button "📡 今日走向" [ref=e38] [cursor=pointer]:
+        - generic [ref=e39]: 📡
+        - generic [ref=e40]: 今日走向
+      - button "🎨" [ref=e42] [cursor=pointer]
+    - navigation [ref=e43]:
+      - button "🌸 花园" [ref=e44] [cursor=pointer]:
+        - generic [ref=e45]: 🌸
+        - generic [ref=e46]: 花园
+      - button "📅 每日一问" [ref=e47] [cursor=pointer]:
+        - generic [ref=e48]: 📅
+        - generic [ref=e49]: 每日一问
+      - button "🌟 星灵议会" [ref=e50] [cursor=pointer]:
+        - generic [ref=e51]: 🌟
+        - generic [ref=e52]: 星灵议会
+    - generic [ref=e81]:
+      - paragraph [ref=e92]: 轻触水晶球，今天有位星灵有话想对你说
+      - generic [ref=e93]:
+        - button "🔮 轻触水晶球" [ref=e94] [cursor=pointer]:
+          - generic [ref=e95]: 🔮
+          - generic [ref=e96]: 轻触水晶球
+        - button "📱 摇一摇" [ref=e97] [cursor=pointer]:
+          - generic [ref=e98]: 📱
+          - generic [ref=e99]: 摇一摇

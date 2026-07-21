@@ -98,3 +98,23 @@ def init_db() -> None:
     """)
     db.commit()
     db.close()
+
+    migrate_db()
+
+
+def migrate_db() -> None:
+    """Idempotent migration: add columns to profiles table."""
+    db = get_db()
+
+    # Check existing columns in profiles
+    existing = {row[1] for row in db.execute("PRAGMA table_info(profiles)").fetchall()}
+
+    if "birth_place" not in existing:
+        db.execute("ALTER TABLE profiles ADD COLUMN birth_place TEXT DEFAULT ''")
+    if "house_system" not in existing:
+        db.execute("ALTER TABLE profiles ADD COLUMN house_system TEXT DEFAULT 'B'")
+    if "daylight_saving" not in existing:
+        db.execute("ALTER TABLE profiles ADD COLUMN daylight_saving INTEGER DEFAULT 0")
+
+    db.commit()
+    db.close()

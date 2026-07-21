@@ -4,13 +4,15 @@
       <!-- 聊天头部 -->
       <div class="chat-header">
         <div class="chat-header-left">
-          <SpiritAvatar :planet="planet" :symbol="symbol" :name="name" size="sm" />
+          <div class="spirit-ring" :style="{ '--ring-color': color }">
+            <SpiritAvatar :planet="planet" :symbol="symbol" :name="name" size="sm" />
+          </div>
           <div>
             <span class="chat-name-sm">{{ name }}</span>
             <span class="chat-subtitle-sm">{{ archetype }}</span>
           </div>
         </div>
-        <button class="chat-close-btn" @click="$emit('close')">✕</button>
+        <button class="chat-close-btn" @click="handleClose">&#10005;</button>
       </div>
 
       <!-- 消息列表 -->
@@ -21,6 +23,9 @@
           <div class="msg-bubble spirit-bubble">
             <p>{{ greeting }}</p>
             <p class="spirit-hint">你想聊什么？我在这儿听着呢~</p>
+            <div class="msg-actions" v-if="greeting">
+              <VoicePlayer :text="greeting" :style="'whisper'" :show-label="false" size="mini" />
+            </div>
           </div>
         </div>
 
@@ -33,6 +38,29 @@
             <div class="msg-avatar"><SpiritAvatar :planet="planet" :symbol="symbol" :name="name" size="sm" /></div>
             <div class="msg-bubble spirit-bubble">
               <p>{{ msg.text }}</p>
+              <div class="msg-actions" v-if="msg.text">
+                <VoicePlayer :text="msg.text" :style="'whisper'" :show-label="false" size="mini" />
+              </div>
+              <!-- 星盘依据：可折叠 -->
+              <div class="evidence-area" v-if="msg.engine_reading?.evidence?.length">
+                <div class="evidence-toggle" @click.stop="toggleEvidence(i)">
+                  <span class="evidence-toggle-line">─</span>
+                  <span class="evidence-toggle-label">查看星盘依据</span>
+                  <span class="evidence-toggle-arrow">{{ expandedEvidence === i ? '▴' : '▾' }}</span>
+                </div>
+                <div class="evidence-collapse" :class="{ 'is-open': expandedEvidence === i }">
+                  <div class="evidence-inner">
+                    <div
+                      v-for="(line, li) in msg.engine_reading.evidence"
+                      :key="li"
+                      class="evidence-line"
+                    >
+                      <span class="evidence-bullet">•</span>
+                      <span>{{ line }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </template>
@@ -60,7 +88,7 @@
           class="chat-send-btn"
           :disabled="!inputText.trim() || isThinking"
           @click="sendMessage"
-          :style="{ background: inputText.trim() ? color : 'rgba(0,0,0,0.06)' }"
+          :style="{ background: inputText.trim() ? color : 'rgba(255,255,255,0.1)' }"
         >
           <span v-if="!isThinking">发送</span>
           <span v-else>...</span>
@@ -79,6 +107,20 @@
 import { ref, nextTick, watch } from "vue";
 import { apiClient } from "@/config/api";
 import SpiritAvatar from "./SpiritAvatar.vue";
+import VoicePlayer from "@/views/home/components/VoicePlayer.vue";
+
+interface EngineReading {
+  evidence: string[];
+  acknowledgment?: string;
+  mirroring?: string;
+  guidance?: string;
+}
+
+interface ChatMessage {
+  role: "user" | "spirit";
+  text: string;
+  engine_reading?: EngineReading;
+}
 
 const props = defineProps<{
   visible: boolean;
@@ -89,16 +131,29 @@ const props = defineProps<{
   greeting: string;
   planet?: string;
   reportId?: string;
+  entryContext?: {
+    source: string;
+    transit_planet?: string;
+    transit_detail?: string;
+    daily_question?: string;
+    previous_spirit?: string;
+    previous_chats_today?: number;
+  };
 }>();
 
 const emit = defineEmits<{
-  close: [];
+  (e: "close", messages: ChatMessage[]): void;
 }>();
 
 const inputText = ref("");
 const isThinking = ref(false);
-const messages = ref<Array<{ role: "user" | "spirit"; text: string }>>([]);
+const messages = ref<ChatMessage[]>([]);
 const messagesEl = ref<HTMLElement | null>(null);
+const expandedEvidence = ref<number | null>(null);
+
+function handleClose() {
+  emit("close", messages.value);
+}
 
 async function sendMessage() {
   const text = inputText.value.trim();
@@ -113,6 +168,7 @@ async function sendMessage() {
 
   // 尝试调用 AI 对话 API
   let apiResponse = "";
+  let engineReading: EngineReading | undefined;
   if (props.reportId && props.planet) {
     try {
       const chatHistory = messages.value.map((m) => ({
@@ -121,32 +177,29 @@ async function sendMessage() {
       }));
       const res = await apiClient.post(`/spirit-chat/${props.reportId}`, {
         planet: props.planet,
-        topic: "personal",
         message: text,
         history: chatHistory,
+        entry_context: props.entryContext,
       });
       if (res.data?.status === "success") {
         apiResponse = res.data.data?.response || "";
+        engineReading = res.data.data?.engine_reading;
       }
     } catch {
       // fallback
     }
   }
 
-  // Fallback: 前端规则生成
+  // 引擎占星师在后端永远在线，只有网络完全不可达时才兜底
   if (!apiResponse) {
-    await new Promise((r) => setTimeout(r, 800 + Math.random() * 1200));
-    const responses = [
-      `你说得对，让我从我的角度来看——${text.slice(0, 10)}这件事，其实反映了你星盘里一个很核心的议题。`,
-      `嗯，我听到了。你知道吗，你的星盘里有一个很特别的地方和这个有关——我慢慢跟你说。`,
-      `这个问题很有意思。从我的位置来看，你之所以会这么想，是因为你天生就带着某种倾向...`,
-      `我明白你的感受。作为你的${props.name}，我一直都在观察你这方面的模式。`,
-      `让我想想...好，我看到了。你星盘里的宫位结构显示，这其实是你的一个成长课题。`,
-    ];
-    apiResponse = responses[Math.floor(Math.random() * responses.length)];
+    apiResponse = `抱歉，我现在暂时无法连接。请稍后再试——${props.name}一直都在。`;
   }
 
-  messages.value.push({ role: "spirit", text: apiResponse });
+  messages.value.push({
+    role: "spirit",
+    text: apiResponse,
+    engine_reading: engineReading?.evidence?.length ? engineReading : undefined,
+  });
   isThinking.value = false;
 
   await nextTick();
@@ -159,6 +212,10 @@ function scrollToBottom() {
   }
 }
 
+function toggleEvidence(index: number) {
+  expandedEvidence.value = expandedEvidence.value === index ? null : index;
+}
+
 watch(
   () => props.visible,
   (v) => {
@@ -168,18 +225,23 @@ watch(
     }
   }
 );
+
+defineExpose({ messages });
 </script>
 
 <style scoped>
 .chat-bubble {
   display: flex;
   flex-direction: column;
-  height: 420px;
+  height: 60vh;
+  max-height: 600px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(16px);
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
-  border: 1.5px solid rgba(255, 255, 255, 0.8);
+  background: rgba(20, 20, 30, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+  color: #f0e6d8;
   overflow: hidden;
 }
 
@@ -199,13 +261,33 @@ watch(
   transform: translateY(8px);
 }
 
+/* ── 呼吸光晕环 ── */
+.spirit-ring {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: ring-pulse 2.5s ease-in-out infinite;
+  box-shadow: 0 0 0 0 var(--ring-color);
+  flex-shrink: 0;
+}
+
+@keyframes ring-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ring-color) 40%, transparent); }
+  50% { box-shadow: 0 0 0 8px color-mix(in srgb, var(--ring-color) 10%, transparent); }
+  100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--ring-color) 40%, transparent); }
+}
+
 /* ── 头部 ── */
 .chat-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 14px 18px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
 }
 .chat-header-left {
@@ -213,43 +295,34 @@ watch(
   align-items: center;
   gap: 10px;
 }
-.chat-avatar-sm {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-  background: var(--chat-color) 20;
-}
 .chat-name-sm {
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: #4a3728;
+  color: #f0e6d8;
 }
 .chat-subtitle-sm {
   font-size: 11px;
-  color: #8b7355;
+  color: rgba(255, 255, 255, 0.5);
 }
 .chat-close-btn {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: none;
-  background: rgba(0, 0, 0, 0.04);
-  color: #8b7355;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   transition: all 0.2s;
+  font-family: inherit;
 }
 .chat-close-btn:hover {
-  background: rgba(0, 0, 0, 0.08);
-  color: #4a3728;
+  background: rgba(255, 255, 255, 0.15);
+  color: #f0e6d8;
 }
 
 /* ── 消息区 ── */
@@ -265,7 +338,7 @@ watch(
   width: 4px;
 }
 .chat-messages::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;
 }
 
@@ -298,8 +371,8 @@ watch(
   line-height: 1.6;
 }
 .spirit-bubble {
-  background: rgba(0, 0, 0, 0.03);
-  color: #4a3728;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f0e6d8;
   border-top-left-radius: 6px;
 }
 .spirit-bubble p {
@@ -308,12 +381,24 @@ watch(
 .spirit-hint {
   margin-top: 6px !important;
   font-size: 12px;
-  color: #a89880;
+  color: rgba(255, 255, 255, 0.4);
 }
 .user-bubble {
   background: var(--chat-color);
   color: #fff;
   border-top-right-radius: 6px;
+}
+
+/* 消息操作按钮 */
+.msg-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+.spirit-bubble:hover .msg-actions {
+  opacity: 1;
 }
 
 /* 思考动画 */
@@ -327,7 +412,7 @@ watch(
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #c4b5a5;
+  background: rgba(255, 255, 255, 0.4);
   animation: bounce 1.4s ease-in-out infinite;
 }
 .thinking-bubble .dot:nth-child(2) {
@@ -337,14 +422,8 @@ watch(
   animation-delay: 0.32s;
 }
 @keyframes bounce {
-  0%,
-  80%,
-  100% {
-    transform: scale(0.6);
-  }
-  40% {
-    transform: scale(1);
-  }
+  0%, 80%, 100% { transform: scale(0.6); }
+  40% { transform: scale(1); }
 }
 
 /* ── 输入区 ── */
@@ -352,17 +431,17 @@ watch(
   display: flex;
   gap: 8px;
   padding: 12px 18px;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
 }
 .chat-input {
   flex: 1;
   padding: 10px 16px;
   border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
   font-size: 14px;
-  color: #4a3728;
+  color: #f0e6d8;
   outline: none;
   font-family: inherit;
   transition: border-color 0.2s;
@@ -371,7 +450,7 @@ watch(
   border-color: var(--chat-color);
 }
 .chat-input::placeholder {
-  color: #c4b5a5;
+  color: rgba(255, 255, 255, 0.3);
 }
 .chat-send-btn {
   padding: 10px 20px;
@@ -392,11 +471,67 @@ watch(
   opacity: 0.5;
 }
 
+/* ── 星盘依据 ── */
+.evidence-area {
+  margin-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 6px;
+}
+.evidence-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  padding: 2px 0;
+  transition: color 0.2s;
+}
+.evidence-toggle:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+.evidence-toggle-line {
+  opacity: 0.5;
+}
+.evidence-toggle-label {
+  letter-spacing: 0.3px;
+}
+.evidence-toggle-arrow {
+  font-size: 10px;
+}
+.evidence-collapse {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+}
+.evidence-collapse.is-open {
+  max-height: 300px;
+}
+.evidence-inner {
+  padding: 6px 8px 4px;
+  margin-top: 4px;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+}
+.evidence-line {
+  font-size: 12px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.6);
+  display: flex;
+  gap: 6px;
+  padding-left: 2px;
+}
+.evidence-bullet {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.3);
+}
+
 /* ── 免责 ── */
 .chat-disclaimer {
   text-align: center;
   font-size: 11px;
-  color: #c4b5a5;
+  color: rgba(255, 255, 255, 0.3);
   padding: 8px 18px 12px;
   margin: 0;
   flex-shrink: 0;

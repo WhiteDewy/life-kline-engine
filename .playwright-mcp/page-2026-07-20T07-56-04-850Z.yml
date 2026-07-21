@@ -1,0 +1,45 @@
+- main [ref=f18e4]:
+  - generic [ref=f18e5]:
+    - button "🔇" [ref=f18e8] [cursor=pointer]
+    - generic [ref=f18e24]:
+      - button "☉" [ref=f18e25] [cursor=pointer]
+      - generic [ref=f18e28] [cursor=pointer]:
+        - generic [ref=f18e29]: ♃
+        - generic [ref=f18e32]:
+          - generic [ref=f18e33]: 今日星灵
+          - generic [ref=f18e34]: 木星 · 狮子座
+      - button "📡 今日走向" [ref=f18e35] [cursor=pointer]:
+        - generic [ref=f18e36]: 📡
+        - generic [ref=f18e37]: 今日走向
+      - button "🎨" [ref=f18e39] [cursor=pointer]
+    - navigation [ref=f18e40]:
+      - button "🌸 花园" [ref=f18e41] [cursor=pointer]:
+        - generic [ref=f18e42]: 🌸
+        - generic [ref=f18e43]: 花园
+      - button "📅 每日一问" [ref=f18e44] [cursor=pointer]:
+        - generic [ref=f18e45]: 📅
+        - generic [ref=f18e46]: 每日一问
+      - button "🌟 星灵议会" [ref=f18e47] [cursor=pointer]:
+        - generic [ref=f18e48]: 🌟
+        - generic [ref=f18e49]: 星灵议会
+    - generic [ref=f18e241]:
+      - generic [ref=f18e242]:
+        - generic [ref=f18e243]: 🌟
+        - generic [ref=f18e244]: 今日星灵登场
+        - button "✕" [ref=f18e245] [cursor=pointer]
+      - generic [ref=f18e246]: ♃
+      - paragraph [ref=f18e250]: "\"我是今天的引路星灵——木星\""
+      - paragraph [ref=f18e252]: "\"你心中的那个部分，今天是否正尝试在“表达”和“克制”之间找到自己的声音\""
+      - paragraph [ref=f18e253]: 基于你的星盘和今日行运，星灵为你提出了这个问题。
+      - generic [ref=f18e254]:
+        - button "🎤 语音播报" [ref=f18e256] [cursor=pointer]:
+          - generic [ref=f18e257]: 🎤
+          - generic [ref=f18e258]: 语音播报
+        - button "💬 和木星聊聊" [ref=f18e259] [cursor=pointer]:
+          - generic [ref=f18e260]: 💬
+          - generic [ref=f18e261]: 和木星聊聊
+      - generic [ref=f18e262]:
+        - generic [ref=f18e263]: ── 历史灵犀 ──
+        - generic [ref=f18e264]:
+          - generic [ref=f18e265]: 📅 7/20
+          - generic [ref=f18e266]: 木星：今天有没有什么事让你特别想大声说“我可以”

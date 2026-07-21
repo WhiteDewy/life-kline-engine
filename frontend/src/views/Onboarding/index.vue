@@ -74,6 +74,27 @@
           <div class="glass-inp">
             <input v-model="birthPlace" class="g-inp" placeholder="城市名，如 北京" />
           </div>
+
+          <!-- 夏令时 -->
+          <div class="toggle-row dls-row">
+            <button class="dls-btn" :class="{ on: daylightSaving }" @click="daylightSaving = !daylightSaving">
+              <span>☀️ 夏令时</span>
+              <span class="dls-hint">{{ daylightSaving ? '已开启' : '未开启' }}</span>
+            </button>
+            <p class="dls-note">1986-1991年间出生请注意</p>
+          </div>
+
+          <!-- 宫位制 -->
+          <div class="f-label">宫位制</div>
+          <div class="glass-inp house-select-row">
+            <button
+              v-for="hs in houseSystemOptions"
+              :key="hs.value"
+              class="hs-chip"
+              :class="{ on: houseSystem === hs.value }"
+              @click="houseSystem = hs.value"
+            >{{ hs.label }}</button>
+          </div>
         </div>
 
         <button class="main-btn" :disabled="!canSubmit" @click="submitBirth">绘制我的星图</button>
@@ -150,11 +171,20 @@ const calendarType = ref<"solar" | "lunar">("solar");
 const birthDate = ref<Date | null>(null);
 const birthTime = ref<Date | null>(null);
 const birthPlace = ref("");
+const daylightSaving = ref(false);
+const houseSystem = ref("B");
 const ni = ref<HTMLInputElement | null>(null);
 const canSubmit = computed(() => birthDate.value && birthTime.value && birthPlace.value.trim());
 const birthDateStr = computed(() => { if (!birthDate.value) return ""; return typeof birthDate.value === "string" ? birthDate.value : (birthDate.value as Date).toISOString().slice(0, 10); });
 
 const NICKNAMES = ["追星星的人","月光旅人","银河漫游者","晨曦微光","晚风轻轻","星辰大海","云端之上","深海鲸鱼","北极星的眼泪","夏日萤火","冬日暖阳","风铃草","薄荷糖","小宇宙","半糖去冰","森林里的鹿","海边的小贝壳","南山南","北方的雪","向日葵"];
+
+const houseSystemOptions = [
+  { value: "B", label: "阿卡比特" },
+  { value: "P", label: "普拉西度" },
+  { value: "W", label: "整宫制" },
+  { value: "K", label: "柯赫" },
+];
 const randomSuggestions = ref<string[]>([]);
 function shuffle() { randomSuggestions.value = [...NICKNAMES].sort(() => Math.random() - 0.5).slice(0, 4); }
 function randomNickname() { const pool = NICKNAMES.filter(n => n !== nickname.value); nickname.value = pool[Math.floor(Math.random() * pool.length)]; }
@@ -171,9 +201,29 @@ async function submitBirth() {
   const iso = `${ds}T${ts}:00`;
   step.value = 4; awakenPhase.value = "card"; showCard.value = false;
 
+  // 地理编码：根据出生地点获取坐标
+  let lat = 39.9, lon = 116.4;
+  const place = birthPlace.value.trim();
+  if (place) {
+    try {
+      const geoRes = await apiClient.post("/geocode", { address: place });
+      if (geoRes.data?.lat != null && geoRes.data?.lon != null) {
+        lat = geoRes.data.lat;
+        lon = geoRes.data.lon;
+      } else {
+        import("@/utils/toast").then(({ toast }) => toast.info("未能定位到该城市，将使用默认坐标", "info"));
+      }
+    } catch {
+      import("@/utils/toast").then(({ toast }) => toast.info("地理编码服务暂不可用，使用默认坐标", "info"));
+    }
+  }
+
   try {
-    await saveProfile({ name: nickname.value, gender: gender.value, birth_time: iso, lat: 39.9, lon: 116.4, timezone: 8 });
-    const res = await apiClient.post("/analyses", { analysis_type: "natal_blueprint", subjects: [{ name: nickname.value, gender: gender.value, birth_time: iso, lat: 39.9, lon: 116.4, timezone: 8 }] });
+    await saveProfile({ name: nickname.value, gender: gender.value, birth_time: iso, lat, lon, timezone: 8, daylight_saving: daylightSaving.value, house_system: houseSystem.value });
+    const res = await apiClient.post("/analyses", {
+      analysis_type: "natal_blueprint",
+      subjects: [{ name: nickname.value, gender: gender.value, birth_time: iso, lat, lon, timezone: 8, daylight_saving: daylightSaving.value, house_system: houseSystem.value }],
+      });
     if (res.data?.status === "success") {
       awakeningReportId.value = res.data.report_id || "";
       try {
@@ -207,7 +257,10 @@ function startPlanets() { awakenPhase.value = "planets"; visiblePlanets.value = 
 const ascSign = ref(""); const ascDesc = ref(""); const showAsc = ref(false); const showFinalPlanets = ref(false); const showCta = ref(false);
 const allPlanets = computed(() => PLANETS.map((p,i) => ({...p, signLabel: planetData.value[p.key]?.signLabel||"", delay:i*0.07})));
 function startAsc() { awakenPhase.value = "ascendant"; showAsc.value = false; showFinalPlanets.value = false; showCta.value = false; setTimeout(()=>{showAsc.value=true},350); setTimeout(()=>{showFinalPlanets.value=true},1300); setTimeout(()=>{showCta.value=true},2200); }
-function enterGarden() { router.replace({ name:"spirit-garden", query:{ id: awakeningReportId.value } }); }
+function enterGarden() {
+  localStorage.setItem("spirit_profile_completed", "1");
+  router.replace({ name: "entry" });
+}
 
 // ── 柔光粒子 ──
 const particleCanvas = ref<HTMLCanvasElement|null>(null); let animId = 0;
@@ -287,6 +340,18 @@ function initCanvas() {
 .toggle-row button.on { background:rgba(240,170,140,0.12);color:#5c3d3a; }
 .f-label { font-size:11px;font-weight:500;color:#b8a090;letter-spacing:2px;text-transform:uppercase;margin-top:2px; }
 .f-picker { width:100%; }
+
+/* ── 夏令时 ── */
+.dls-row { flex-direction:column;padding:6px 10px;gap:2px;border-radius:14px;border:1px solid rgba(0,0,0,0.04);background:rgba(255,255,255,0.4); }
+.dls-btn { width:100%;display:flex;align-items:center;justify-content:space-between;border:none;background:transparent;font-size:13px;font-weight:500;color:#b8a090;cursor:pointer;font-family:inherit;letter-spacing:1px;padding:8px 6px;transition:all 0.3s;border-radius:12px; }
+.dls-btn.on { background:rgba(240,170,140,0.12);color:#5c3d3a; }
+.dls-hint { font-size:11px;opacity:0.6; }
+.dls-note { margin:0;font-size:10px;color:#c4b0a5;text-align:center;letter-spacing:1px; }
+/* ── 宫位制 ── */
+.house-select-row { display:flex;gap:6px;padding:6px 8px;flex-wrap:wrap;justify-content:center; }
+.hs-chip { padding:8px 14px;border-radius:14px;border:1px solid rgba(0,0,0,0.04);background:rgba(255,255,255,0.5);color:#8b6f5f;font-size:12px;cursor:pointer;font-family:inherit;letter-spacing:1px;transition:all 0.3s;flex:1;min-width:70px; }
+.hs-chip:hover { border-color:rgba(255,160,130,0.25);color:#4a3028;background:rgba(255,255,255,0.7); }
+.hs-chip.on { background:rgba(240,170,140,0.12);border-color:rgba(240,170,140,0.25);color:#5c3d3a;font-weight:600; }
 
 /* ═══ 唤醒动画 ═══ */
 .awaken { position:relative;z-index:1;width:100%;max-width:400px;padding:0 24px;display:flex;flex-direction:column;align-items:center;min-height:60vh;justify-content:center; }

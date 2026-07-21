@@ -1,0 +1,7 @@
+- main [ref=e4]:
+  - generic [ref=e5]:
+    - button "🔇" [ref=e8] [cursor=pointer]
+    - generic [ref=e9]:
+      - generic [ref=e10]: 🌸
+      - heading "星灵花园正在打开..." [level=2] [ref=e11]
+      - paragraph [ref=e12]: 正在连接你的星盘，邀请星灵们登场

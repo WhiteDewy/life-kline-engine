@@ -32,6 +32,7 @@
             :is-active="p.planet === activePlanet"
             :activation-score="p.activationScore"
             :float-delay="0"
+            :healing-label="p.healingLabel || ''"
             @select="onSelectPlanet(p)"
           />
         </div>

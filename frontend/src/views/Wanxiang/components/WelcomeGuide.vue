@@ -7,7 +7,7 @@
           <div class="guide-emoji">🌌</div>
           <h2 class="guide-title">欢迎来到<br />你的星灵花园</h2>
           <p class="guide-text">
-            七颗行星，七位星灵<br />
+            十颗行星，十位星灵<br />
             它们一直住在你的星盘里<br />
             今天，它们想正式认识你
           </p>

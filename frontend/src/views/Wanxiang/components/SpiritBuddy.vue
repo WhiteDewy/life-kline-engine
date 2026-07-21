@@ -36,6 +36,9 @@
       <div class="buddy-sign">{{ signLabel }} · {{ dignityLabel }}</div>
     </div>
 
+    <!-- 疗愈标签 -->
+    <span v-if="healingLabel" class="healing-tag">{{ healingLabel }}</span>
+
     <!-- 活跃度条 -->
     <div class="buddy-meter" v-if="activationScore !== null">
       <div class="meter-track">
@@ -73,6 +76,7 @@ defineProps<{
   isActive: boolean;
   activationScore: number | null;
   floatDelay: number;
+  healingLabel?: string;
 }>();
 
 defineEmits<{
@@ -233,6 +237,19 @@ defineEmits<{
 .buddy-sign {
   font-size: 11px;
   color: #a89880;
+}
+
+/* ── 疗愈标签 ── */
+.healing-tag {
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(74, 55, 40, 0.7);
+  background: rgba(255, 200, 180, 0.35);
+  border: 1px solid rgba(255, 180, 160, 0.3);
+  padding: 2px 10px;
+  border-radius: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.03em;
 }
 
 /* ── 活跃度条 ── */

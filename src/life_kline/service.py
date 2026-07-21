@@ -562,9 +562,11 @@ class LifeKlineService:
         lon: float,
         timezone_offset: float = 8.0,
         gender: Optional[str] = None,
+        house_system: str = 'B',
+        daylight_saving: bool = False,
     ) -> Dict[str, Any]:
-        birth_time_local, birth_time_utc = self._parse_birth_time(birth_time_iso, timezone_offset)
-        chart = self.engine.calculate_chart(birth_time_utc, lat, lon)
+        birth_time_local, birth_time_utc = self._parse_birth_time(birth_time_iso, timezone_offset, daylight_saving)
+        chart = self.engine.calculate_chart(birth_time_utc, lat, lon, house_system=house_system)
         aspect_cache = self._build_aspect_cache(chart)
         planet_profiles = self._build_planet_profiles(chart, aspect_cache)
         periods = calculate_firdaria_periods(chart.is_day_chart)
@@ -582,6 +584,8 @@ class LifeKlineService:
                 "lon": lon,
                 "timezone": f"GMT {timezone_offset:+.2f}",
                 "is_day_chart": chart.is_day_chart,
+                "house_system": house_system,
+                "daylight_saving": daylight_saving,
             },
             "kline_data": {"periods": []},
         }
@@ -642,7 +646,7 @@ class LifeKlineService:
         output_data["timeline_validation"] = timeline_validation
 
         # ── 行运数据 ──
-        transits = self.compute_transits(chart)
+        transits = self.compute_transits(chart, house_system=house_system)
         transits_fast = [t for t in transits if t.get("speed") == "fast"]
         transits_slow = [t for t in transits if t.get("speed") == "slow"]
 
@@ -679,7 +683,7 @@ class LifeKlineService:
         output_data["_transits_slow"] = transits_slow
         return output_data
 
-    def _parse_birth_time(self, birth_time_iso: str, timezone_offset: float) -> tuple[datetime, datetime]:
+    def _parse_birth_time(self, birth_time_iso: str, timezone_offset: float, daylight_saving: bool = False) -> tuple[datetime, datetime]:
         try:
             parsed_birth_time = datetime.fromisoformat(birth_time_iso)
         except ValueError as exc:
@@ -692,7 +696,8 @@ class LifeKlineService:
             birth_time_local = birth_time_utc + timedelta(hours=timezone_offset)
         else:
             birth_time_local = parsed_birth_time
-            birth_time_utc = birth_time_local - timedelta(hours=timezone_offset)
+            actual_offset = timezone_offset + 1.0 if daylight_saving else timezone_offset
+            birth_time_utc = birth_time_local - timedelta(hours=actual_offset)
         return birth_time_local, birth_time_utc
 
     def _find_current_lunar_return(
@@ -771,6 +776,7 @@ class LifeKlineService:
         natal_moon_longitude: float,
         lat: float,
         lon: float,
+        house_system: str = 'B',
     ) -> datetime:
         coarse_start = start_utc - timedelta(days=2)
         coarse_end = start_utc + timedelta(days=2)
@@ -780,7 +786,7 @@ class LifeKlineService:
 
         cursor = coarse_start
         while cursor <= coarse_end:
-            moon_longitude = self._moon_longitude_at(cursor, lat, lon)
+            moon_longitude = self._moon_longitude_at(cursor, lat, lon, house_system=house_system)
             distance = deg_diff(moon_longitude, natal_moon_longitude)
             if distance < best_value:
                 best_value = distance
@@ -796,7 +802,7 @@ class LifeKlineService:
             local_best_value = 999.0
             local_step = timedelta(seconds=delta_seconds)
             while current <= right:
-                moon_longitude = self._moon_longitude_at(current, lat, lon)
+                moon_longitude = self._moon_longitude_at(current, lat, lon, house_system=house_system)
                 distance = deg_diff(moon_longitude, natal_moon_longitude)
                 if distance < local_best_value:
                     local_best_value = distance
@@ -808,8 +814,8 @@ class LifeKlineService:
 
         return best_time
 
-    def _moon_longitude_at(self, dt_utc: datetime, lat: float, lon: float) -> float:
-        chart = self.engine.calculate_chart(dt_utc, lat, lon)
+    def _moon_longitude_at(self, dt_utc: datetime, lat: float, lon: float, house_system: str = 'B') -> float:
+        chart = self.engine.calculate_chart(dt_utc, lat, lon, house_system=house_system)
         moon = chart.get_planet_info(Planet.MOON)
         if not moon:
             raise ValueError("Moon position is unavailable.")
@@ -903,7 +909,7 @@ class LifeKlineService:
     _TRANSIT_ORB: dict[AspectType, float] = {
         AspectType.CONJUNCTION: 3.0,
         AspectType.OPPOSITION: 3.0,
-        AspectType.SQUARE: 2.5,
+        AspectType.SQUARE: 3.5,
         AspectType.TRINE: 3.0,
         AspectType.SEXTILE: 2.0,
     }
@@ -916,12 +922,12 @@ class LifeKlineService:
     _FAST_TRANSIT_PLANETS = {Planet.SUN, Planet.MOON, Planet.MERCURY, Planet.VENUS, Planet.MARS}
     _SLOW_TRANSIT_PLANETS = {Planet.JUPITER, Planet.SATURN, Planet.URANUS, Planet.NEPTUNE, Planet.PLUTO}
 
-    def compute_transits(self, chart: Any) -> list[dict[str, Any]]:
+    def compute_transits(self, chart: Any, house_system: str = 'B') -> list[dict[str, Any]]:
         now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
         lat = chart.location.get("lat", 0.0) if getattr(chart, "location", None) else 0.0
         lon = chart.location.get("lon", 0.0) if getattr(chart, "location", None) else 0.0
 
-        current_chart = self.engine.calculate_chart(now_utc, lat, lon)
+        current_chart = self.engine.calculate_chart(now_utc, lat, lon, house_system=house_system)
         transits: list[dict[str, Any]] = []
 
         for t_planet in self._TRANSITING_PLANETS:
@@ -938,7 +944,7 @@ class LifeKlineService:
 
         planet_rank = {p: i for i, p in enumerate(self._TRANSITING_PLANETS)}
         transits.sort(key=lambda t: (planet_rank.get(t["transiting_planet"], 99), -t["strength"]))
-        return transits[:6]
+        return transits[:12]
 
     def _detect_transit(self, t_planet: Planet, t_info: Any, n_planet: Planet, n_info: Any) -> dict[str, Any] | None:
         t_lon = self._absolute_longitude(t_info)
@@ -5096,9 +5102,11 @@ class LifeKlineService:
         timezone_offset: float = 8.0,
         gender: Optional[str] = None,
         reference_time_utc: Optional[datetime] = None,
+        house_system: str = 'B',
+        daylight_saving: bool = False,
     ) -> Dict[str, Any]:
-        birth_time_local, birth_time_utc = self._parse_birth_time(birth_time_iso, timezone_offset)
-        natal_chart = self.engine.calculate_chart(birth_time_utc, lat, lon)
+        birth_time_local, birth_time_utc = self._parse_birth_time(birth_time_iso, timezone_offset, daylight_saving)
+        natal_chart = self.engine.calculate_chart(birth_time_utc, lat, lon, house_system=house_system)
         natal_aspect_cache = self._build_aspect_cache(natal_chart)
         natal_profiles = self._build_planet_profiles(natal_chart, natal_aspect_cache)
         natal_chart_payload = self._build_natal_chart(
@@ -5124,6 +5132,7 @@ class LifeKlineService:
             reference_time_utc=reference_time_utc,
             lat=lat,
             lon=lon,
+            house_system=house_system,
         )
         next_lunar_return_exact_utc = self._find_nth_lunar_return_after(
             natal_moon_longitude=natal_moon_longitude,
@@ -5132,12 +5141,13 @@ class LifeKlineService:
             count=1,
             lat=lat,
             lon=lon,
+            house_system=house_system,
         )
 
         lunar_return_exact_local = lunar_return_exact_utc + timedelta(hours=timezone_offset)
         next_lunar_return_exact_local = next_lunar_return_exact_utc + timedelta(hours=timezone_offset)
 
-        lunar_return_chart = self.engine.calculate_chart(lunar_return_exact_utc, lat, lon)
+        lunar_return_chart = self.engine.calculate_chart(lunar_return_exact_utc, lat, lon, house_system=house_system)
         lunar_return_aspect_cache = self._build_aspect_cache(lunar_return_chart)
         lunar_return_profiles = self._build_planet_profiles(lunar_return_chart, lunar_return_aspect_cache)
         lunar_return_chart_payload = self._build_natal_chart(
@@ -5155,10 +5165,11 @@ class LifeKlineService:
             lat=lat,
             lon=lon,
             timezone_offset=timezone_offset,
+            house_system=house_system,
         )
 
         # ── 快星行运：本月提醒 ──
-        all_transits = self.compute_transits(natal_chart)
+        all_transits = self.compute_transits(natal_chart, house_system=house_system)
         fast_transits = [t for t in all_transits if t.get("speed") == "fast"]
 
         return {
@@ -5174,6 +5185,8 @@ class LifeKlineService:
                 "lon": lon,
                 "timezone": f"GMT {timezone_offset:+.2f}",
                 "is_day_chart": natal_chart.is_day_chart,
+                "house_system": house_system,
+                "daylight_saving": daylight_saving,
             },
             "reference": {
                 "current_date_utc": reference_time_utc.isoformat(),
@@ -5204,6 +5217,7 @@ class LifeKlineService:
         reference_time_utc: datetime,
         lat: float,
         lon: float,
+        house_system: str = 'B',
     ) -> datetime:
         days_since_birth = max((reference_time_utc - birth_time_utc).total_seconds() / 86400.0, 0.0)
         cycles_elapsed = max(int(days_since_birth // SIDEREAL_MONTH_DAYS), 0)
@@ -5216,6 +5230,7 @@ class LifeKlineService:
                 natal_moon_longitude=natal_moon_longitude,
                 lat=lat,
                 lon=lon,
+                house_system=house_system,
             )
             if target <= reference_time_utc:
                 last_match = target
@@ -5234,6 +5249,7 @@ class LifeKlineService:
         count: int,
         lat: float,
         lon: float,
+        house_system: str = 'B',
     ) -> datetime:
         current = start_time_utc
         found = 0
@@ -5246,6 +5262,7 @@ class LifeKlineService:
                 natal_moon_longitude=natal_moon_longitude,
                 lat=lat,
                 lon=lon,
+                house_system=house_system,
             )
             if candidate <= current:
                 candidate = self._find_lunar_return_near(
@@ -5253,6 +5270,7 @@ class LifeKlineService:
                     natal_moon_longitude=natal_moon_longitude,
                     lat=lat,
                     lon=lon,
+                    house_system=house_system,
                 )
             current = candidate + timedelta(minutes=1)
             found += 1
@@ -5265,6 +5283,7 @@ class LifeKlineService:
         natal_moon_longitude: float,
         lat: float,
         lon: float,
+        house_system: str = 'B',
     ) -> datetime:
         coarse_start = start_utc - timedelta(days=2)
         coarse_end = start_utc + timedelta(days=2)
@@ -5273,7 +5292,7 @@ class LifeKlineService:
 
         cursor = coarse_start
         while cursor <= coarse_end:
-            moon_longitude = self._moon_longitude_at(cursor, lat, lon)
+            moon_longitude = self._moon_longitude_at(cursor, lat, lon, house_system=house_system)
             distance = deg_diff(moon_longitude, natal_moon_longitude)
             if distance < best_value:
                 best_value = distance
@@ -5289,7 +5308,7 @@ class LifeKlineService:
             local_best_value = 999.0
             local_step = timedelta(seconds=delta_seconds)
             while current <= right:
-                moon_longitude = self._moon_longitude_at(current, lat, lon)
+                moon_longitude = self._moon_longitude_at(current, lat, lon, house_system=house_system)
                 distance = deg_diff(moon_longitude, natal_moon_longitude)
                 if distance < local_best_value:
                     local_best_value = distance
@@ -5300,8 +5319,8 @@ class LifeKlineService:
 
         return local_best_time
 
-    def _moon_longitude_at(self, dt_utc: datetime, lat: float, lon: float) -> float:
-        chart = self.engine.calculate_chart(dt_utc, lat, lon)
+    def _moon_longitude_at(self, dt_utc: datetime, lat: float, lon: float, house_system: str = 'B') -> float:
+        chart = self.engine.calculate_chart(dt_utc, lat, lon, house_system=house_system)
         moon = chart.get_planet_info(Planet.MOON)
         if not moon:
             raise ValueError("Moon position is unavailable.")
@@ -5314,8 +5333,9 @@ class LifeKlineService:
         lat: float,
         lon: float,
         timezone_offset: float,
+        house_system: str = 'B',
     ) -> list[Dict[str, Any]]:
-        samples = self._sample_lunar_cycle_positions(start_utc, end_utc, lat, lon)
+        samples = self._sample_lunar_cycle_positions(start_utc, end_utc, lat, lon, house_system=house_system)
         windows: list[Dict[str, Any]] = []
 
         for planet in LUNAR_RETURN_WINDOW_PLANETS:
@@ -5362,6 +5382,7 @@ class LifeKlineService:
                                 lat=lat,
                                 lon=lon,
                                 timezone_offset=timezone_offset,
+                                house_system=house_system,
                             ),
                         }
                     )
@@ -5375,6 +5396,7 @@ class LifeKlineService:
         end_utc: datetime,
         lat: float,
         lon: float,
+        house_system: str = 'B',
     ) -> list[Dict[str, Any]]:
         samples: list[Dict[str, Any]] = []
         tracked_planets = set(LUNAR_RETURN_WINDOW_PLANETS)
@@ -5382,7 +5404,7 @@ class LifeKlineService:
         cursor = start_utc
 
         while cursor <= end_utc:
-            chart = self.engine.calculate_chart(cursor, lat, lon)
+            chart = self.engine.calculate_chart(cursor, lat, lon, house_system=house_system)
             positions = {
                 planet: self._absolute_longitude(info)
                 for planet, info in getattr(chart, "planets", {}).items()
@@ -5392,7 +5414,7 @@ class LifeKlineService:
             cursor += timedelta(hours=1)
 
         if not samples or samples[-1]["timestamp_utc"] < end_utc:
-            chart = self.engine.calculate_chart(end_utc, lat, lon)
+            chart = self.engine.calculate_chart(end_utc, lat, lon, house_system=house_system)
             positions = {
                 planet: self._absolute_longitude(info)
                 for planet, info in getattr(chart, "planets", {}).items()
@@ -5445,6 +5467,7 @@ class LifeKlineService:
         lat: float,
         lon: float,
         timezone_offset: float,
+        house_system: str = 'B',
     ) -> list[Dict[str, Any]]:
         rows: list[Dict[str, Any]] = []
         local_start = start_utc + timedelta(hours=timezone_offset)
@@ -5459,7 +5482,7 @@ class LifeKlineService:
                 candidate_utc = candidate_local - timedelta(hours=timezone_offset)
                 if candidate_utc < start_utc or candidate_utc > end_utc:
                     continue
-                chart = self.engine.calculate_chart(candidate_utc, lat, lon)
+                chart = self.engine.calculate_chart(candidate_utc, lat, lon, house_system=house_system)
                 moon = chart.get_planet_info(Planet.MOON)
                 target = chart.get_planet_info(planet)
                 if not moon or not target:

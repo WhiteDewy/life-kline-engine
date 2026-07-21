@@ -11,7 +11,7 @@ import { getVideoBySign } from "@/config/videoAssets";
 import { ZODIAC_SIGNS, SIGN_EMOJI_BY_NAME, PLANET_ORDER } from "@/config/zodiac";
 
 export function useHomeData() {
-  const { user, profiles, isLoggedIn, loadMe, logout } = useAuth();
+  const { user, profiles, isLoggedIn, loadMe, logout, authHeaders } = useAuth();
 
   // ── 核心状态 ──
   const loading = ref(true);
@@ -104,9 +104,45 @@ export function useHomeData() {
     return "今夜，星光为你低语";
   });
 
+  // ── 今日星灵 ──
+  const todayStarSpirit = ref<any>(null);
+  const dailyQuestion = ref<any>(null);
+  const diaryEntries = ref<any[]>([]);
+
+  // ── 今日星象（每日走向面板用）──
+  // TODO: /api/daily-transits/{report_id} 后端同步开发中，暂用 try/catch 兜底
+  const dailyTransitReport = ref<any>(null);
+
+  const todaysPlanetProfile = computed(() => {
+    const planetKey = todayStarSpirit.value?.planet;
+    if (!planetKey) return null;
+    const profiles = planetProfiles.value?.planet_characters || {};
+    return profiles[planetKey] || null;
+  });
+
+  const directionTheme = computed(() => {
+    const sunTransitText = sunTransitStatus.value;
+    if (sunTransitText) return sunTransitText;
+    return dailyData.value?.daily_theme || "";
+  });
+
   // ═══════════════════════════════════════
   // 星灵议会
   // ═══════════════════════════════════════
+
+    /** 行星 → 疗愈主题映射 */
+  const HEALING_LABELS: Record<string, string> = {
+    SUN: "自我认同",
+    MOON: "情感安全",
+    MERCURY: "思维清晰",
+    VENUS: "关系和谐",
+    MARS: "行动勇气",
+    JUPITER: "信念希望",
+    SATURN: "结构边界",
+    URANUS: "突破创新",
+    NEPTUNE: "内在平静",
+    PLUTO: "深度转化",
+  };
 
   const councilPlanetList = computed(() => {
     const profiles = planetProfiles.value?.planet_characters || {};
@@ -128,6 +164,7 @@ export function useHomeData() {
         isFeatured: featuredSet.has(key),
         activationScore: activationScores[key] ?? null,
         greeting: p.personalized_greeting || "",
+        healingLabel: HEALING_LABELS[key] || "",
       };
     }).filter(Boolean) as any[];
   });
@@ -174,7 +211,7 @@ export function useHomeData() {
 
       if (profiles.value.length > 0 || user.value) {
         const hist = await apiClient.get("/reports/history", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("lk_token") || ""}` },
+          headers: authHeaders(),
         });
         const reports = hist.data?.reports || [];
         if (reports.length > 0) {
@@ -190,6 +227,24 @@ export function useHomeData() {
               const dRes = await apiClient.get(`/characters/${lastId}/daily`);
               if (dRes.data?.status === "success") dailyData.value = dRes.data.data;
             } catch { /* optional */ }
+            // 非阻塞加载今日星灵、每日一问、日记、每日星象
+            try {
+              const ssRes = await apiClient.get(`/today-star-spirit/${lastId}`);
+              if (ssRes.data?.status === "success") todayStarSpirit.value = ssRes.data.data;
+            } catch { /* optional */ }
+            try {
+              const dqRes = await apiClient.get(`/daily-question/${lastId}`);
+              if (dqRes.data?.status === "success") dailyQuestion.value = dqRes.data.data;
+            } catch { /* optional */ }
+            try {
+              const deRes = await apiClient.get(`/spirit-diary/${lastId}?limit=30&offset=0`);
+              if (deRes.data?.status === "success") diaryEntries.value = deRes.data.data?.entries || deRes.data.data || [];
+            } catch { /* optional */ }
+            // TODO: /api/daily-transits/{report_id} 后端同步开发中，可能尚未就绪
+            try {
+              const dtRes = await apiClient.get(`/daily-transits/${lastId}`);
+              if (dtRes.data?.status === "success") dailyTransitReport.value = dtRes.data.data;
+            } catch { /* API not available yet - gracefully degrade */ }
           }
         }
       }
@@ -207,6 +262,24 @@ export function useHomeData() {
             const dRes = await apiClient.get(`/characters/${reportId.value}/daily`);
             if (dRes.data?.status === "success") dailyData.value = dRes.data.data;
           } catch { /* optional */ }
+          // 非阻塞加载今日星灵、每日一问、日记、每日星象
+          try {
+            const ssRes = await apiClient.get(`/today-star-spirit/${reportId.value}`);
+            if (ssRes.data?.status === "success") todayStarSpirit.value = ssRes.data.data;
+          } catch { /* optional */ }
+          try {
+            const dqRes = await apiClient.get(`/daily-question/${reportId.value}`);
+            if (dqRes.data?.status === "success") dailyQuestion.value = dqRes.data.data;
+          } catch { /* optional */ }
+          try {
+            const deRes = await apiClient.get(`/spirit-diary/${reportId.value}?limit=30&offset=0`);
+            if (deRes.data?.status === "success") diaryEntries.value = deRes.data.data?.entries || deRes.data.data || [];
+          } catch { /* optional */ }
+          // TODO: /api/daily-transits/{report_id} 后端同步开发中，可能尚未就绪
+          try {
+            const dtRes = await apiClient.get(`/daily-transits/${reportId.value}`);
+            if (dtRes.data?.status === "success") dailyTransitReport.value = dtRes.data.data;
+          } catch { /* API not available yet - gracefully degrade */ }
         }
       }
     } catch (err: any) {
@@ -235,6 +308,7 @@ export function useHomeData() {
   function clearData() {
     reportData.value = null;
     dailyData.value = null;
+    dailyTransitReport.value = null;
     reportId.value = "";
     activePlanet.value = "SUN";
     activeSign.value = "";
@@ -276,6 +350,14 @@ export function useHomeData() {
     dailyTheme,
     dateLabel,
     chatCtaText,
+    // 今日星灵
+    todayStarSpirit,
+    dailyQuestion,
+    diaryEntries,
+    todaysPlanetProfile,
+    directionTheme,
+    // 每日星象
+    dailyTransitReport,
     // 议会
     councilPlanetList,
     councilSignList,

@@ -44,23 +44,51 @@
       <el-button round size="large" class="retry-btn" @click="homeData.refreshData()">重新尝试</el-button>
     </section>
 
+    <!-- ═══ 登录引导: 未登录且 demo 数据加载完成 ═══ -->
+    <section v-else-if="!isLoggedIn && !homeData.loading.value" class="garden-state login-guide">
+      <div class="state-icon">🔮</div>
+      <h2 class="state-title">欢迎来到星灵花园</h2>
+      <p class="state-sub">登录解锁专属星盘，与你的星灵对话</p>
+      <el-button round size="large" class="login-guide-btn" @click="startLogin">登录</el-button>
+      <p class="login-guide-hint">你也可以继续浏览 Demo 星盘</p>
+    </section>
+
     <!-- ═══ 主内容 ═══ -->
     <template v-else>
       <!-- 顶栏：悬浮于视频之上 -->
-      <div class="top-bar" v-if="homeData.hasProfile.value">
+      <div class="top-bar top-bar--three" v-if="homeData.hasProfile.value">
+        <!-- 左：用户头像 -->
         <button class="avatar-trigger" @click="showProfile = true">
           <SpiritAvatar planet="SUN" :sign="homeData.sunSign.value" :gender="homeData.userGender.value" size="sm" />
         </button>
+
+        <!-- 中：今日星灵 -->
+        <StarSpiritDisplay
+          v-if="homeData.todayStarSpirit.value"
+          :planet="homeData.todayStarSpirit.value.planet"
+          :planet-name="homeData.todayStarSpirit.value.planet_label"
+          :planet-sign="homeData.todayStarSpirit.value.sign_label"
+          :symbol="homeData.todayStarSpirit.value.symbol"
+          :color="homeData.todaysPlanetProfile?.value?.persona?.visual_color || '#F2A900'"
+          :gender="homeData.userGender.value"
+          @chat="openStarSpiritChat"
+        />
+
+        <!-- 右：今日走向 -->
+        <button class="direction-trigger" @click="openDirection">
+          <span class="direction-icon">📡</span>
+          <span class="direction-label">今日走向</span>
+        </button>
+
         <ThemeSwitcher :current="currentTheme" @select="(k: string) => currentTheme = k" />
       </div>
 
       <!-- ═══ 底部导航栏 ═══ -->
       <HomeTabBar
         v-if="homeData.hasProfile.value"
-        :chat-cta-text="homeData.chatCtaText.value"
         @garden="goGarden"
-        @chat="openChat"
-        @council="showCouncil = true"
+        @daily-question="openDailyQuestion"
+        @council="openCouncil"
       />
 
       <!-- ═══ Profile 浮层 ═══ -->
@@ -77,14 +105,17 @@
         @go-garden="goGarden"
         @go-history="goHistory"
         @go-onboarding="goOnboarding"
+        @go-profile="goProfile"
+        @go-diary="goDiary"
         @logout="doLogout"
       />
 
       <!-- ═══ 聊天浮层 ═══ -->
       <transition name="overlay-fade">
-        <div v-if="chatVisible" class="overlay-backdrop" @click.self="chatVisible = false">
+        <div v-if="chatVisible" class="overlay-backdrop" @click.self="handleBackdropClose">
           <div class="overlay-content">
             <SpiritChatBubble
+              ref="chatBubbleRef"
               :visible="chatVisible"
               :planet="chatPlanet"
               :symbol="chatSymbol"
@@ -93,7 +124,8 @@
               :color="chatColor"
               :greeting="chatGreeting"
               :report-id="homeData.reportId.value"
-              @close="chatVisible = false"
+              :entry-context="chatEntryContext"
+              @close="closeChatAndGenerateDiary"
             />
           </div>
         </div>
@@ -113,15 +145,55 @@
         @select-planet="homeData.setActivePlanet"
         @select-sign="homeData.setActiveSign"
       />
+
+      <!-- ═══ 灵犀一问 ═══ -->
+      <SpiritOracle
+        :visible="showDailyQuestion"
+        :today-star-spirit="homeData.todayStarSpirit.value"
+        :daily-question="homeData.dailyQuestion.value"
+        :spirit-profile="homeData.todaysPlanetProfile?.value"
+        :gender="homeData.userGender.value"
+        @chat="openStarSpiritChat"
+        @close="showDailyQuestion = false"
+      />
+
+      <!-- ═══ 星灵日记 ═══ -->
+      <StarSpiritDiary
+        :visible="showDiary"
+        :entries="homeData.diaryEntries.value"
+        :loading="false"
+        @close="showDiary = false"
+      />
+
+      <!-- ═══ 今日走向 ═══ -->
+      <TodayDirection
+        :visible="showDirection"
+        :transit-report="homeData.dailyTransitReport.value"
+        :today-star-spirit="homeData.todayStarSpirit.value"
+        :date-label="homeData.dateLabel.value"
+        @close="showDirection = false"
+        @chat-with-spirit="onTransitChat($event.planet, $event.detail)"
+      />
+
+      <!-- ═══ 新人引导 ═══ -->
+      <OnboardingFlow
+        :visible="showOnboarding"
+        :today-star-spirit="homeData.todayStarSpirit.value"
+        :todays-planet-profile="homeData.todaysPlanetProfile?.value"
+        :daily-question="homeData.dailyQuestion.value?.question || ''"
+        @close="showOnboarding = false"
+      />
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from "vue";
+import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useHomeData } from "@/composables/useHomeData";
+import { useAuth } from "@/utils/auth";
 import { PLANET_COLORS } from "@/config/zodiac";
+import { apiClient } from "@/config/api";
 import GardenScene from "@/views/Wanxiang/components/GardenScene.vue";
 import SpiritAvatar from "@/views/Wanxiang/components/SpiritAvatar.vue";
 import SpiritChatBubble from "@/views/Wanxiang/components/SpiritChatBubble.vue";
@@ -129,9 +201,17 @@ import ThemeSwitcher from "@/views/Wanxiang/components/ThemeSwitcher.vue";
 import HomeTabBar from "./HomeTabBar.vue";
 import ProfileOverlay from "./ProfileOverlay.vue";
 import HomeCouncil from "./HomeCouncil.vue";
+import StarSpiritDisplay from "./StarSpiritDisplay.vue";
+import SpiritOracle from "./SpiritOracle.vue";
+import StarSpiritDiary from "./StarSpiritDiary.vue";
+import TodayDirection from "./TodayDirection.vue";
+import OnboardingFlow from "./OnboardingFlow.vue";
 
 const router = useRouter();
 const homeData = useHomeData();
+const { isLoggedIn } = useAuth();
+
+function startLogin() { router.push("/login"); }
 
 // ── 主题 ──
 const currentTheme = ref(localStorage.getItem("spirit_garden_theme") || "cream");
@@ -161,13 +241,46 @@ watch(() => homeData.currentSignVideo.value, () => {
   });
 });
 
+// 加载完成后检查是否显示新用户引导
+watch(() => homeData.loading.value, (loading) => {
+  if (!loading) {
+    const profileDone = localStorage.getItem("spirit_profile_completed");
+    if (!profileDone) {
+      showOnboarding.value = true;
+    }
+  }
+}, { immediate: true });
+
 // ── 色板 (spinner 用) ──
 const planetColors = PLANET_COLORS;
 
 // ── UI 浮层状态 ──
 const showProfile = ref(false);
 const showCouncil = ref(false);
+const showDailyQuestion = ref(false);
+const showDiary = ref(false);
+const showDirection = ref(false);
 const chatVisible = ref(false);
+const showOnboarding = ref(false);
+
+// ── 面板互斥：打开一个时关闭其他 ──
+function openDailyQuestion() {
+  showDirection.value = false;
+  showCouncil.value = false;
+  showDailyQuestion.value = true;
+}
+
+function openCouncil() {
+  showDirection.value = false;
+  showDailyQuestion.value = false;
+  showCouncil.value = true;
+}
+
+function openDirection() {
+  showDailyQuestion.value = false;
+  showCouncil.value = false;
+  showDirection.value = true;
+}
 
 // ── 聊天目标 ──
 const chatPlanet = ref("SUN");
@@ -176,6 +289,18 @@ const chatName = ref("太阳");
 const chatArchetype = ref("");
 const chatColor = ref("#F2A900");
 const chatGreeting = ref("");
+
+// ── 聊天入口上下文 & 计数 ──
+const chatEntryContext = ref<{
+  source: string;
+  transit_planet?: string;
+  transit_detail?: string;
+  daily_question?: string;
+  previous_spirit?: string;
+  previous_chats_today?: number;
+}>({ source: "" });
+const todayChatCounts = ref<Record<string, number>>({});
+const chatBubbleRef = ref<any>(null);
 
 // ═══════════════════════════════════════
 // 视频随星灵动态切换
@@ -193,6 +318,29 @@ function openChat() {
   chatVisible.value = true;
 }
 
+function openStarSpiritChat() {
+  const ss = homeData.todayStarSpirit.value;
+  if (!ss) {
+    openChat();
+    return;
+  }
+  chatPlanet.value = ss.planet;
+  chatSymbol.value = ss.symbol || "★";
+  chatName.value = ss.planet_label || "星灵";
+  chatArchetype.value = ss.sign_label || "";
+  chatColor.value = homeData.todaysPlanetProfile?.value?.persona?.visual_color || "#F2A900";
+  chatGreeting.value = "";
+  chatEntryContext.value = {
+    source: "today_star_spirit",
+    daily_question: homeData.dailyQuestion.value?.question || "",
+    previous_chats_today: todayChatCounts.value[ss.planet] || 0,
+  };
+  todayChatCounts.value[ss.planet] = (todayChatCounts.value[ss.planet] || 0) + 1;
+  homeData.setActivePlanet(ss.planet);
+  showDailyQuestion.value = false;
+  chatVisible.value = true;
+}
+
 function onCouncilPlanetChat(p: any) {
   chatPlanet.value = p.planet;
   chatSymbol.value = p.symbol;
@@ -200,6 +348,11 @@ function onCouncilPlanetChat(p: any) {
   chatArchetype.value = p.archetypeShort;
   chatColor.value = p.color;
   chatGreeting.value = p.greeting;
+  chatEntryContext.value = {
+    source: "council",
+    previous_chats_today: todayChatCounts.value[p.planet] || 0,
+  };
+  todayChatCounts.value[p.planet] = (todayChatCounts.value[p.planet] || 0) + 1;
   // 切换视频到该星灵落座星座
   homeData.setActivePlanet(p.planet);
   showCouncil.value = false;
@@ -220,20 +373,70 @@ function onCouncilSignChat(s: any) {
   chatVisible.value = true;
 }
 
+async function closeChatAndGenerateDiary(msgs: Array<{ role: string; text: string }>) {
+  if (msgs && msgs.length > 0 && chatPlanet.value && homeData.reportId.value) {
+    try {
+      const chatContext = msgs.map((m) => ({
+        role: m.role,
+        text: m.text,
+      }));
+      await apiClient.post(`/spirit-diary/${homeData.reportId.value}/entry`, {
+        chat_context: JSON.stringify(chatContext),
+        spirit_planet: chatPlanet.value,
+        mood_emoji: "",
+      });
+    } catch {
+      // silent fail
+    }
+  }
+  chatVisible.value = false;
+}
+
+function handleBackdropClose() {
+  const msgs = chatBubbleRef.value?.messages || [];
+  closeChatAndGenerateDiary(msgs);
+}
+
+function onTransitChat(transitPlanet: string, transitDetail: string) {
+  const profile = homeData.planetProfiles.value?.planet_characters?.[transitPlanet];
+  chatPlanet.value = transitPlanet;
+  chatSymbol.value = profile?.symbol || "";
+  chatName.value = profile?.persona?.name_zh || transitPlanet;
+  chatArchetype.value = profile?.persona?.archetype_zh || "";
+  chatColor.value = profile?.persona?.visual_color || "#ccc";
+  chatGreeting.value = profile?.personalized_greeting || "";
+  chatEntryContext.value = {
+    source: "transit",
+    transit_planet: transitPlanet,
+    transit_detail: transitDetail,
+    previous_chats_today: todayChatCounts.value[transitPlanet] || 0,
+  };
+  todayChatCounts.value[transitPlanet] = (todayChatCounts.value[transitPlanet] || 0) + 1;
+  homeData.setActivePlanet(transitPlanet);
+  showCouncil.value = false;
+  chatVisible.value = true;
+}
+
 // ═══════════════════════════════════════
 // 导航
 // ═══════════════════════════════════════
 
 function goGarden() {
-  const rid = homeData.reportId.value || "";
-  router.push({ name: "spirit-garden", query: rid ? { id: rid } : {} });
+  // 花园按钮当前已经处于主页（花园模式），无需跳转
+  // 如果未来需要跳转具体视图，可以在这里修改
 }
 function goHistory() { router.push("/history"); }
 function goOnboarding() { router.push("/onboarding"); }
+function goProfile() { router.push("/profile"); }
+function goDiary() {
+  showProfile.value = false;
+  showDiary.value = true;
+}
 function doLogout() {
   homeData.logout();
   homeData.clearData();
   showProfile.value = false;
+  router.push("/login");
 }
 
 onMounted(() => homeData.refreshData());
@@ -283,14 +486,16 @@ onMounted(() => homeData.refreshData());
   width: 100%; height: 100%;
   object-fit: cover;
 }
-/* 渐变遮罩 */
+/* 渐变遮罩 — pointer-events: none 让点击穿透 */
 .video-overlay-top {
   position: absolute; top: 0; left: 0; right: 0; height: 35%;
   background: linear-gradient(to bottom, rgba(0,0,0,0.45), transparent);
+  pointer-events: none;
 }
 .video-overlay-bottom {
   position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
   background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+  pointer-events: none;
 }
 /* 声音切换按钮 */
 .sound-toggle {
@@ -323,6 +528,10 @@ onMounted(() => homeData.refreshData());
 .spinner-dot { width: 10px; height: 10px; border-radius: 50%; animation: dot-bounce 1.2s ease-in-out infinite; }
 @keyframes dot-bounce { 0%,100%{transform:translateY(0);opacity:0.4} 50%{transform:translateY(-16px);opacity:1} }
 .retry-btn { background: rgba(255,154,139,0.2) !important; border-color: rgba(255,154,139,0.3) !important; color: #4a3728 !important; }
+.login-guide { padding: 160px 20px 100px !important; }
+.login-guide-btn { background: linear-gradient(135deg, #f0b8a0, #e8a890, #f0c0b0) !important; border: none !important; color: #fff !important; font-weight: 600 !important; letter-spacing: 2px !important; padding: 14px 40px !important; border-radius: 18px !important; box-shadow: 0 4px 20px rgba(220,150,120,0.18) !important; }
+.login-guide-btn:hover { transform: translateY(-2px) !important; box-shadow: 0 10px 32px rgba(220,150,120,0.28) !important; }
+.login-guide-hint { font-size: 12px; color: #b8a090; margin-top: 12px; cursor: pointer; }
 
 /* ═══════════════ 顶栏：悬浮于视频之上 ═══════════════ */
 .top-bar {
@@ -338,6 +547,57 @@ onMounted(() => homeData.refreshData());
   backdrop-filter: blur(8px);
 }
 .avatar-trigger:hover { border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.4); transform: scale(1.05); }
+
+/* ── 三栏顶栏布局 ── */
+.top-bar--three {
+  display: grid;
+  grid-template-columns: 40px 1fr auto auto;
+  gap: 10px;
+  align-items: center;
+}
+.top-bar--three > .avatar-trigger {
+  grid-column: 1;
+}
+.top-bar--three > .star-spirit-display {
+  grid-column: 2;
+  justify-self: center;
+}
+.top-bar--three > .direction-trigger {
+  grid-column: 3;
+}
+.top-bar--three > .theme-switcher {
+  grid-column: 4;
+}
+
+/* ── 今日走向按钮 ── */
+.direction-trigger {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.direction-trigger:hover {
+  background: rgba(255,255,255,0.25);
+  transform: scale(1.04);
+}
+.direction-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+.direction-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  white-space: nowrap;
+}
 
 /* ═══════════════ Chat Overlay ═══════════════ */
 .overlay-backdrop {

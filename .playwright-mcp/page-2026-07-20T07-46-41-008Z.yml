@@ -1,0 +1,16 @@
+- main [ref=f10e4]:
+  - generic [ref=f10e6]:
+    - generic [ref=f10e13]:
+      - heading "星 灵 花 园" [level=1] [ref=f10e14]:
+        - generic [ref=f10e15]: 星
+        - generic [ref=f10e16]: 灵
+        - generic [ref=f10e17]: 花
+        - generic [ref=f10e18]: 园
+      - paragraph [ref=f10e19]: 十颗星辰，在你的花园里苏醒
+    - generic [ref=f10e20]:
+      - generic [ref=f10e21]:
+        - generic [ref=f10e22]: "+86"
+        - textbox "请输入手机号" [ref=f10e24]
+      - button "一键登录" [disabled] [ref=f10e25]
+      - button "其他方式登录" [ref=f10e26] [cursor=pointer]
+    - generic [ref=f10e27] [cursor=pointer]: 同意 《用户协议》和 《隐私政策》

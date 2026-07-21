@@ -264,21 +264,15 @@ class PlanetCharacterEngine:
     @staticmethod
     def get_house_context(house_num: int) -> dict[str, Any]:
         """获取宫位的领域语境。"""
+        from ..interpretation.house_rules import get_house_profile
 
-        try:
-            from ..interpretation.house_rules import HOUSE_PROFILES
-            hp = HOUSE_PROFILES.get(house_num)
-            if hp:
-                return {
-                    "house": house_num,
-                    "title": getattr(hp, "title", ""),
-                    "domain": getattr(hp, "domain", ""),
-                    "topic": getattr(hp, "topic", ""),
-                }
-        except Exception:
-            pass
-
-        return {"house": house_num, "title": "", "domain": "", "topic": ""}
+        hp = get_house_profile(house_num)
+        return {
+            "house": house_num,
+            "title": hp.title,
+            "domain": hp.domain_key,
+            "topic": hp.keywords[0] if hp.keywords else "",
+        }
 
     # ── 领域关联 ──────────────────────────────────────────
 

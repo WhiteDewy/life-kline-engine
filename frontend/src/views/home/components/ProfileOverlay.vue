@@ -31,6 +31,12 @@
             <button class="pm-item" @click="$emit('go-history'); $emit('close')">
               <span>📋</span><span>历史报告</span><span>→</span>
             </button>
+            <button class="pm-item" @click="$emit('go-profile'); $emit('close')">
+              <span>📝</span><span>编辑档案</span><span>→</span>
+            </button>
+            <button class="pm-item" @click="$emit('go-diary'); $emit('close')">
+              <span>📖</span><span>星灵日记</span><span>→</span>
+            </button>
             <button class="pm-item" @click="$emit('go-onboarding'); $emit('close')">
               <span>🔄</span><span>重新绘制星盘</span><span>→</span>
             </button>
@@ -64,6 +70,8 @@ defineEmits<{
   'go-garden': []
   'go-history': []
   'go-onboarding': []
+  'go-profile': []
+  'go-diary': []
   logout: []
 }>()
 

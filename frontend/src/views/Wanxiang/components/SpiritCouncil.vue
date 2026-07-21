@@ -251,24 +251,17 @@ async function selectTopic(topic: (typeof topics)[0]) {
 
 function buildPerspective(
   name: string,
-  approach: string,
-  voiceTone: string,
+  _approach: string,
+  _voiceTone: string,
   coreTheme: string,
   structure: string,
   psychology: string
 ): string {
-  // 规则驱动：每个星灵用自己的风格"翻译"同一份领域数据
-  const shortStructure = structure.slice(0, 200);
-  const shortPsych = psychology.slice(0, 120);
-
-  const templates = [
-    `让我用我的方式来看——${coreTheme || "这件事"}。${shortStructure || "从星盘来看，这里的结构比较复杂。"} ${shortPsych ? "从心理层面看，" + shortPsych : ""}`,
-    `嗯，关于这个话题...${coreTheme || ""} ${shortStructure ? "星盘结构告诉我：" + shortStructure : ""}`,
-    `我注意到一件事——${coreTheme || ""} 这和你星盘里的一个模式有关。${shortPsych || shortStructure || ""}`,
-  ];
-
-  const base = templates[Math.floor(Math.random() * templates.length)];
-  return `${name}说：${base}`.slice(0, 500);
+  // 引擎在后端永远在线，此函数仅在网络完全不可达时兜底
+  const themeText = coreTheme ? `核心议题：${coreTheme}。` : "";
+  const structText = structure ? structure.slice(0, 200) : "";
+  const psychText = psychology ? `从心理层面看：${psychology.slice(0, 120)}` : "";
+  return `${name}看这个话题——${themeText}${structText} ${psychText}`.slice(0, 400);
 }
 
 function buildSynthesis(
@@ -277,10 +270,9 @@ function buildSynthesis(
   cards: PerspectiveCard[]
 ): string {
   const names = cards.map((c) => c.name).join("、");
-  const shortStruct = structure.slice(0, 250);
-  const shortSuggest = suggestion.slice(0, 150);
-
-  return `${names}——三位星灵从不同角度看了这个话题。综合来看：${shortStruct || "你的星盘在这方面有独特的配置。"} ${shortSuggest ? "建议方向——" + shortSuggest : "多听听不同声音，答案往往在交叉点上。"}`;
+  const structText = structure ? structure.slice(0, 200) : "你的星盘在这方面有独特的配置。";
+  const suggestText = suggestion ? `建议方向——${suggestion.slice(0, 150)}` : "";
+  return `${names}——三位星灵从不同角度看了这个话题。${structText} ${suggestText}`;
 }
 </script>
 

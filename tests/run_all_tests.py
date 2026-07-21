@@ -6,6 +6,13 @@
 import sys
 import os
 
+# Fix Unicode emoji output on Windows GBK terminals
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 def run_tests():
     """运行所有测试"""
     print("🚀 开始运行 Life K-Line Engine 所有测试")
@@ -13,25 +20,25 @@ def run_tests():
     
     # 导入并运行各个测试模块
     test_modules = [
-        ('基础功能测试', 'test_basic'),
-        ('尊贵度计算测试', 'test_dignities'),
-        ('集成测试', 'test_integration')
+        ('基础功能测试', 'test_basic', 'run_all_tests'),
+        ('尊贵度计算测试', 'test_dignities', 'run_dignities_tests'),
+        ('集成测试', 'test_integration', 'run_integration_tests')
     ]
     
     all_passed = True
     results = []
     
-    for test_name, module_name in test_modules:
+    for test_name, module_name, func_name in test_modules:
         print(f"\n📋 运行 {test_name}...")
         print("-" * 50)
-        
+
         try:
             # 动态导入测试模块
             module = __import__(module_name)
-            
+
             # 运行测试函数
-            if hasattr(module, f'run_{module_name}_tests'):
-                passed = getattr(module, f'run_{module_name}_tests')()
+            if hasattr(module, func_name):
+                passed = getattr(module, func_name)()
             elif hasattr(module, 'run_all_tests'):
                 passed = module.run_all_tests()
             else:

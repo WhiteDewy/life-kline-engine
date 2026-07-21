@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Entry from "@/views/home/index.vue";
 
-export default createRouter({
+const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: "/", name: "entry", component: Entry },
@@ -51,5 +51,37 @@ export default createRouter({
       name: "spirit-detail",
       component: () => import("@/views/Wanxiang/index.vue"),
     },
+    {
+      path: "/profile",
+      name: "profile",
+      component: () => import("@/views/Profile/index.vue"),
+    },
   ],
 });
+
+// ── 路由守卫 ──
+const PUBLIC_ROUTES = ["/login"];
+
+router.beforeEach((to, _from, next) => {
+  const token = localStorage.getItem("lk_token");
+
+  if (to.path === "/login") {
+    // 已登录用户不需要再看登录页
+    if (token) {
+      next("/");
+    } else {
+      next();
+    }
+    return;
+  }
+
+  // 除 /login 外的所有路由需要鉴权
+  if (!token) {
+    next(`/login?redirect=${encodeURIComponent(to.fullPath)}`);
+    return;
+  }
+
+  next();
+});
+
+export default router;

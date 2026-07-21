@@ -58,3 +58,22 @@ export const PLANET_SYMBOLS: Record<string, string> = {
   SUN: "☉", MOON: "☽", MERCURY: "☿", VENUS: "♀", MARS: "♂",
   JUPITER: "♃", SATURN: "♄", URANUS: "♅", NEPTUNE: "♆", PLUTO: "♇",
 };
+
+// ── 行星中文名 ──
+export const PLANET_LABELS: Record<string, string> = {
+  SUN: "太阳", MOON: "月亮", MERCURY: "水星", VENUS: "金星", MARS: "火星",
+  JUPITER: "木星", SATURN: "土星", URANUS: "天王星", NEPTUNE: "海王星", PLUTO: "冥王星",
+};
+
+// ── 行星颜色映射 ──
+export const PLANET_COLORS_MAP: Record<string, string> = {
+  SUN: "#F2A900", MOON: "#9BC4D0", MERCURY: "#7B8D6F", VENUS: "#E8A0BF", MARS: "#E8533F",
+  JUPITER: "#4B6BAA", SATURN: "#5B6770", URANUS: "#8B5CF6", NEPTUNE: "#06B6D4", PLUTO: "#6D28D9",
+};
+
+// ── 星座守护星映射 ──
+export const SIGN_RULER_MAP: Record<string, string> = {
+  ARIES: "MARS", TAURUS: "VENUS", GEMINI: "MERCURY", CANCER: "MOON",
+  LEO: "SUN", VIRGO: "MERCURY", LIBRA: "VENUS", SCORPIO: "MARS",
+  SAGITTARIUS: "JUPITER", CAPRICORN: "SATURN", AQUARIUS: "SATURN", PISCES: "JUPITER",
+};
