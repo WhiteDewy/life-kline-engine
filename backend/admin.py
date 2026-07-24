@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import os
+import secrets
 import time
 from typing import Optional
 
@@ -31,23 +32,39 @@ if not JWT_SECRET or JWT_SECRET == JWT_SECRET_DEFAULT:
         "请在 backend/.env 中配置一个强随机字符串后再启动 admin 模块。"
     )
 
-# 启动时若未创建过 root 账号，从 env 读取
+# 初始管理员账号：用户名可有默认值，但密码必须显式配置，禁止内置弱口令。
 ENV_ADMIN_USER = os.getenv("LIFE_KLINE_ADMIN_USER", "admin")
-ENV_ADMIN_PASS = os.getenv("LIFE_KLINE_ADMIN_PASS", "admin@2026")
+ENV_ADMIN_PASS = os.getenv("LIFE_KLINE_ADMIN_PASS", "")
+
+_LEGACY_SALT = "lk_admin_salt_v1"  # 仅用于验证历史遗留哈希，禁止再用于新密码
+_PBKDF2_ROUNDS = 50000
 
 
-# ──────────── 密码哈希（PBKDF2 简化版）─────────────────────────
+# ──────────── 密码哈希（PBKDF2 + per-password 随机盐）─────────────────────────
+
+def _pbkdf2(password: str, salt: bytes) -> bytes:
+    return hashlib.pbkdf2_hmac("sha256", password.encode(), salt, _PBKDF2_ROUNDS, dklen=32)
+
 
 def _hash_password(password: str) -> str:
-    salt = "lk_admin_salt_v1"
-    dk = hashlib.pbkdf2_hmac(
-        "sha256", password.encode(), salt.encode(), 50000, dklen=32
-    )
-    return dk.hex()
+    """生成带随机盐的哈希，格式：pbkdf2$<salt_hex>$<hash_hex>。"""
+    salt = secrets.token_bytes(16)
+    dk = _pbkdf2(password, salt)
+    return f"pbkdf2${salt.hex()}${dk.hex()}"
 
 
 def _verify_password(password: str, password_hash: str) -> bool:
-    return hmac.compare_digest(_hash_password(password), password_hash)
+    """验证密码，兼容新格式与历史遗留（共享盐）格式。"""
+    if password_hash.startswith("pbkdf2$"):
+        try:
+            _, salt_hex, hash_hex = password_hash.split("$", 2)
+        except ValueError:
+            return False
+        candidate = _pbkdf2(password, bytes.fromhex(salt_hex)).hex()
+        return hmac.compare_digest(candidate, hash_hex)
+    # 历史遗留格式：固定盐、裸 hex。仅为兼容旧账号登录。
+    legacy = _pbkdf2(password, _LEGACY_SALT.encode()).hex()
+    return hmac.compare_digest(legacy, password_hash)
 
 
 def _make_admin_token(admin_id: str, username: str, role: str) -> str:
@@ -80,9 +97,19 @@ def _parse_admin_token(token: str) -> Optional[dict]:
 
 
 def ensure_root_admin() -> None:
-    """启动时调用 — 确保至少有一个 super_admin 账号存在。"""
+    """启动时调用 — 确保至少有一个 super_admin 账号存在。
+
+    密码必须通过 LIFE_KLINE_ADMIN_PASS 显式配置；未配置时跳过自动创建，
+    绝不使用内置弱口令创建 super_admin。
+    """
     existing = _dao.get_admin_by_username(ENV_ADMIN_USER)
     if existing:
+        return
+    if not ENV_ADMIN_PASS or len(ENV_ADMIN_PASS) < 8:
+        print(
+            "[admin] 未配置 LIFE_KLINE_ADMIN_PASS（或长度 < 8），"
+            "跳过初始管理员创建。请设置强密码后重启以创建 super_admin。"
+        )
         return
     pwd_hash = _hash_password(ENV_ADMIN_PASS)
     _dao.create_admin(

@@ -38,6 +38,8 @@ class EngineResponse:
     guidance: str             # 方向 — 可行动的建议
     evidence: list[str]       # 使用的星盘证据
     full_text: str            # 组合后的完整回复
+    is_crisis: bool = False   # 危机信号命中 — 命中时应脱离占星话术，禁止 AI 增强
+    crisis: dict[str, Any] | None = None  # 危机检测详情
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -50,6 +52,8 @@ class EngineResponse:
             "guidance": self.guidance,
             "evidence": self.evidence,
             "full_text": self.full_text,
+            "is_crisis": self.is_crisis,
+            "crisis": self.crisis,
         }
 
 
@@ -832,6 +836,25 @@ class EngineAstrologer:
         宫内星=过程 → 你怎么经历这个领域。
         宫主星=结果 → 这个领域最终走向哪里。
         """
+        # 0. 危机检测闸门（最高优先级，先于任何占星逻辑）
+        #    命中则脱离占星话术，直接返回真实支持资源。此逻辑独立于 LLM。
+        from .safety import detect_crisis
+        crisis = detect_crisis(user_message)
+        if crisis.is_crisis:
+            return EngineResponse(
+                domain="__crisis__",
+                domain_label="",
+                confidence=1.0,
+                emotional_state="crisis",
+                acknowledgment=crisis.message,
+                mirroring="",
+                guidance="",
+                evidence=[],
+                full_text=crisis.message,
+                is_crisis=True,
+                crisis=crisis.to_dict(),
+            )
+
         # 1. 获取或创建对话上下文
         key = self._context_key(report_id, planet)
         ctx = self._conversations.get(key)

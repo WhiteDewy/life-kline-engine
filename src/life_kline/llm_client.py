@@ -26,6 +26,9 @@ class LLMConfig:
     base_url: str = ""
     max_tokens: int = 600
     temperature: float = 0.85
+    connect_timeout: float = 3.0    # 连接超时（§3 分级超时）
+    read_timeout: float = 25.0      # 读取/整体超时
+    max_retries: int = 2            # 仅对瞬态失败重试
 
     @classmethod
     def from_env(cls) -> LLMConfig:
@@ -56,11 +59,19 @@ class LLMConfig:
         if not base_url and provider == "deepseek":
             base_url = "https://api.deepseek.com/v1"
 
+        def _f(env: str, default: float) -> float:
+            try:
+                return float(os.getenv(env, "").strip() or default)
+            except ValueError:
+                return default
+
         return cls(
             provider=provider,
             api_key=api_key,
             model=model,
             base_url=base_url,
+            connect_timeout=_f("LIFE_KLINE_LLM_CONNECT_TIMEOUT", 3.0),
+            read_timeout=_f("LIFE_KLINE_LLM_READ_TIMEOUT", 25.0),
         )
 
 
@@ -79,20 +90,27 @@ class LLMClient:
         return bool(self.config.api_key)
 
     def chat(self, system_prompt: str, user_message: str, history: list[dict] | None = None) -> str:
-        """发送对话请求，返回助手的文本回复。
-
-        Args:
-            system_prompt: 系统提示词（星灵 persona + 星盘 context）
-            user_message: 用户当前消息
-            history: 最近对话历史 [{"role": "user"|"assistant", "content": "..."}]
-        """
+        """同步对话请求（供纯引擎/离线测试使用）。async 路径请用 chat_async。"""
         if not self.is_configured:
             return ""
+        messages = self._build_messages(system_prompt, user_message, history)
+        return self._call_api(messages)
 
+    async def chat_async(
+        self, system_prompt: str, user_message: str, history: list[dict] | None = None
+    ) -> str:
+        """异步对话请求（非阻塞，供 FastAPI async 端点使用）。"""
+        if not self.is_configured:
+            return ""
+        messages = self._build_messages(system_prompt, user_message, history)
+        return await self._call_api_async(messages)
+
+    def _build_messages(
+        self, system_prompt: str, user_message: str, history: list[dict] | None
+    ) -> list[dict[str, str]]:
         messages: list[dict[str, str]] = [
             {"role": "system", "content": system_prompt},
         ]
-
         if history:
             # 保留最近 6 轮
             for h in history[-12:]:
@@ -100,32 +118,88 @@ class LLMClient:
                 content = h.get("text", h.get("content", ""))
                 api_role = "assistant" if role in ("spirit", "assistant") else "user"
                 messages.append({"role": api_role, "content": content})
-
         messages.append({"role": "user", "content": user_message})
+        return messages
 
-        return self._call_api(messages)
-
-    def _call_api(self, messages: list[dict[str, str]]) -> str:
-        """实际的 HTTP 调用（OpenAI 兼容格式）。"""
-        body = json.dumps({
+    def _request_body(self, messages: list[dict[str, str]]) -> bytes:
+        return json.dumps({
             "model": self.config.model,
             "messages": messages,
             "max_tokens": self.config.max_tokens,
             "temperature": self.config.temperature,
         }).encode("utf-8")
 
-        url = f"{self.config.base_url.rstrip('/')}/chat/completions"
-        req = Request(url, data=body)
-        req.add_header("Content-Type", "application/json")
-        req.add_header("Authorization", f"Bearer {self.config.api_key}")
+    @property
+    def _url(self) -> str:
+        return f"{self.config.base_url.rstrip('/')}/chat/completions"
 
+    @property
+    def _headers(self) -> dict[str, str]:
+        return {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.config.api_key}",
+        }
+
+    def _call_api(self, messages: list[dict[str, str]]) -> str:
+        """同步 HTTP 调用（OpenAI 兼容格式）。仅用于非 async 上下文。"""
+        req = Request(self._url, data=self._request_body(messages))
+        for k, v in self._headers.items():
+            req.add_header(k, v)
         try:
-            with urlopen(req, timeout=25) as resp:
+            with urlopen(req, timeout=self.config.read_timeout) as resp:
                 data = json.loads(resp.read())
             return data["choices"][0]["message"]["content"].strip()
         except Exception as e:
-            print(f"[LLMClient] API 调用失败: {e}")
+            print(f"[LLMClient] 同步 API 调用失败: {e}")
             return ""
+
+    async def _call_api_async(self, messages: list[dict[str, str]]) -> str:
+        """异步 HTTP 调用（httpx，非阻塞）。带分级超时 + 瞬态失败有限重试。
+
+        失败返回空字符串，由调用方降级到引擎原文（§3 熔断/降级）。
+        """
+        import asyncio
+
+        try:
+            import httpx
+        except ImportError:
+            # 未安装 httpx 时退回线程池执行同步调用，避免阻塞 event loop。
+            import anyio
+            return await anyio.to_thread.run_sync(self._call_api, messages)
+
+        timeout = httpx.Timeout(
+            self.config.read_timeout, connect=self.config.connect_timeout
+        )
+        body = self._request_body(messages)
+        last_err: Exception | None = None
+
+        for attempt in range(self.config.max_retries + 1):
+            try:
+                async with httpx.AsyncClient(timeout=timeout) as client:
+                    resp = await client.post(self._url, content=body, headers=self._headers)
+                # 4xx（鉴权/参数）不重试，直接放弃
+                if 400 <= resp.status_code < 500:
+                    print(f"[LLMClient] API 4xx 不可重试: {resp.status_code}")
+                    return ""
+                resp.raise_for_status()
+                data = resp.json()
+                return data["choices"][0]["message"]["content"].strip()
+            except (httpx.TimeoutException, httpx.TransportError, httpx.HTTPStatusError) as e:
+                last_err = e
+                if attempt < self.config.max_retries:
+                    # 指数退避 + 抖动（用 attempt 派生，避免 Math.random 依赖）
+                    delay = 0.4 * (2 ** attempt) + (attempt * 0.1)
+                    await asyncio.sleep(delay)
+                    continue
+            except asyncio.CancelledError:
+                # 客户端断连：向上抛，让请求被取消，释放资源（§3）
+                raise
+            except Exception as e:
+                last_err = e
+                break
+
+        print(f"[LLMClient] 异步 API 调用失败（降级到引擎原文）: {last_err}")
+        return ""
 
 
 # ═══════════════════════════════════════════════════════════════

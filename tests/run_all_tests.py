@@ -39,6 +39,7 @@ def run_tests():
         ('尊贵度计算测试', 'test_dignities', 'run_dignities_tests'),
         ('集成测试', 'test_integration', 'run_integration_tests'),
         ('星灵触发重构测试', 'test_spirit_trigger_refactor', None),
+        ('危机检测测试', 'test_safety', None),
     ]
 
     all_passed = True

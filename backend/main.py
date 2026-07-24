@@ -10,6 +10,7 @@ import uuid
 import random
 import hashlib
 import time as _time
+import anyio
 from datetime import datetime, timedelta, timezone
 from dataclasses import asdict
 from typing import Any, Dict, Optional
@@ -527,7 +528,6 @@ def save_report_record(report_id: str, record: Dict[str, Any]) -> None:
 
 def load_report_record(report_id: str) -> Dict[str, Any]:
     """读报告：DB 优先，JSON 兜底。"""
-    # 1) DB
     try:
         row = _dao.load_report(report_id)
         if row:
@@ -573,6 +573,52 @@ def load_report_record(report_id: str) -> Dict[str, Any]:
         "analysis": get_analysis_type("phase_navigation"),
         "data": payload,
     }
+
+
+def _report_owner(report_id: str) -> Optional[str]:
+    """返回报告归属的 user_id。DB 优先，JSON 兜底；不存在返回 None。"""
+    try:
+        row = _dao.load_report(report_id)
+        if row is not None:
+            return row.get("user_id") or ""
+    except Exception:
+        pass
+    file_path = os.path.join(DATA_DIR, f"{report_id}.json")
+    if os.path.exists(file_path):
+        try:
+            with open(file_path, "r", encoding="utf-8") as file:
+                payload = json.load(file)
+            if isinstance(payload, dict):
+                return payload.get("user_id") or ""
+        except Exception:
+            return None
+    return None
+
+
+def require_report_owner(report_id: str, authorization: str) -> str:
+    """校验调用者是报告归属者。
+
+    规则（不允许游客创建报告，分享功能后续单独实现）：
+      - 报告不存在 → 404
+      - 无有效 token → 401
+      - token 的 user_id 与报告 owner 不一致（含无主报告）→ 403
+    返回校验通过的 user_id。
+    """
+    owner = _report_owner(report_id)
+    if owner is None:
+        raise HTTPException(status_code=404, detail="Report not found")
+    uid = _parse_token((authorization or "").replace("Bearer ", ""))
+    if not uid:
+        raise HTTPException(status_code=401, detail="请先登录")
+    if owner != uid:
+        raise HTTPException(status_code=403, detail="无权访问该报告")
+    return uid
+
+
+def load_owned_report(report_id: str, authorization: str) -> Dict[str, Any]:
+    """校验归属后加载报告，供只读端点统一调用。"""
+    require_report_owner(report_id, authorization)
+    return load_report_record(report_id)
 
 
 def run_analysis(input_data: AnalysisRequest, user_id: str = "", profile_id: str = "") -> Dict[str, Any]:
@@ -659,26 +705,29 @@ async def get_analysis_types() -> Dict[str, Any]:
 
 @app.post("/api/analyses", response_model=ServiceResponse)
 async def create_analysis(input_data: AnalysisRequest, authorization: str = Header(default="")) -> Dict[str, Any]:
-    user_id = ""
-    profile_id = ""
+    # 不允许游客创建报告：必须携带有效 token，禁止产生无主报告。
     token = authorization.replace("Bearer ", "")
     uid = _parse_token(token)
-    if uid:
-        user_id = uid
-        if input_data.subjects:
-            s = input_data.subjects[0]
-            profile_id = _uid()
-            try:
-                db = get_db()
-                db.execute(
-                    "INSERT INTO profiles (id, user_id, name, gender, birth_time, lat, lon, timezone, is_default, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    (profile_id, user_id, s.name or "", s.gender or "", s.birth_time, s.lat, s.lon, s.timezone, 0, _now()),
-                )
-                db.commit()
-                db.close()
-            except Exception:
-                profile_id = ""
-    return run_analysis(input_data, user_id=user_id, profile_id=profile_id)
+    if not uid:
+        raise HTTPException(status_code=401, detail="请先登录后再创建分析报告")
+    user_id = uid
+    profile_id = ""
+    if input_data.subjects:
+        s = input_data.subjects[0]
+        profile_id = _uid()
+        try:
+            db = get_db()
+            db.execute(
+                "INSERT INTO profiles (id, user_id, name, gender, birth_time, lat, lon, timezone, is_default, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (profile_id, user_id, s.name or "", s.gender or "", s.birth_time, s.lat, s.lon, s.timezone, 0, _now()),
+            )
+            db.commit()
+            db.close()
+        except Exception:
+            profile_id = ""
+    return await anyio.to_thread.run_sync(
+        lambda: run_analysis(input_data, user_id=user_id, profile_id=profile_id)
+    )
 
 
 @app.get("/api/reports/history")
@@ -703,8 +752,8 @@ async def report_history(authorization: str = Header(default="")) -> Dict[str, A
 
 
 @app.get("/api/analyses/{report_id}", response_model=ServiceResponse)
-async def get_analysis(report_id: str) -> Dict[str, Any]:
-    record = load_report_record(report_id)
+async def get_analysis(report_id: str, authorization: str = Header(default="")) -> Dict[str, Any]:
+    record = load_owned_report(report_id, authorization)
     return {
         "status": "success",
         "report_id": report_id,
@@ -1104,7 +1153,11 @@ def _build_natal_chart_response(report_id: str, record: Dict[str, Any]) -> Dict[
 
 
 @app.post("/api/analyze", response_model=ServiceResponse)
-async def analyze_life_path(input_data: UserInput) -> Dict[str, Any]:
+async def analyze_life_path(input_data: UserInput, authorization: str = Header(default="")) -> Dict[str, Any]:
+    # 遗留端点：同样不允许游客创建报告，必须携带有效 token。
+    uid = _parse_token(authorization.replace("Bearer ", ""))
+    if not uid:
+        raise HTTPException(status_code=401, detail="请先登录后再创建分析报告")
     request_payload = AnalysisRequest(
         analysis_type="phase_navigation",
         subjects=[
@@ -1117,12 +1170,14 @@ async def analyze_life_path(input_data: UserInput) -> Dict[str, Any]:
             )
         ],
     )
-    return run_analysis(request_payload)
+    return await anyio.to_thread.run_sync(
+        lambda: run_analysis(request_payload, user_id=uid)
+    )
 
 
 @app.get("/api/report/{report_id}", response_model=ServiceResponse)
-async def get_report(report_id: str) -> Dict[str, Any]:
-    record = load_report_record(report_id)
+async def get_report(report_id: str, authorization: str = Header(default="")) -> Dict[str, Any]:
+    record = load_owned_report(report_id, authorization)
     return {
         "status": "success",
         "report_id": report_id,
@@ -1150,9 +1205,9 @@ class CouncilInput(BaseModel):
 
 
 @app.get("/api/characters/{report_id}")
-async def get_character_profiles(report_id: str) -> Dict[str, Any]:
+async def get_character_profiles(report_id: str, authorization: str = Header(default="")) -> Dict[str, Any]:
     """获取12星座个性化角色画像"""
-    record = load_report_record(report_id)
+    record = load_owned_report(report_id, authorization)
     data = record.get("data", {})
     characters = data.get("characters", {})
     if not characters:
@@ -1161,9 +1216,9 @@ async def get_character_profiles(report_id: str) -> Dict[str, Any]:
 
 
 @app.get("/api/characters/{report_id}/daily")
-async def get_daily_activation(report_id: str) -> Dict[str, Any]:
+async def get_daily_activation(report_id: str, authorization: str = Header(default="")) -> Dict[str, Any]:
     """获取今日角色激活度和登场角色"""
-    record = load_report_record(report_id)
+    record = load_owned_report(report_id, authorization)
     user_info = record.get("data", {}).get("user_info", {})
     if not user_info:
         raise HTTPException(status_code=400, detail="User info missing from report")
@@ -1174,40 +1229,43 @@ async def get_daily_activation(report_id: str) -> Dict[str, Any]:
     from life_kline.characters.character_engine import CharacterEngine
     from life_kline.awakening.daily_engine import DailyAwakeningEngine
 
-    # 重建本命盘
-    engine = EphemerisEngine()
-    birth_time = datetime.fromisoformat(user_info.get("birth_time_utc", user_info.get("birth_time_local", "")))
-    lat = user_info.get("lat", 0.0)
-    lon = user_info.get("lon", 0.0)
-    chart = engine.calculate_chart(birth_time, lat, lon)
+    def _compute():
+        # 重建本命盘
+        engine = EphemerisEngine()
+        birth_time = datetime.fromisoformat(user_info.get("birth_time_utc", user_info.get("birth_time_local", "")))
+        lat = user_info.get("lat", 0.0)
+        lon = user_info.get("lon", 0.0)
+        chart = engine.calculate_chart(birth_time, lat, lon)
 
-    # 当前法达周期
-    is_day = user_info.get("is_day_chart", True)
-    birth_time_local = datetime.fromisoformat(user_info.get("birth_time_local", user_info.get("birth_time_utc", "")))
-    current_age = (datetime.now() - birth_time_local.replace(tzinfo=None)).days / 365.2422
-    periods = calculate_firdaria_periods(is_day)
-    current_period = None
-    for p in periods:
-        if p.start_age <= current_age < p.end_age:
-            current_period = p
-            break
+        # 当前法达周期
+        is_day = user_info.get("is_day_chart", True)
+        birth_time_local = datetime.fromisoformat(user_info.get("birth_time_local", user_info.get("birth_time_utc", "")))
+        current_age = (datetime.now() - birth_time_local.replace(tzinfo=None)).days / 365.2422
+        periods = calculate_firdaria_periods(is_day)
+        current_period = None
+        for p in periods:
+            if p.start_age <= current_age < p.end_age:
+                current_period = p
+                break
 
-    # 计算每日激活
-    char_engine = CharacterEngine(chart)
-    daily_engine = DailyAwakeningEngine(chart, char_engine, current_period)
-    activation = daily_engine.compute_daily_activation()
+        # 计算每日激活
+        char_engine = CharacterEngine(chart)
+        daily_engine = DailyAwakeningEngine(chart, char_engine, current_period)
+        return daily_engine.compute_daily_activation()
+
+    activation = await anyio.to_thread.run_sync(_compute)
 
     return {"status": "success", "report_id": report_id, "data": activation.to_dict()}
 
 
 @app.get("/api/natal-chart/{report_id}")
-async def get_natal_chart(report_id: str) -> Dict[str, Any]:
+async def get_natal_chart(report_id: str, authorization: str = Header(default="")) -> Dict[str, Any]:
     """获取本命盘详情：星盘数据 + 相位 + 接纳/互溶 + 100年法达周期。"""
     from life_kline.firdaria import calculate_firdaria_periods
     from life_kline.constants import Planet
     from life_kline.service import planet_label
 
-    record = load_report_record(report_id)
+    record = load_owned_report(report_id, authorization)
     data = record.get("data", {})
     natal_chart = data.get("natal_chart", {}) or {}
     advanced = data.get("advanced_patterns", {}) or {}
@@ -1298,9 +1356,9 @@ async def get_natal_chart(report_id: str) -> Dict[str, Any]:
 
 
 @app.post("/api/characters/{report_id}/chat")
-async def chat_with_character(report_id: str, body: CharacterChatInput) -> Dict[str, Any]:
+async def chat_with_character(report_id: str, body: CharacterChatInput, authorization: str = Header(default="")) -> Dict[str, Any]:
     """与指定星座角色对话"""
-    record = load_report_record(report_id)
+    record = load_owned_report(report_id, authorization)
     data = record.get("data", {})
 
     from life_kline.constants import Sign
@@ -1389,9 +1447,9 @@ async def chat_with_character(report_id: str, body: CharacterChatInput) -> Dict[
 
 
 @app.post("/api/characters/{report_id}/council")
-async def character_council(report_id: str, body: CouncilInput) -> Dict[str, Any]:
+async def character_council(report_id: str, body: CouncilInput, authorization: str = Header(default="")) -> Dict[str, Any]:
     """获取多个角色对同一话题的不同视角"""
-    record = load_report_record(report_id)
+    record = load_owned_report(report_id, authorization)
     data = record.get("data", {})
 
     from life_kline.constants import Sign
@@ -1511,9 +1569,9 @@ def _reconstruct_chart_from_user_info(user_info: dict):
 
 
 @app.get("/api/today-star-spirit/{report_id}")
-async def get_today_star_spirit(report_id: str) -> Dict[str, Any]:
+async def get_today_star_spirit(report_id: str, authorization: str = Header(default="")) -> Dict[str, Any]:
     """获取用户今日引路星灵"""
-    record = load_report_record(report_id)
+    record = load_owned_report(report_id, authorization)
     user_info = record.get("data", {}).get("user_info", {})
     if not user_info:
         raise HTTPException(status_code=400, detail="User info missing from report")
@@ -1521,9 +1579,12 @@ async def get_today_star_spirit(report_id: str) -> Dict[str, Any]:
     try:
         from life_kline.today_engine import TodayStarSpiritEngine
 
-        chart = _reconstruct_chart_from_user_info(user_info)
-        spirit_engine = TodayStarSpiritEngine(service)
-        result = spirit_engine.compute_today_star_spirit(chart)
+        def _compute():
+            chart = _reconstruct_chart_from_user_info(user_info)
+            spirit_engine = TodayStarSpiritEngine(service)
+            return spirit_engine.compute_today_star_spirit(chart)
+
+        result = await anyio.to_thread.run_sync(_compute)
 
         return {
             "status": "success",
@@ -1551,9 +1612,9 @@ async def get_today_star_spirit(report_id: str) -> Dict[str, Any]:
 
 
 @app.get("/api/daily-question/{report_id}")
-async def get_daily_question(report_id: str) -> Dict[str, Any]:
+async def get_daily_question(report_id: str, authorization: str = Header(default="")) -> Dict[str, Any]:
     """获取每日一问"""
-    record = load_report_record(report_id)
+    record = load_owned_report(report_id, authorization)
     user_info = record.get("data", {}).get("user_info", {})
     if not user_info:
         raise HTTPException(status_code=400, detail="User info missing from report")
@@ -1563,19 +1624,19 @@ async def get_daily_question(report_id: str) -> Dict[str, Any]:
         from life_kline.daily_question_engine import DailyQuestionEngine
         from life_kline.llm_client import LLMClient
 
-        chart = _reconstruct_chart_from_user_info(user_info)
-        spirit_engine = TodayStarSpiritEngine(service)
-        today_spirit = spirit_engine.compute_today_star_spirit(chart)
+        def _compute():
+            chart = _reconstruct_chart_from_user_info(user_info)
+            spirit_engine = TodayStarSpiritEngine(service)
+            today_spirit = spirit_engine.compute_today_star_spirit(chart)
+            question_engine = DailyQuestionEngine(llm_client=LLMClient())
+            transits = service.compute_transits(chart)
+            return question_engine.generate(
+                today_spirit=today_spirit,
+                chart=chart,
+                transits=transits,
+            )
 
-        llm_client = LLMClient()
-        question_engine = DailyQuestionEngine(llm_client=llm_client)
-
-        transits = service.compute_transits(chart)
-        question = question_engine.generate(
-            today_spirit=today_spirit,
-            chart=chart,
-            transits=transits,
-        )
+        question = await anyio.to_thread.run_sync(_compute)
 
         return {
             "status": "success",
@@ -1714,8 +1775,10 @@ async def get_diary_timeline(
     report_id: str,
     limit: int = 30,
     offset: int = 0,
+    authorization: str = Header(default=""),
 ) -> Dict[str, Any]:
     """获取星灵日记时间线 — 从 DB 读取"""
+    require_report_owner(report_id, authorization)
     try:
         rows = _dao.list_star_diary(
             report_id=report_id, limit=limit, offset=offset,
@@ -1934,13 +1997,17 @@ async def spirit_chat(report_id: str, body: SpiritChatInput, request: Request) -
     from life_kline.pricing import AccessChecker
 
     # ── 用户认证 ──
+    # 身份只来自签名 token，禁止信任客户端可伪造的 header（如 X-User-Id）。
+    # 无有效 token 时以匿名游客身份处理（严格限额），不得冒充任何用户。
     auth_header = request.headers.get("Authorization", "")
     user_id = ""
     if auth_header.startswith("Bearer "):
         user_id = _parse_token(auth_header[7:]) or ""
-    # 无 token 时作为游客（严格限额），有 token 则按用户定价检查
+    # 归属校验：只能用自己的报告对话，禁止凭他人 report_id 越权。
     if not user_id:
-        user_id = request.headers.get("X-User-Id", "") or record.get("user_id", "")
+        raise HTTPException(status_code=401, detail="请先登录")
+    if (_report_owner(report_id) or "") != user_id:
+        raise HTTPException(status_code=403, detail="无权访问该报告")
     state = load_user_state(user_id)
     access_checker = AccessChecker(state)
     engine_access = access_checker.check_engine_chat(body.planet)
@@ -1981,6 +2048,19 @@ async def spirit_chat(report_id: str, body: SpiritChatInput, request: Request) -
     )
     engine_dict = engine_response.to_dict()
 
+    # ── 危机短路：命中危机信号时脱离占星话术，禁止 AI 增强改写干预文案 ──
+    if engine_response.is_crisis:
+        return {
+            "status": "success",
+            "source": "crisis_guard",
+            "data": {
+                "spirit_response": engine_response.full_text,
+                "is_crisis": True,
+                "crisis": engine_response.crisis,
+                "engine": engine_dict,
+            },
+        }
+
     # ── 第 2 层：AI 增强（可选） ──
     client = LLMClient()
     final_response = engine_response.full_text
@@ -2017,7 +2097,7 @@ async def spirit_chat(report_id: str, body: SpiritChatInput, request: Request) -
                 )
                 system_prompt = engine_hint + "\n\n" + system_prompt
 
-                ai_response = client.chat(
+                ai_response = await client.chat_async(
                     system_prompt=system_prompt,
                     user_message=body.message,
                     history=body.history,
@@ -2222,7 +2302,9 @@ async def get_current_transit() -> Dict[str, Any]:
         from life_kline.constants import Planet
 
         now_utc = datetime.utcnow()
-        chart = service.engine.calculate_chart(now_utc, 39.9, 116.4)
+        chart = await anyio.to_thread.run_sync(
+            service.engine.calculate_chart, now_utc, 39.9, 116.4
+        )
 
         planets: Dict[str, Dict[str, Any]] = {}
         target_planets = [
@@ -2268,21 +2350,23 @@ async def get_current_transit() -> Dict[str, Any]:
 
 
 @app.get("/api/daily-transits/{report_id}")
-async def get_daily_transits(report_id: str) -> Dict[str, Any]:
+async def get_daily_transits(report_id: str, authorization: str = Header(default="")) -> Dict[str, Any]:
     """Get layered daily transit report for a user's natal chart."""
-    record = load_report_record(report_id)
+    record = load_owned_report(report_id, authorization)
     report_data = record.get("data", {})
     user_info = report_data.get("user_info", {})
     if not user_info:
         raise HTTPException(status_code=400, detail="User info missing from report")
 
-    chart = _reconstruct_chart_from_user_info(user_info)
-
     from life_kline.transit_engine import DailyTransitEngine
     from life_kline.ephemeris import EphemerisEngine
 
-    engine = DailyTransitEngine(EphemerisEngine())
-    report = engine.compute_daily_transits(chart)
+    def _compute():
+        chart = _reconstruct_chart_from_user_info(user_info)
+        engine = DailyTransitEngine(EphemerisEngine())
+        return engine.compute_daily_transits(chart)
+
+    report = await anyio.to_thread.run_sync(_compute)
 
     return {"status": "success", "report_id": report_id, "data": asdict(report)}
 
@@ -2442,12 +2526,16 @@ async def start_consultation(
     if not user_id:
         raise HTTPException(status_code=401, detail="请先登录")
 
+    if (_report_owner(report_id) or "") != user_id:
+        raise HTTPException(status_code=403, detail="无权访问该报告")
     record = load_report_record(report_id)
     report_data = record.get("data", {})
 
     engine = ConsultationEngine(report_data, _garden_llm_client)
     try:
-        state = engine.start_consultation(body.category, body.question_key)
+        state = await anyio.to_thread.run_sync(
+            engine.start_consultation, body.category, body.question_key
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -2504,11 +2592,15 @@ async def continue_consultation(
     if not state:
         raise HTTPException(status_code=404, detail="会话不存在或已过期")
 
+    if (_report_owner(report_id) or "") != user_id:
+        raise HTTPException(status_code=403, detail="无权访问该报告")
     record = load_report_record(report_id)
     report_data = record.get("data", {})
 
     engine = ConsultationEngine(report_data, _garden_llm_client)
-    state = engine.continue_consultation(state, body.user_response)
+    state = await anyio.to_thread.run_sync(
+        engine.continue_consultation, state, body.user_response
+    )
 
     # 更新持久化
     _garden_session_mgr.store(state)
@@ -2545,6 +2637,8 @@ async def generate_consultation_report(
     if not state:
         raise HTTPException(status_code=404, detail="会话不存在或已过期")
 
+    if (_report_owner(report_id) or "") != user_id:
+        raise HTTPException(status_code=403, detail="无权访问该报告")
     record = load_report_record(report_id)
     report_data = record.get("data", {})
 
@@ -2552,9 +2646,9 @@ async def generate_consultation_report(
     # 如果还没完成，先完成
     if not state.is_complete:
         state.step = 3
-        state = engine._run_chart_verify(state)
+        state = await anyio.to_thread.run_sync(engine._run_chart_verify, state)
 
-    report = engine.generate_report(state)
+    report = await anyio.to_thread.run_sync(engine.generate_report, state)
 
     # 存到 consultation_reports
     try:

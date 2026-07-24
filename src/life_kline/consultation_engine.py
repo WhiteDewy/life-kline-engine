@@ -65,6 +65,10 @@ class ConsultationState:
     # 古占/现占倾向
     tradition_lean: bool | None = None   # True=古占论事, False=现占心理, None=未定
 
+    # 危机检测
+    is_crisis: bool = False
+    crisis: dict[str, Any] | None = None
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "session_id": self.session_id,
@@ -81,6 +85,8 @@ class ConsultationState:
             "pending_question": self.pending_question,
             "is_complete": self.is_complete,
             "tradition_lean": self.tradition_lean,
+            "is_crisis": self.is_crisis,
+            "crisis": self.crisis,
         }
 
 
@@ -326,6 +332,16 @@ class ConsultationEngine:
     def continue_consultation(self, state: ConsultationState, user_response: str) -> ConsultationState:
         """根据当前步骤和用户回复推进状态"""
         if state.is_complete:
+            return state
+
+        # 危机检测闸门（先于任何咨询逻辑）：命中则脱离占星流程，给真实支持资源。
+        from .safety import detect_crisis
+        crisis = detect_crisis(user_response)
+        if crisis.is_crisis:
+            state.user_responses.append(user_response)
+            state.is_crisis = True
+            state.crisis = crisis.to_dict()
+            state.pending_question = crisis.message
             return state
 
         state.user_responses.append(user_response)

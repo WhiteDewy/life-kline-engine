@@ -2,6 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## ⚠️ 最高开发准则（MUST READ FIRST）
+
+**本项目是企业级工程化项目，需落地、承接高并发。所有开发（主 agent 与全部 subagent）在写任何代码前，必须先读取并严格执行 `docs/ENGINEERING_STANDARD.md`。**
+
+- 该规范采用 MUST / SHOULD / MAY 分级；违反 MUST 项即阻断合并。
+- 提交前必须逐条走一遍规范附录 A 的《PR 自检清单》。
+- 规范 §0 维护着项目技术债审计表（D1–D10），新代码零豁免、不得加重任何既有债务。
+- subagent 被派发任务时，必须将本节与 `docs/ENGINEERING_STANDARD.md` 视为不可协商的约束。
+
 ## Project Overview
 
 Life K-Line Engine is an astrological life analysis system (占星人生模型) that fuses classical (古占) and modern (现占) astrology. It computes natal charts, planetary dignities, aspects, houses, receptions, flystar chains, and Firdaria (法达) periods, then produces structured reports covering 8 life domains using a five-layer interpretation rule engine. Version 0.3.3 → in transition to v1.0.
