@@ -36,7 +36,7 @@ defineEmits<{
 }>();
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .question-list {
   padding: 0 4px;
 }

@@ -1,7 +1,7 @@
 ---
 name: ux-designer
 description: UX/UI 交互设计师，负责审查交互模式、状态覆盖、视觉层级、移动端适配、用户情感曲线
-model: deepseek-v4-flash
+model: opus
 tools:
   - Read
   - Glob

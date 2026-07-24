@@ -207,7 +207,7 @@ const groupCards = computed(() =>
 );
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .methodSection {
   margin-bottom: 22px;
 }

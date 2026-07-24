@@ -593,16 +593,13 @@ watch(
 );
 </script>
 
-<style scoped>
+<style scoped lang="less">
 /* ── 背景 ── */
 .page {
   min-height: 100vh;
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(circle at top left, rgba(212, 175, 55, 0.08), transparent 24%),
-    radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.14), transparent 22%),
-    linear-gradient(180deg, #020617 0%, #07111f 100%);
+  background: var(--bg-main);
 }
 .halo {
   position: absolute;
@@ -628,7 +625,7 @@ watch(
 }
 .heroWelcome {
   text-align: center;
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 15px;
   margin: 0 0 32px;
   line-height: 1.7;
@@ -643,7 +640,7 @@ watch(
 
 .heroPara {
   margin: 0;
-  color: #e2e8f0;
+  color: var(--text-primary);
   font-size: 16px;
   line-height: 2.1;
 }
@@ -766,11 +763,11 @@ watch(
 }
 :deep(mark.hl-gift) {
   background: linear-gradient(180deg, transparent 55%, rgba(212, 175, 55, 0.25) 55%);
-  color: #f8fafc;
+  color: var(--text-primary);
 }
 :deep(mark.hl-honest) {
   background: linear-gradient(180deg, transparent 55%, rgba(148, 163, 184, 0.15) 55%);
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-style: italic;
 }
 :deep(mark.hl-correct) {
@@ -792,7 +789,7 @@ watch(
   border-bottom: 1px dashed rgba(251, 191, 36, 0.3);
 }
 :deep(mark.hl-action) {
-  color: #f8fafc;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -816,32 +813,32 @@ mark {
   gap: 4px;
   padding: 6px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-light);
+  background: var(--bg-elevated);
   font-size: 13px;
 }
 .snapshotIcon { color: #d4af37; font-size: 14px; }
-.snapshotLabel { color: #64748b; margin-right: 2px; }
-.snapshotValue { color: #cbd5e1; }
+.snapshotLabel { color: var(--text-tertiary); margin-right: 2px; }
+.snapshotValue { color: var(--text-secondary); }
 
 /* ── 加载 / 错误 ── */
 .stateCard {
   padding: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid var(--border-light);
+  background: var(--bg-card);
   backdrop-filter: blur(18px);
   border-radius: 24px;
 }
 .errorCard { border-color: rgba(244, 63, 94, 0.2); }
-.stateTitle { font-size: 22px; color: #f8fafc; }
-.stateText { margin: 12px 0 0; color: #94a3b8; }
+.stateTitle { font-size: 22px; color: var(--text-primary); }
+.stateText { margin: 12px 0 0; color: var(--text-secondary); }
 
 /* ── 领域导航 ── */
 .exploreNav {
   text-align: center;
 }
 .exploreHint {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 15px;
   margin: 0 0 14px;
 }
@@ -854,9 +851,9 @@ mark {
 .exploreChip {
   padding: 9px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(15,23,42,0.55);
-  color: #cbd5e1;
+  border: 1px solid var(--border-light);
+  background: var(--bg-card);
+  color: var(--text-secondary);
   font-size: 14px;
   cursor: pointer;
   transition: all .2s;
@@ -865,7 +862,7 @@ mark {
 .exploreChip.active {
   border-color: rgba(212,175,55,0.3);
   background: rgba(212,175,55,0.08);
-  color: #f8fafc;
+  color: var(--text-primary);
 }
 
 .domainExpanded {
@@ -885,17 +882,17 @@ mark {
   gap: 24px;
   padding: 28px 32px;
   border-radius: 20px;
-  border: 1px solid rgba(99,102,241,0.15);
-  background: rgba(99,102,241,0.06);
+  border: 1px solid rgba(184, 169, 201, 0.3);
+  background: var(--color-lavender-light);
 }
 .aiCtaTitle {
   margin: 0 0 6px;
-  color: #f8fafc;
+  color: var(--text-primary);
   font-size: 18px;
 }
 .aiCtaText {
   margin: 0;
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 14px;
   line-height: 1.7;
 }
@@ -924,8 +921,8 @@ mark {
 }
 .techFold {
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  background: rgba(15, 23, 42, 0.40);
+  border: 1px solid var(--border-light);
+  background: var(--bg-card);
   overflow: hidden;
 }
 .techSummary {
@@ -934,7 +931,7 @@ mark {
   gap: 8px;
   padding: 16px 20px;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 14px;
   user-select: none;
   transition: background 0.2s;
@@ -948,7 +945,7 @@ mark {
 .techSummaryHint {
   margin-left: auto;
   font-size: 11px;
-  color: #475569;
+  color: var(--text-tertiary);
   letter-spacing: 0.04em;
 }
 .techBody {
@@ -959,8 +956,8 @@ mark {
   margin: 14px 0 0;
   padding: 24px 20px;
   border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid var(--border-light);
+  background: var(--bg-card);
   backdrop-filter: blur(12px);
   text-align: center;
 }
@@ -971,14 +968,14 @@ mark {
 
 .chartCardTitle {
   margin: 0;
-  color: #f8fafc;
+  color: var(--text-primary);
   font-size: 18px;
 }
 
 .chartCardSub {
   display: block;
   margin-top: 4px;
-  color: #64748b;
+  color: var(--text-tertiary);
   font-size: 12px;
 }
 
@@ -1002,7 +999,7 @@ mark {
   gap: 8px;
   margin: 24px 0 16px;
   padding: 4px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-elevated);
   border-radius: 12px;
   max-width: 360px;
 }
@@ -1024,7 +1021,7 @@ mark {
 }
 .viewModeTab:hover:not(.active) {
   color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-elevated);
 }
 .characterChatSection { margin: 24px 0; }
 .characterChatHeader {
@@ -1032,9 +1029,9 @@ mark {
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-elevated);
   border-radius: 12px 12px 0 0;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-light);
   border-bottom: none;
 }
 .characterChatDot { width: 10px; height: 10px; border-radius: 50%; }

@@ -21,7 +21,7 @@ defineProps<{
 }>()
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .whisper-card {
   position: relative; border-radius: 28px; overflow: hidden;
   background: linear-gradient(135deg,

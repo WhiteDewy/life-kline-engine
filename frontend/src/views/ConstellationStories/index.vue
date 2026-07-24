@@ -46,7 +46,7 @@ const signName = computed(() => SIGN_INFO[signKey.value]?.name || "星座");
 const signEmoji = computed(() => SIGN_INFO[signKey.value]?.emoji || "✨");
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .constellation-stories {
   min-height: 100vh;
   display: flex;

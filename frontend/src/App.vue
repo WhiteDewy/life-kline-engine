@@ -1,7 +1,7 @@
 <template>
   <AppShell>
     <router-view v-slot="{ Component }">
-      <transition name="fade" mode="out-in">
+      <transition name="page-fade" mode="out-in">
         <component :is="Component" />
       </transition>
     </router-view>
@@ -13,17 +13,17 @@ import AppShell from "@/layouts/AppShell.vue";
 </script>
 
 <style>
-/* ── 路由切换过渡 ── */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.35s ease, transform 0.35s ease;
+/* ── 页面切换过渡 ── */
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.35s var(--ease-smooth), transform 0.35s var(--ease-smooth);
 }
-.fade-enter-from {
+.page-fade-enter-from {
   opacity: 0;
-  transform: translateY(8px);
+  transform: translateY(12px);
 }
-.fade-leave-to {
+.page-fade-leave-to {
   opacity: 0;
-  transform: translateY(-4px);
+  transform: translateY(-8px);
 }
 </style>

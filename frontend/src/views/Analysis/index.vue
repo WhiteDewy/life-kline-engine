@@ -275,11 +275,11 @@ watch(() => route.query.profile, resetForm);
 onMounted(resetForm);
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .analysis-page {
   min-height: calc(100vh - var(--h-header));
   position: relative; overflow: hidden;
-  background: linear-gradient(180deg, #FFF5EE 0%, #FFEFD5 40%, #FFF0F5 80%, #F8F4FF 100%);
+  background: var(--bg-main);
 }
 .glow { position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none; }
 .glow-a { width: 260px; height: 260px; top: -40px; right: -60px; background: rgba(255,154,139,0.10); }
@@ -296,89 +296,89 @@ onMounted(resetForm);
   animation: orb-pulse 2s ease-in-out infinite;
 }
 @keyframes orb-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
-.loading-title { font-size: 18px; font-weight: 700; color: #4a3728; margin: 0 0 24px; }
+.loading-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0 0 24px; }
 .loading-stages { display: flex; flex-direction: column; gap: 10px; align-items: center; }
-.loading-stage { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #c4b5a5; opacity: 0.3; transition: all 0.4s; }
+.loading-stage { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-muted); opacity: 0.3; transition: all 0.4s; }
 .loading-stage.active { opacity: 1; }
-.loading-stage.current { color: #4a3728; font-weight: 600; }
+.loading-stage.current { color: var(--text-primary); font-weight: 600; }
 .stage-dot { width: 6px; height: 6px; border-radius: 50%; background: #c4b5a5; flex-shrink: 0; }
-.loading-stage.current .stage-dot { background: #ff9a8b; box-shadow: 0 0 8px rgba(255,154,139,0.5); animation: dot-pulse 1s ease-in-out infinite; }
+.loading-stage.current .stage-dot { background: var(--color-primary); box-shadow: 0 0 8px rgba(255,154,139,0.5); animation: dot-pulse 1s ease-in-out infinite; }
 @keyframes dot-pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.8)} }
 
 /* ── 表单头 ── */
 .form-view { display: flex; flex-direction: column; gap: 20px; }
 .form-header { text-align: center; }
 .form-emoji { font-size: 36px; display: block; margin-bottom: 8px; }
-.form-title { font-size: 24px; font-weight: 800; color: #4a3728; margin: 0 0 6px; letter-spacing: 0.03em; }
-.form-sub { font-size: 13px; color: #8b7355; margin: 0; }
+.form-title { font-size: 24px; font-weight: 800; color: var(--text-primary); margin: 0 0 6px; letter-spacing: 0.03em; }
+.form-sub { font-size: 13px; color: var(--text-secondary); margin: 0; }
 
 /* ── 表单卡片 ── */
 .form-card {
   padding: 28px 24px; border-radius: 24px;
-  background: rgba(255,255,255,0.82); backdrop-filter: blur(12px);
-  border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+  background: var(--bg-card); backdrop-filter: blur(12px);
+  border: 1px solid var(--border-light); box-shadow: var(--shadow-card);
   display: flex; flex-direction: column; gap: 18px;
 }
 
 /* ── 字段 ── */
 .field { display: flex; flex-direction: column; gap: 6px; }
-.field-label { font-size: 13px; font-weight: 700; color: #6b5744; }
+.field-label { font-size: 13px; font-weight: 700; color: var(--text-secondary); }
 .field-input {
-  padding: 12px 16px; border-radius: 14px; border: 1px solid rgba(0,0,0,0.08);
-  background: rgba(0,0,0,0.02); font-size: 15px; color: #4a3728; outline: none; font-family: inherit;
+  padding: 12px 16px; border-radius: 14px; border: 1px solid var(--border-light);
+  background: var(--bg-elevated); font-size: 15px; color: var(--text-primary); outline: none; font-family: inherit;
   transition: border-color 0.2s; width: 100%; box-sizing: border-box;
 }
-.field-input:focus { border-color: #ff9a8b; }
-.field-input::placeholder { color: #c4b5a5; }
+.field-input:focus { border-color: var(--color-primary); }
+.field-input::placeholder { color: var(--text-muted); }
 
 .field-row { display: grid; grid-template-columns: 1fr 120px; gap: 14px; }
 
 /* 性别切换 */
-.gender-toggle { display: flex; border-radius: 14px; overflow: hidden; border: 1px solid rgba(0,0,0,0.08); }
+.gender-toggle { display: flex; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-light); }
 .gender-toggle button {
   flex: 1; padding: 10px 12px; border: none; background: transparent;
-  font-size: 14px; font-weight: 600; color: #a89880; cursor: pointer; font-family: inherit; transition: all 0.2s;
+  font-size: 14px; font-weight: 600; color: var(--text-tertiary); cursor: pointer; font-family: inherit; transition: all 0.2s;
 }
-.gender-toggle button.active { background: rgba(255,154,139,0.12); color: #4a3728; }
+.gender-toggle button.active { background: rgba(255,154,139,0.12); color: var(--text-primary); }
 
 /* 地点 */
 .place-input {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 16px; border-radius: 14px; border: 1px solid rgba(0,0,0,0.08);
-  background: rgba(0,0,0,0.02); cursor: pointer; transition: border-color 0.2s;
+  padding: 12px 16px; border-radius: 14px; border: 1px solid var(--border-light);
+  background: var(--bg-elevated); cursor: pointer; transition: border-color 0.2s;
 }
-.place-input:hover { border-color: #ff9a8b; }
-.place-text { font-size: 15px; color: #4a3728; }
-.place-placeholder { font-size: 15px; color: #c4b5a5; }
+.place-input:hover { border-color: var(--color-primary); }
+.place-text { font-size: 15px; color: var(--text-primary); }
+.place-placeholder { font-size: 15px; color: var(--text-muted); }
 .place-arrow { font-size: 16px; }
-.coord-preview { display: flex; gap: 8px; font-size: 12px; color: #a89880; }
+.coord-preview { display: flex; gap: 8px; font-size: 12px; color: var(--text-tertiary); }
 
 /* 提交按钮 */
 .submit-btn {
   width: 100%; padding: 16px; border-radius: 18px; border: none;
-  background: linear-gradient(135deg, #ff9a8b, #ffb8a8);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
   color: #fff; font-size: 17px; font-weight: 700; cursor: pointer; font-family: inherit;
-  box-shadow: 0 4px 16px rgba(255,154,139,0.25); transition: all 0.25s;
+  box-shadow: var(--shadow-card); transition: all 0.25s;
 }
 .submit-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(255,154,139,0.3); }
 .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.submit-hint { text-align: center; font-size: 12px; color: #c4b5a5; margin: -8px 0 0; }
+.submit-hint { text-align: center; font-size: 12px; color: var(--text-muted); margin: -8px 0 0; }
 
 /* 示例 */
 .demo-entry { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.demo-divider { font-size: 12px; color: #c4b5a5; }
+.demo-divider { font-size: 12px; color: var(--text-muted); }
 .demo-btn {
-  padding: 8px 18px; border-radius: 14px; border: 1px solid rgba(0,0,0,0.06);
-  background: rgba(0,0,0,0.02); color: #8b7355; font-size: 13px; cursor: pointer; font-family: inherit; transition: all 0.2s;
+  padding: 8px 18px; border-radius: 14px; border: 1px solid var(--border-light);
+  background: var(--bg-elevated); color: var(--text-secondary); font-size: 13px; cursor: pointer; font-family: inherit; transition: all 0.2s;
 }
 .demo-btn:hover { border-color: rgba(255,154,139,0.2); background: rgba(255,154,139,0.04); }
 
 /* ── 弹窗内样式 ── */
-.place-dialog :deep(.el-tabs__item) { color: #6b5744; }
+.place-dialog :deep(.el-tabs__item) { color: var(--text-secondary); }
 .manual-grid { display: grid; gap: 12px; margin-bottom: 12px; }
-.manual-field label { display: block; font-size: 12px; color: #6b5744; margin-bottom: 4px; }
+.manual-field label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
 .manual-row { display: flex; align-items: center; gap: 6px; }
-.manual-row span { color: #8b7355; font-size: 14px; }
+.manual-row span { color: var(--text-secondary); font-size: 14px; }
 
 /* ── 覆盖 Element Plus date picker 暗色 → 暖色 ── */
 .analysis-page :deep(.el-input__wrapper) {
@@ -388,7 +388,7 @@ onMounted(resetForm);
 .analysis-page :deep(.el-input__inner) { color: #4a3728 !important; }
 .analysis-page :deep(.el-input__inner::placeholder) { color: #c4b5a5 !important; }
 .analysis-page :deep(.el-button--primary) {
-  background: linear-gradient(135deg, #ff9a8b, #ffb8a8) !important; border: none !important;
+  background: linear-gradient(135deg, var(--color-primary), #ffb8a8) !important; border: none !important;
 }
 
 /* 响应式 */

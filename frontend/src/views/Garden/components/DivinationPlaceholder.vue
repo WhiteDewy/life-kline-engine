@@ -24,7 +24,7 @@ defineEmits<{
 }>();
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .div-overlay {
   position: fixed; inset: 0; z-index: 200;
   background: rgba(0,0,0,0.2); backdrop-filter: blur(6px);

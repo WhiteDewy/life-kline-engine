@@ -85,7 +85,7 @@
               <!-- Action buttons -->
               <div class="card-actions">
                 <div class="action-btn-wrapper">
-                  <VoicePlayer :text="question" :style="'whisper'" showLabel />
+                  <VoicePlayer :text="question" voice-style="whisper" showLabel />
                 </div>
                 <button class="action-btn action-btn--chat" @click="$emit('chat')">
                   <span class="action-icon">💬</span>
@@ -277,7 +277,7 @@ function saveToHistory() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 /* ═══════════════════════════════════════════════
    Card container — glassmorphism, fixed bottom
 ═══════════════════════════════════════════════ */

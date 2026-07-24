@@ -56,7 +56,7 @@ const items = computed(() =>
 );
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .fast-transit-bar {
   margin: 14px 0;
   padding: 16px 18px;

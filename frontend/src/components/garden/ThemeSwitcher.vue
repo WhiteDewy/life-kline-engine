@@ -41,7 +41,7 @@ function select(key: string) {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .theme-switcher {
   position: relative;
   z-index: 10;

@@ -1,7 +1,7 @@
 ---
 name: backend-dev
 description: 后端开发工程师，负责 Python + FastAPI 后端开发与测试
-model: deepseek-v4-flash
+model: opus
 tools:
   - Read
   - Write

@@ -22,7 +22,7 @@ defineEmits<{
 }>();
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .category-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));

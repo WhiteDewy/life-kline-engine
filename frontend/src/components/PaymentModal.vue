@@ -94,7 +94,7 @@ function simulatePayment() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .payment-overlay {
   position: fixed;
   inset: 0;

@@ -188,7 +188,7 @@ function complete() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .onboarding-overlay {
   position: fixed;
   inset: 0;

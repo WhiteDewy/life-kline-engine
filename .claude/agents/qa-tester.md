@@ -1,7 +1,7 @@
 ---
 name: qa-tester
 description: QA 测试工程师，负责系统化功能测试、边界情况覆盖、异常状态验证、回归测试
-model: deepseek-v4-flash
+model: opus
 tools:
   - Read
   - Glob

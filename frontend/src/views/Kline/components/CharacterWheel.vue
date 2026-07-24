@@ -192,7 +192,7 @@ function innerDotY(cy: number, r: number, index: number): number {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .character-wheel-section {
   margin: 32px 0;
   padding: 24px;

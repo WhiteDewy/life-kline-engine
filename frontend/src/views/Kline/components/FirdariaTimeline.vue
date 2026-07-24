@@ -209,7 +209,7 @@ const majorPeriods = computed(() => {
 });
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .phase-section {
   margin: 38px 0;
 }

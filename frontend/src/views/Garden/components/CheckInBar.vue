@@ -28,7 +28,7 @@ defineEmits<{
 }>();
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .checkin-bar {
   width: 100%;
   padding: 12px 20px;

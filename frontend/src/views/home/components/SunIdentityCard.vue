@@ -47,7 +47,7 @@ defineProps<{
 }>()
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .sun-card {
   position: relative; border-radius: 28px; overflow: hidden;
   background: linear-gradient(135deg,

@@ -187,7 +187,7 @@ function scrollToBottom() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .chat-panel {
   display: flex;
   flex-direction: column;

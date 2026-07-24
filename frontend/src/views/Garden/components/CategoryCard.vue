@@ -19,7 +19,7 @@ defineEmits<{
 }>();
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .category-card {
   padding: 20px 16px;
   border-radius: 20px;

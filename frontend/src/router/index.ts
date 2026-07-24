@@ -53,6 +53,16 @@ const router = createRouter({
       component: () => import("@/views/Onboarding/index.vue"),
     },
     {
+      path: "/chat/:planet",
+      name: "spirit-chat",
+      component: () => import("@/views/Chat/index.vue"),
+    },
+    {
+      path: "/diary",
+      name: "spirit-diary",
+      component: () => import("@/views/Diary/index.vue"),
+    },
+    {
       path: "/spirit-garden",
       name: "spirit-garden",
       component: () => import("@/views/Garden/index.vue"),

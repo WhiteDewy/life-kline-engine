@@ -14,7 +14,7 @@
 defineEmits<{ 'go-login': [] }>()
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .welcome-card {
   text-align: center; padding: 56px 28px; border-radius: 28px; cursor: pointer;
   background: linear-gradient(135deg,

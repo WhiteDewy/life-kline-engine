@@ -268,7 +268,7 @@ const sunCharacter = computed(() => {
 });
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .planet-wheel-section {
   padding: 24px;
   border-radius: 16px;

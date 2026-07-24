@@ -193,7 +193,7 @@ void particleCanvas;
 function sparkStyle(i: number) { const a = (i / 6) * 360; return { '--a': a + 'deg', animationDelay: i * 0.5 + 's' }; }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 /* ═══ 基底：朝霞暖光 ═══ */
 .login-page {
   min-height: 100vh; position: relative;

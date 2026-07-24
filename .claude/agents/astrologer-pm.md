@@ -1,7 +1,7 @@
 ---
 name: astrologer-pm
 description: 占星师兼产品经理，负责占星领域知识、产品决策、UI/UX 设计指导
-model: deepseek-v4-pro
+model: opus
 tools:
   - Read
   - Glob

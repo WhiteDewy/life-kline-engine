@@ -631,7 +631,7 @@ async function executeDelete() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .journal-view {
   display: flex;
   flex-direction: column;

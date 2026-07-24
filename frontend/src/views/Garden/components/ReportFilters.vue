@@ -32,7 +32,7 @@ defineEmits<{
 }>();
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .report-filters {
   display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;
 }

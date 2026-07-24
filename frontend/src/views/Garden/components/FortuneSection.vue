@@ -24,7 +24,7 @@ defineProps<{
 }>();
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .fortune-section {
   padding: 12px 0;
 }

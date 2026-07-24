@@ -338,7 +338,7 @@ const aspects = [
 ];
 </script>
 
-<style lang="less" scoped>
+<style scoped lang="less">
 @bg: var(--bg-main);
 @card-bg: var(--bg-card);
 @text: var(--text-primary);

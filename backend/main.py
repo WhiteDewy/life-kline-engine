@@ -2771,17 +2771,17 @@ async def get_me(authorization: str = Header(default="")) -> Dict[str, Any]:
         raise HTTPException(status_code=401, detail="请先登录")
     db = get_db()
     user = db.execute(
-        "SELECT id, nickname, role, is_disabled, created_at, last_login_at FROM users WHERE id=?",
+        "SELECT id, nickname, role, created_at, last_login_at FROM users WHERE id=?",
         (uid,),
     ).fetchone()
-    profile = db.execute(
+    rows = db.execute(
         "SELECT id, name, gender, birth_time, lat, lon, timezone, birth_place, "
         "house_system, daylight_saving, residence_place, residence_lat, residence_lon, "
-        "is_default, created_at FROM profiles WHERE user_id=? ORDER BY created_at DESC LIMIT 1",
+        "is_default, created_at FROM profiles WHERE user_id=? ORDER BY created_at DESC",
         (uid,),
-    ).fetchone()
+    ).fetchall()
     db.close()
-    return {"status": "success", "user": dict(user) if user else None, "profiles": [dict(profile)] if profile else []}
+    return {"status": "success", "user": dict(user) if user else None, "profiles": [dict(r) for r in rows]}
 
 
 def _auto_detect_dst(birth_time: str, lat: float) -> bool:

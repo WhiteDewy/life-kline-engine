@@ -347,7 +347,7 @@ async function executeDelete() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .diary-screen {
   position: fixed; inset: 0; z-index: 200;
   background: rgba(255, 255, 255, 0.97);

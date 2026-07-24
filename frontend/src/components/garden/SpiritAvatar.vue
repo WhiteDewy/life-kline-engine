@@ -51,7 +51,7 @@ const displaySymbol = computed(() => {
 const sizeClass = computed(() => `spirit-avatar--${props.size}`);
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .spirit-avatar {
   display: flex;
   align-items: center;

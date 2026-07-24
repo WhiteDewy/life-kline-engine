@@ -91,7 +91,7 @@ function trendLabel(value: string) {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .card {
   margin-top: 28px;
   border: 1px solid rgba(255, 255, 255, 0.08);

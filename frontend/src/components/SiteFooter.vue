@@ -16,7 +16,7 @@ defineEmits<{
 }>();
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .siteFooter {
   margin-top: auto;
   border-top: 1px solid rgba(255, 255, 255, 0.08);

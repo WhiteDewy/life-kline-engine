@@ -1,7 +1,7 @@
 ---
 name: frontend-dev
 description: 前端开发工程师，负责 Vue 3 + TypeScript 前端开发与测试
-model: deepseek-v4-flash
+model: opus
 tools:
   - Read
   - Write

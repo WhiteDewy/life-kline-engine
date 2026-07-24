@@ -1,6 +1,6 @@
 <template>
   <div class="main-page" :data-theme="currentTheme">
-    <!-- ═══ 视频全屏背景 ═══ -->
+    <!-- ═══ 氛围背景层 ═══ -->
     <div class="video-layer">
       <transition name="video-cross" mode="out-in">
         <video
@@ -13,12 +13,17 @@
           :muted="videoMuted"
         />
       </transition>
-      <!-- 渐变遮罩 -->
       <div class="video-overlay-top"></div>
       <div class="video-overlay-bottom"></div>
-      <!-- 声音切换 -->
       <button class="sound-toggle" @click="toggleSound" :title="videoMuted ? '开启声音' : '静音'">
-        {{ videoMuted ? '🔇' : '🔊' }}
+        <svg v-if="videoMuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 5L6 9H2v6h4l5 4V5z" />
+          <path d="M23 9l-6 6M17 9l6 6" />
+        </svg>
+        <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 5L6 9H2v6h4l5 4V5z" />
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+        </svg>
       </button>
     </div>
 
@@ -41,57 +46,82 @@
       <div class="state-icon">🪐</div>
       <h2 class="state-title">花园暂时打不开</h2>
       <p class="state-sub">{{ homeData.error.value }}</p>
-      <el-button round size="large" class="retry-btn" @click="homeData.refreshData()">重新尝试</el-button>
+      <AppButton variant="secondary" size="lg" @click="homeData.refreshData()">重新尝试</AppButton>
     </section>
 
-    <!-- ═══ 登录引导: 未登录且 demo 数据加载完成 ═══ -->
+    <!-- ═══ 登录引导 ═══ -->
     <section v-else-if="!isLoggedIn && !homeData.loading.value" class="garden-state login-guide">
       <div class="state-icon">🔮</div>
       <h2 class="state-title">欢迎来到星灵花园</h2>
       <p class="state-sub">登录解锁专属星盘，与你的星灵对话</p>
-      <el-button round size="large" class="login-guide-btn" @click="startLogin">登录</el-button>
-      <p class="login-guide-hint">你也可以继续浏览 Demo 星盘</p>
+      <AppButton size="lg" @click="startLogin">登录</AppButton>
+      <p class="login-guide-hint" @click="enterDemo">你也可以继续浏览 Demo 星盘</p>
     </section>
 
     <!-- ═══ 主内容 ═══ -->
     <template v-else>
-      <!-- 顶栏：悬浮于视频之上 -->
-      <div class="top-bar top-bar--three" v-if="homeData.hasProfile.value">
-        <!-- 左：用户头像 -->
-        <button class="avatar-trigger" @click="showProfile = true">
+      <!-- 顶栏 -->
+      <div class="top-bar" v-if="homeData.hasProfile.value">
+        <button class="avatar-trigger" @click="showProfile = true" aria-label="打开个人菜单">
           <SpiritAvatar planet="SUN" :sign="homeData.sunSign.value" :gender="homeData.userGender.value" size="sm" />
         </button>
 
-        <!-- 中：今日星灵 -->
         <StarSpiritDisplay
           v-if="homeData.todayStarSpirit.value"
           :planet="homeData.todayStarSpirit.value.planet"
           :planet-name="homeData.todayStarSpirit.value.planet_label"
           :planet-sign="homeData.todayStarSpirit.value.sign_label"
           :symbol="homeData.todayStarSpirit.value.symbol"
-          :color="homeData.todaysPlanetProfile?.value?.persona?.visual_color || '#F2A900'"
+          :color="homeData.todaysPlanetProfile?.value?.persona?.visual_color || '#D4A35A'"
           :gender="homeData.userGender.value"
           @chat="openStarSpiritChat"
         />
 
-        <!-- 右：今日走向 -->
         <button class="direction-trigger" @click="openDirection">
-          <span class="direction-icon">📡</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M6.34 17.66l-2.83 2.83M19.07 4.93l-2.83 2.83" />
+          </svg>
           <span class="direction-label">今日走向</span>
         </button>
-
-        <ThemeSwitcher :current="currentTheme" @select="(k: string) => currentTheme = k" />
       </div>
 
-      <!-- ═══ 底部导航栏 ═══ -->
-      <HomeTabBar
-        v-if="homeData.hasProfile.value"
-        @garden="goGarden"
-        @daily-question="openDailyQuestion"
-        @council="openCouncil"
-      />
+      <!-- 主体内容区 -->
+      <div class="home-content" v-if="homeData.hasProfile.value">
+        <div class="hero-card">
+          <p class="hero-greeting">{{ greetingText }}</p>
+          <h1 class="hero-title">今天，你的心境如何？</h1>
+          <AppButton size="lg" class="hero-cta" @click="openChatPage">
+            和 {{ homeData.todayStarSpirit.value?.planet_label || '星灵' }} 聊聊
+          </AppButton>
+        </div>
 
-      <!-- ═══ Profile 浮层 ═══ -->
+        <div class="quick-actions">
+          <AppCard variant="soft" hover clickable class="quick-card" @click="goDiary">
+            <template #header>
+              <div class="quick-card__header">
+                <span class="quick-card__icon">📖</span>
+                <span class="quick-card__title">星灵日记</span>
+              </div>
+            </template>
+            <p class="quick-card__desc">记录此刻，让星灵陪你沉淀情绪。</p>
+          </AppCard>
+
+          <AppCard variant="soft" hover clickable class="quick-card" @click="goGarden">
+            <template #header>
+              <div class="quick-card__header">
+                <span class="quick-card__icon">🌸</span>
+                <span class="quick-card__title">进入花园</span>
+              </div>
+            </template>
+            <p class="quick-card__desc">拜访 22 位星灵，听听它们想对你说什么。</p>
+          </AppCard>
+        </div>
+      </div>
+
+      <!-- 底部导航 -->
+      <HomeTabBar @garden="goGarden" @daily-question="openDailyQuestionPanel" @council="openCouncil" />
+
+      <!-- Profile 浮层 -->
       <ProfileOverlay
         :visible="showProfile"
         :display-name="homeData.userName.value"
@@ -109,28 +139,7 @@
         @logout="doLogout"
       />
 
-      <!-- ═══ 聊天浮层 ═══ -->
-      <transition name="overlay-fade">
-        <div v-if="chatVisible" class="overlay-backdrop" @click.self="handleBackdropClose">
-          <div class="overlay-content">
-            <SpiritChatBubble
-              ref="chatBubbleRef"
-              :visible="chatVisible"
-              :planet="chatPlanet"
-              :symbol="chatSymbol"
-              :name="chatName"
-              :archetype="chatArchetype"
-              :color="chatColor"
-              :greeting="chatGreeting"
-              :report-id="homeData.reportId.value"
-              :entry-context="chatEntryContext"
-              @close="closeChatAndGenerateDiary"
-            />
-          </div>
-        </div>
-      </transition>
-
-      <!-- ═══ 星灵议会 浮层 ═══ -->
+      <!-- 星灵议会 浮层 -->
       <HomeCouncil
         :visible="showCouncil"
         :planet-list="homeData.councilPlanetList.value"
@@ -145,7 +154,7 @@
         @select-sign="homeData.setActiveSign"
       />
 
-      <!-- ═══ 灵犀一问 ═══ -->
+      <!-- 灵犀一问 -->
       <SpiritOracle
         :visible="showDailyQuestion"
         :today-star-spirit="homeData.todayStarSpirit.value"
@@ -156,16 +165,16 @@
         @close="showDailyQuestion = false"
       />
 
-      <!-- ═══ 星灵日记 ═══ -->
+      <!-- 星灵日记（兼容旧入口，主流程已跳转到 /diary） -->
       <StarSpiritDiary
+        v-if="false"
         :visible="showDiary"
         :entries="homeData.diaryEntries.value"
         :loading="false"
         @close="showDiary = false"
-        @refresh="onDiaryRefresh"
       />
 
-      <!-- ═══ 今日走向 ═══ -->
+      <!-- 今日走向 -->
       <TodayDirection
         :visible="showDirection"
         :transit-report="homeData.dailyTransitReport.value"
@@ -175,7 +184,7 @@
         @chat-with-spirit="onTransitChat($event)"
       />
 
-      <!-- ═══ 新人引导 ═══ -->
+      <!-- 新人引导 -->
       <OnboardingFlow
         :visible="showOnboarding"
         :today-star-spirit="homeData.todayStarSpirit.value"
@@ -184,7 +193,7 @@
         @close="onOnboardingClosed"
       />
 
-      <!-- ═══ 灵犀占卜（占位） ═══ -->
+      <!-- 灵犀占卜（占位） -->
       <DivinationPlaceholder
         :visible="showDivination"
         @close="showDivination = false"
@@ -194,16 +203,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick } from "vue";
+import { ref, onMounted, watch, nextTick, computed } from "vue";
 import { useRouter } from "vue-router";
 import { useHomeData } from "@/composables/useHomeData";
 import { useAuth } from "@/utils/auth";
 import { PLANET_COLORS } from "@/config/zodiac";
-import { apiClient } from "@/config/api";
+import AppButton from "@/components/AppButton.vue";
+import AppCard from "@/components/AppCard.vue";
 import GardenScene from "@/components/garden/GardenScene.vue";
 import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
-import SpiritChatBubble from "@/views/Wanxiang/components/SpiritChatBubble.vue";
-import ThemeSwitcher from "@/components/garden/ThemeSwitcher.vue";
 import HomeTabBar from "./HomeTabBar.vue";
 import ProfileOverlay from "./ProfileOverlay.vue";
 import HomeCouncil from "./HomeCouncil.vue";
@@ -219,26 +227,28 @@ const homeData = useHomeData();
 const { isLoggedIn } = useAuth();
 
 function startLogin() { router.push("/login"); }
+function enterDemo() {
+  // Demo 模式：继续展示首页（当前逻辑已支持未登录但 homeData 有 demo 数据）
+  homeData.refreshData();
+}
 
 // ── 主题 ──
 const currentTheme = ref(localStorage.getItem("spirit_garden_theme") || "cream");
 
 // ── 视频声音 ──
 const videoRef = ref<HTMLVideoElement | null>(null);
-const videoMuted = ref(true); // 默认静音以兼容 autoplay 策略
+const videoMuted = ref(true);
 
 function toggleSound() {
   videoMuted.value = !videoMuted.value;
   if (!videoMuted.value && videoRef.value) {
     videoRef.value.muted = false;
     videoRef.value.play().catch(() => {
-      // 浏览器阻止有声播放，回退静音
       videoMuted.value = true;
     });
   }
 }
 
-// 视频切换后尝试有声播放
 watch(() => homeData.currentSignVideo.value, () => {
   nextTick(() => {
     if (videoRef.value && !videoMuted.value) {
@@ -248,7 +258,6 @@ watch(() => homeData.currentSignVideo.value, () => {
   });
 });
 
-// 加载完成后检查是否显示新用户引导
 watch(() => homeData.loading.value, (loading) => {
   if (!loading) {
     const profileDone = localStorage.getItem("spirit_profile_completed");
@@ -258,189 +267,83 @@ watch(() => homeData.loading.value, (loading) => {
   }
 }, { immediate: true });
 
-// ── 色板 (spinner 用) ──
 const planetColors = PLANET_COLORS;
 
-// ── UI 浮层状态 ──
+const greetingText = computed(() => {
+  const hour = new Date().getHours();
+  if (hour < 6) return "夜深了，星灵还在陪着你。";
+  if (hour < 11) return "早安，今天想从哪里开始？";
+  if (hour < 14) return "午安，停下来和自己说句话吧。";
+  if (hour < 19) return "下午好，今天有什么想被听见的？";
+  return "晚上好，把今天交给星灵吧。";
+});
+
+// ── 兼容保留的浮层状态（星灵议会 / 灵犀一问 / 今日走向 仍由浮层承载） ──
 const showProfile = ref(false);
 const showCouncil = ref(false);
 const showDailyQuestion = ref(false);
 const showDiary = ref(false);
 const showDirection = ref(false);
-const chatVisible = ref(false);
 const showOnboarding = ref(false);
 const showDivination = ref(false);
 
-// ── 面板互斥：打开一个时关闭其他 ──
-function openDailyQuestion() {
-  showDirection.value = false;
-  showCouncil.value = false;
-  showDivination.value = false;
-  showDailyQuestion.value = true;
-}
-
-function openCouncil() {
-  showDirection.value = false;
-  showDailyQuestion.value = false;
-  showCouncil.value = true;
-}
-
 function openDirection() {
-  showDailyQuestion.value = false;
-  showCouncil.value = false;
+  closeAllPanels();
   showDirection.value = true;
 }
 
-// ── 聊天目标 ──
-const chatPlanet = ref("SUN");
-const chatSymbol = ref("☉");
-const chatName = ref("太阳");
-const chatArchetype = ref("");
-const chatColor = ref("#F2A900");
-const chatGreeting = ref("");
-
-// ── 聊天入口上下文 & 计数 ──
-const chatEntryContext = ref<{
-  source: string;
-  transit_planet?: string;
-  transit_detail?: string;
-  transit_aspect?: string;
-  transit_natal?: string;
-  transit_orb?: number | null;
-  daily_question?: string;
-  from_daily_question?: boolean;
-  previous_spirit?: string;
-  previous_chats_today?: number;
-}>({ source: "" });
-const todayChatCounts = ref<Record<string, number>>({});
-const chatBubbleRef = ref<any>(null);
-
-// ═══════════════════════════════════════
-// 视频随星灵动态切换
-// ═══════════════════════════════════════
-
-// 切换星灵：先关闭触发归档 → nextTick 后再打开新星灵
-async function switchToSpirit() {
-  if (chatVisible.value) {
-    chatVisible.value = false;
-    await nextTick();
-  }
+function openCouncil() {
+  closeAllPanels();
+  showCouncil.value = true;
 }
 
-function openChat() {
-  switchToSpirit().then(() => {
-    const sp = homeData.sunProfile.value;
-    chatPlanet.value = "SUN";
-    chatSymbol.value = sp?.persona?.symbol || "☉";
-    chatName.value = homeData.sunName.value;
-    chatArchetype.value = homeData.sunArchetype.value;
-    chatColor.value = homeData.sunColor.value;
-    chatGreeting.value = sp?.personalized_greeting || "";
-    homeData.setActivePlanet("SUN");
-    chatVisible.value = true;
+function openDailyQuestionPanel() {
+  closeAllPanels();
+  showDailyQuestion.value = true;
+}
+
+function closeAllPanels() {
+  showDirection.value = false;
+  showCouncil.value = false;
+  showDivination.value = false;
+  showDailyQuestion.value = false;
+}
+
+// ── 路由跳转：进入全屏聊天页 ──
+
+function openChatPage(planet?: string) {
+  const target = planet || homeData.todayStarSpirit.value?.planet || "SUN";
+  router.push({
+    name: "spirit-chat",
+    params: { planet: target },
+    query: {
+      source: planet ? "council" : "today",
+      question: homeData.dailyQuestion.value?.question || "",
+    },
   });
 }
 
 function openStarSpiritChat() {
-  const ss = homeData.todayStarSpirit.value;
-  if (!ss) {
-    openChat();
-    return;
-  }
-  switchToSpirit().then(() => {
-    chatPlanet.value = ss.planet;
-    chatSymbol.value = ss.symbol || "★";
-    chatName.value = ss.planet_label || "星灵";
-    chatArchetype.value = ss.sign_label || "";
-    chatColor.value = homeData.todaysPlanetProfile?.value?.persona?.visual_color || "#F2A900";
-    chatGreeting.value = "";
-    chatEntryContext.value = {
-      source: "today_star_spirit",
-      daily_question: homeData.dailyQuestion.value?.question || "",
-      from_daily_question: !!(homeData.dailyQuestion.value?.question || "").trim(),
-      previous_chats_today: todayChatCounts.value[ss.planet] || 0,
-    };
-    todayChatCounts.value[ss.planet] = (todayChatCounts.value[ss.planet] || 0) + 1;
-    homeData.setActivePlanet(ss.planet);
-    showDailyQuestion.value = false;
-    chatVisible.value = true;
-  });
+  openChatPage();
 }
 
 function onCouncilPlanetChat(p: any) {
-  switchToSpirit().then(() => {
-    chatPlanet.value = p.planet;
-    chatSymbol.value = p.symbol;
-    chatName.value = p.shortName;
-    chatArchetype.value = p.archetypeShort;
-    chatColor.value = p.color;
-    chatGreeting.value = p.greeting;
-    chatEntryContext.value = {
-      source: "council",
-      previous_chats_today: todayChatCounts.value[p.planet] || 0,
-    };
-    todayChatCounts.value[p.planet] = (todayChatCounts.value[p.planet] || 0) + 1;
-    homeData.setActivePlanet(p.planet);
-    showCouncil.value = false;
-    chatVisible.value = true;
-  });
+  homeData.setActivePlanet(p.planet);
+  showCouncil.value = false;
+  openChatPage(p.planet);
 }
 
 function onCouncilSignChat(s: any) {
-  // 星座模式：不再打开星灵聊天，改为跳转到星座神话故事页
   showCouncil.value = false;
   homeData.setActiveSign(s.key);
   router.push({ path: "/constellation-stories", query: { sign: s.key } });
 }
 
-async function closeChatAndGenerateDiary(msgs: Array<{ role: string; text: string }>) {
-  if (msgs && msgs.length > 0 && chatPlanet.value && homeData.reportId.value) {
-    try {
-      const chatContext = msgs.map((m) => ({
-        role: m.role,
-        text: m.text,
-      }));
-      await apiClient.post(`/spirit-diary/${homeData.reportId.value}/entry`, {
-        chat_context: JSON.stringify(chatContext),
-        spirit_planet: chatPlanet.value,
-        mood_emoji: "",
-      });
-    } catch {
-      // silent fail
-    }
-  }
-  chatVisible.value = false;
-}
-
-function handleBackdropClose() {
-  const msgs = chatBubbleRef.value?.messages || [];
-  closeChatAndGenerateDiary(msgs);
-}
-
 function onTransitChat(payload: { planet: string; detail: string; transit?: any }) {
-  const { planet: transitPlanet, detail: transitDetail, transit } = payload;
-  switchToSpirit().then(() => {
-    const profile = homeData.planetProfiles.value?.planet_characters?.[transitPlanet];
-    chatPlanet.value = transitPlanet;
-    chatSymbol.value = profile?.symbol || "";
-    chatName.value = profile?.persona?.name_zh || transitPlanet;
-    chatArchetype.value = profile?.persona?.archetype_zh || "";
-    chatColor.value = profile?.persona?.visual_color || "#ccc";
-    chatGreeting.value = profile?.personalized_greeting || "";
-    chatEntryContext.value = {
-      source: "transit",
-      transit_planet: transitPlanet,
-      transit_detail: transitDetail,
-      transit_aspect: transit?.aspect_label || "",
-      transit_natal: transit?.natal_label || "",
-      transit_orb: transit?.orb ?? null,
-      previous_chats_today: todayChatCounts.value[transitPlanet] || 0,
-    };
-    todayChatCounts.value[transitPlanet] = (todayChatCounts.value[transitPlanet] || 0) + 1;
-    homeData.setActivePlanet(transitPlanet);
-    showCouncil.value = false;
-    chatVisible.value = true;
-  });
+  const { planet: transitPlanet } = payload;
+  homeData.setActivePlanet(transitPlanet);
+  showDirection.value = false;
+  openChatPage(transitPlanet);
 }
 
 // ═══════════════════════════════════════
@@ -453,7 +356,6 @@ function goHistory() { router.push("/history"); }
 function goProfile() { router.push("/profile"); }
 function onOnboardingClosed() {
   showOnboarding.value = false;
-  // 新用户完成导览后若无档案，跳转出生信息采集
   const { profiles } = useAuth();
   if (!profiles.value?.length) {
     router.push("/onboarding");
@@ -461,20 +363,9 @@ function onOnboardingClosed() {
 }
 function goDiary() {
   showProfile.value = false;
-  showDiary.value = true;
+  router.push({ name: "spirit-diary" });
 }
 
-/** 星灵日记条目编辑/删除后，从后端重新拉取时间线 */
-async function onDiaryRefresh() {
-  const lastId = homeData.reportId.value;
-  if (!lastId) return;
-  try {
-    const res = await apiClient.get(`/spirit-diary/${lastId}?limit=30&offset=0`);
-    if (res.data?.status === "success") {
-      homeData.diaryEntries.value = res.data.data?.entries || res.data.data || [];
-    }
-  } catch { /* 静默失败，下次刷新会重试 */ }
-}
 function doLogout() {
   homeData.logout();
   homeData.clearData();
@@ -485,178 +376,353 @@ function doLogout() {
 onMounted(() => homeData.refreshData());
 </script>
 
-<style scoped>
-/* ═══════════════ 主题变量 ═══════════════ */
-.main-page[data-theme="cream"] {
-  --garden-bg-1: #FFF5EE;
-  --garden-bg-2: #FFF0F5;
-  --garden-card-bg: rgba(255,255,255,0.75);
-  --garden-text: #4A3728;
-  --garden-text-soft: #8B7355;
-  --garden-accent: #FF9A8B;
-}
-.main-page[data-theme="night"] {
-  --garden-bg-1: #1a1a2e;
-  --garden-bg-2: #16213e;
-  --garden-card-bg: rgba(30,30,60,0.75);
-  --garden-text: #E8E0F0;
-  --garden-text-soft: #A098B8;
-  --garden-accent: #9B8EC4;
-}
-.main-page[data-theme="sakura"] {
-  --garden-bg-1: #FFF0F5;
-  --garden-bg-2: #FDE8EF;
-  --garden-card-bg: rgba(255,255,255,0.75);
-  --garden-text: #5C3D4A;
-  --garden-text-soft: #9B7B8A;
-  --garden-accent: #F4A7B9;
-}
-
+<style scoped lang="less">
 .main-page {
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
-  background: var(--garden-bg-1);
-  transition: background 0.6s ease;
+  background: var(--bg-main);
+  transition: background var(--duration-slow) var(--ease-smooth);
+  padding-bottom: calc(var(--h-tab-bar) + env(safe-area-inset-bottom, 0px));
 }
 
-/* ═══════════════ 视频全屏层 ═══════════════ */
+/* ═══════════════ 氛围背景 ═══════════════ */
 .video-layer {
-  position: fixed; inset: 0; z-index: 0;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
 }
-.bg-video {
-  position: absolute; inset: 0;
-  width: 100%; height: 100%;
-  object-fit: cover;
-}
-/* 渐变遮罩 — pointer-events: none 让点击穿透 */
-.video-overlay-top {
-  position: absolute; top: 0; left: 0; right: 0; height: 35%;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.45), transparent);
-  pointer-events: none;
-}
-.video-overlay-bottom {
-  position: absolute; bottom: 0; left: 0; right: 0; height: 40%;
-  background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
-  pointer-events: none;
-}
-/* 声音切换按钮 */
-.sound-toggle {
-  position: absolute; bottom: 120px; right: 20px; z-index: 10;
-  width: 40px; height: 40px; border-radius: 50%;
-  border: none; background: rgba(0,0,0,0.3); backdrop-filter: blur(8px);
-  color: #fff; font-size: 18px; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.25s;
-}
-.sound-toggle:hover { background: rgba(0,0,0,0.5); transform: scale(1.08); }
 
-/* 视频交叉淡入淡出 */
+.bg-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.85) brightness(1.05);
+}
+
+.video-overlay-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(to bottom, rgba(247, 244, 239, 0.55), transparent);
+  pointer-events: none;
+}
+
+.video-overlay-bottom {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 55%;
+  background: linear-gradient(to top, rgba(247, 244, 239, 0.92) 0%, rgba(247, 244, 239, 0.4) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+.sound-toggle {
+  position: absolute;
+  bottom: calc(var(--h-tab-bar) + var(--space-5) + env(safe-area-inset-bottom, 0px));
+  right: var(--space-5);
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border-light);
+  background: var(--bg-card-glass);
+  backdrop-filter: blur(12px);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.sound-toggle:hover {
+  background: var(--bg-card);
+  color: var(--color-primary);
+  transform: scale(1.05);
+}
+
 .video-cross-enter-active,
 .video-cross-leave-active {
-  transition: opacity 0.8s ease;
+  transition: opacity var(--duration-slow) var(--ease-smooth);
 }
+
 .video-cross-enter-from,
 .video-cross-leave-to {
   opacity: 0;
 }
 
-/* ═══════════════ 加载/错误态 ═══════════════ */
-.garden-state { position: relative; z-index: 1; text-align: center; padding: 120px 20px; }
-.state-icon { font-size: 52px; margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
-@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-.state-title { font-size: 22px; font-weight: 700; color: #4a3728; margin: 0 0 8px; }
-.state-sub { font-size: 14px; color: #8b7355; margin: 0 0 24px; }
-.state-spinner { display: flex; justify-content: center; gap: 10px; }
-.spinner-dot { width: 10px; height: 10px; border-radius: 50%; animation: dot-bounce 1.2s ease-in-out infinite; }
-@keyframes dot-bounce { 0%,100%{transform:translateY(0);opacity:0.4} 50%{transform:translateY(-16px);opacity:1} }
-.retry-btn { background: rgba(255,154,139,0.2) !important; border-color: rgba(255,154,139,0.3) !important; color: #4a3728 !important; }
-.login-guide { padding: 160px 20px 100px !important; }
-.login-guide-btn { background: linear-gradient(135deg, #f0b8a0, #e8a890, #f0c0b0) !important; border: none !important; color: #fff !important; font-weight: 600 !important; letter-spacing: 2px !important; padding: 14px 40px !important; border-radius: 18px !important; box-shadow: 0 4px 20px rgba(220,150,120,0.18) !important; }
-.login-guide-btn:hover { transform: translateY(-2px) !important; box-shadow: 0 10px 32px rgba(220,150,120,0.28) !important; }
-.login-guide-hint { font-size: 12px; color: #b8a090; margin-top: 12px; cursor: pointer; }
-
-/* ═══════════════ 顶栏：悬浮于视频之上 ═══════════════ */
-.top-bar {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 10;
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 16px 20px;
-  padding-top: calc(16px + env(safe-area-inset-top, 0px));
-}
-.avatar-trigger {
-  width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3);
-  background: rgba(255,255,255,0.25); cursor: pointer; padding: 0; overflow: hidden;
-  transition: all 0.2s; display: flex; align-items: center; justify-content: center;
-  backdrop-filter: blur(8px);
-}
-.avatar-trigger:hover { border-color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.4); transform: scale(1.05); }
-
-/* ── 三栏顶栏布局 ── */
-.top-bar--three {
-  display: grid;
-  grid-template-columns: 40px 1fr auto auto;
-  gap: 10px;
+/* ═══════════════ 状态页 ═══════════════ */
+.garden-state {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 120px var(--space-5);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-}
-.top-bar--three > .avatar-trigger {
-  grid-column: 1;
-}
-.top-bar--three > .star-spirit-display {
-  grid-column: 2;
-  justify-self: center;
-}
-.top-bar--three > .direction-trigger {
-  grid-column: 3;
-}
-.top-bar--three > .theme-switcher {
-  grid-column: 4;
+  justify-content: center;
+  gap: var(--space-3);
 }
 
-/* ── 今日走向按钮 ── */
+.state-icon {
+  font-size: 52px;
+  margin-bottom: var(--space-2);
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.state-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.state-sub {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-4);
+  max-width: 280px;
+}
+
+.state-spinner {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.spinner-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  animation: dot-bounce 1.2s ease-in-out infinite;
+}
+
+@keyframes dot-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(-16px); opacity: 1; }
+}
+
+.login-guide {
+  padding-top: 160px;
+}
+
+.login-guide-hint {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  margin-top: var(--space-4);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-smooth);
+}
+
+.login-guide-hint:hover {
+  color: var(--color-primary);
+}
+
+/* ═══════════════ 顶栏 ═══════════════ */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  padding-top: calc(var(--space-3) + env(safe-area-inset-top, 0px));
+}
+
+.avatar-trigger {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background: var(--bg-card-glass);
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  transition: all var(--duration-fast) var(--ease-smooth);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-trigger:hover {
+  border-color: var(--color-primary-light);
+  transform: scale(1.05);
+}
+
 .direction-trigger {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  border-radius: 16px;
-  border: 1px solid rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.15);
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: var(--bg-card-glass);
   backdrop-filter: blur(8px);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--duration-fast) var(--ease-smooth);
+  color: var(--text-primary);
   font-family: inherit;
 }
+
 .direction-trigger:hover {
-  background: rgba(255,255,255,0.25);
-  transform: scale(1.04);
+  background: var(--bg-card);
+  border-color: var(--color-primary-light);
 }
-.direction-icon {
-  font-size: 14px;
-  line-height: 1;
+
+.direction-trigger svg {
+  color: var(--color-primary);
 }
+
 .direction-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
   white-space: nowrap;
+}
+
+/* ═══════════════ 主内容 ═══════════════ */
+.home-content {
+  position: relative;
+  z-index: 1;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: calc(var(--h-header) + env(safe-area-inset-top, 0px) + var(--space-8)) var(--space-5) var(--space-10);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.hero-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--space-5);
+}
+
+.hero-greeting {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.04em;
+}
+
+.hero-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  line-height: var(--leading-tight);
+  max-width: 280px;
+}
+
+.hero-cta {
+  margin-top: var(--space-2);
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.quick-card {
+  --card-padding: var(--space-4);
+}
+
+.quick-card :deep(.app-card__body) {
+  padding: var(--space-4);
+}
+
+.quick-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.quick-card__icon {
+  font-size: var(--text-lg);
+}
+
+.quick-card__title {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.quick-card__desc {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-normal);
+  margin: 0;
 }
 
 /* ═══════════════ Chat Overlay ═══════════════ */
 .overlay-backdrop {
-  position: fixed; inset: 0; z-index: 200;
-  background: rgba(0,0,0,0.3); backdrop-filter: blur(6px);
-  display: flex; align-items: center; justify-content: center; padding: 20px;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(44, 38, 34, 0.2);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
 }
-.overlay-content {
-  width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto;
-  border-radius: 28px;
-}
-.overlay-content::-webkit-scrollbar { width: 4px; }
-.overlay-fade-enter-active { transition: all 0.3s ease; }
-.overlay-fade-leave-active { transition: all 0.2s ease; }
-.overlay-fade-enter-from { opacity: 0; }
-.overlay-fade-enter-from .overlay-content { transform: scale(0.95) translateY(20px); }
-.overlay-fade-leave-to { opacity: 0; }
 
+.overlay-content {
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: var(--radius-2xl);
+}
+
+.overlay-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.overlay-fade-enter-active {
+  transition: all var(--duration-normal) var(--ease-smooth);
+}
+
+.overlay-fade-leave-active {
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.overlay-fade-enter-from {
+  opacity: 0;
+}
+
+.overlay-fade-enter-from .overlay-content {
+  transform: scale(0.95) translateY(20px);
+}
+
+.overlay-fade-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 380px) {
+  .hero-title {
+    font-size: var(--text-xl);
+  }
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

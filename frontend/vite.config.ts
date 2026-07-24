@@ -29,11 +29,7 @@ export default defineConfig(({ mode }) => {
       },
     },
     css: {
-      preprocessorOptions: {
-        scss: {
-          additionalData: `@use "~/styles/element/index.scss" as *;`,
-        },
-      },
+      preprocessorOptions: {},
     },
   }
 })

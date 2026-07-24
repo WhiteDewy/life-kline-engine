@@ -1,188 +1,450 @@
 :root {
-  /* Deep Space Order Palette */
+  /* ═══════════════════════════════════════
+     Paper Moon Design System
+     星灵花园 · 纸上月色
+     温暖如纸，安静如月，克制而高级
+     ═══════════════════════════════════════ */
 
-  /* Brand Colors */
-  --color-gold: #FF9A8B; /* Orderly Gold */
-  --color-gold-rgb: 255, 154, 139;
-  --color-indigo: #6366F1; /* Logic Indigo */
-  --color-indigo-rgb: 99, 102, 241;
-  --color-red: #F43F5E; /* Entropy Red */
-  --color-red-rgb: 244, 63, 94;
+  /* ── Brand Colors ── */
+  --color-primary: #B87D5A;
+  --color-primary-rgb: 184, 125, 90;
+  --color-primary-light: #D9A88A;
+  --color-primary-soft: #F2E5DA;
+  --color-primary-dark: #8F5E40;
 
-  /* Data Viz Colors */
-  --color-data-pos: #10B981; /* Positive/Expansion */
-  --color-data-neg: #F59E0B; /* Negative/Contraction - Amber */
-  --color-data-neu: rgba(148, 163, 184, 0.2); /* Neutral/Grid */
+  --color-sage: #8A9A7A;
+  --color-sage-rgb: 138, 154, 122;
+  --color-sage-light: #D8E4D3;
 
-  /* Backgrounds & Layers */
-  --bg-main: #FFF5EE; /* Void Black */
-  --bg-card: rgba(255,255,255,0.7); /* Nebula Grey */
-  --card-hover: rgba(255, 255, 255, 0.08);
-  --border-light: rgba(0,0,0,0.06); /* Orderly Border */
-  --glass-mask: rgba(255,255,255,0.85); /* Glass Mask */
+  --color-lavender: #B8A9C9;
+  --color-lavender-rgb: 184, 169, 201;
+  --color-lavender-light: #E8E0F0;
 
-  /* Text */
-  --text-primary: #4A3728;
-  --text-muted: #8B7355;
-  --text-disabled: #A89880;
+  /* ── Semantic Colors ── */
+  --color-success: #8A9A7A;
+  --color-warning: #C99A5A;
+  --color-danger: #B85C5C;
+  --color-info: #8FA3C0;
 
-  /* Gradients */
-  --grad-hero: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
-  --grad-gold: linear-gradient(135deg, #d4af37 0%, #f59e0b 100%);
-  --grad-highlight: linear-gradient(to left, #ffffff, #d4af37);
+  --color-success-rgb: 138, 154, 122;
+  --color-warning-rgb: 201, 154, 90;
+  --color-danger-rgb: 184, 92, 92;
+  --color-info-rgb: 143, 163, 192;
 
-  /* Legacy Mappings (for compatibility) */
+  /* ── Data Viz Colors ── */
+  --color-data-pos: #8A9A7A;
+  --color-data-neg: #C99A5A;
+  --color-data-neu: rgba(44, 38, 34, 0.12);
+  --color-data-grid: rgba(44, 38, 34, 0.06);
+
+  /* ── Backgrounds ── */
+  --bg-main: #F7F4EF;
+  --bg-elevated: #FAF8F4;
+  --bg-card: #FFFFFF;
+  --bg-card-glass: rgba(255, 255, 255, 0.78);
+  --bg-overlay: rgba(247, 244, 239, 0.92);
+  --bg-dark: #15171E;
+
+  /* ── Text ── */
+  --text-primary: #2C2622;
+  --text-secondary: #7A6F66;
+  --text-tertiary: #A59A90;
+  --text-muted: #B8B0A8;
+  --text-on-dark: #EDE8E0;
+
+  /* ── Borders ── */
+  --border-light: rgba(44, 38, 34, 0.08);
+  --border-medium: rgba(44, 38, 34, 0.12);
+  --border-dark: rgba(44, 38, 34, 0.18);
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 2px rgba(44, 38, 34, 0.04);
+  --shadow-card: 0 4px 12px rgba(44, 38, 34, 0.06);
+  --shadow-raised: 0 12px 28px rgba(44, 38, 34, 0.08);
+  --shadow-hover: 0 16px 40px rgba(44, 38, 34, 0.10);
+  --shadow-glow: 0 0 0 3px rgba(184, 125, 90, 0.18);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  /* ── Typography ── */
+  --font-sans: "Inter", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Noto Serif SC", "Source Han Serif CN", "Noto Serif SC", "Songti SC", "STSong", serif;
+  --font-mono: "SF Mono", "Menlo", "Roboto Mono", monospace;
+
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.8125rem;   /* 13px */
+  --text-base: 0.9375rem; /* 15px */
+  --text-md: 1.0625rem;   /* 17px */
+  --text-lg: 1.25rem;     /* 20px */
+  --text-xl: 1.5rem;      /* 24px */
+  --text-2xl: 1.875rem;   /* 30px */
+  --text-3xl: 2.25rem;    /* 36px */
+
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  --leading-tight: 1.25;
+  --leading-snug: 1.4;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.75;
+
+  /* ── Spacing ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* ── Radius ── */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-full: 9999px;
+
+  /* ── Layout ── */
+  --h-header: 56px;
+  --h-footer: 64px;
+  --h-tab-bar: 64px;
+  --content-max: 480px;
+  --content-max-wide: 680px;
+
+  /* ── Animation ── */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce-soft: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-emotional: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+  --duration-ambient: 8s;
+
+  /* ═══════════════════════════════════════
+     Legacy Aliases (过渡兼容)
+     ═══════════════════════════════════════ */
   --bg: var(--bg-main);
   --card-bg: var(--bg-card);
   --text: var(--text-primary);
-  --text-secondary: var(--text-muted);
-  --muted: var(--text-disabled);
+  --text-secondary: var(--text-secondary);
+  --muted: var(--text-muted);
   --border: var(--border-light);
-  
-  --primary: var(--color-gold);
-  --accent: var(--color-indigo);
-  --success: var(--color-data-pos);
-  --warning: var(--color-data-neg);
-  --danger: var(--color-red);
+  --primary: var(--color-primary);
+  --accent: var(--color-lavender);
+  --success: var(--color-success);
+  --warning: var(--color-warning);
+  --danger: var(--color-danger);
+  --gold: var(--color-primary);
+  --gold-rgb: var(--color-primary-rgb);
+  --indigo: var(--color-lavender);
+  --indigo-rgb: var(--color-lavender-rgb);
+  --red: var(--color-danger);
+  --red-rgb: var(--color-danger-rgb);
 
-  --gold: var(--color-gold);
-  --gold-rgb: var(--color-gold-rgb);
-  --indigo: var(--color-indigo);
-  --indigo-rgb: var(--color-indigo-rgb);
-  --red: var(--color-red);
-  --red-rgb: var(--color-red-rgb);
-
-  /* Layout */
-  --h-header: 64px;
-  --h-footer: 80px;
-  --content-min: 320px;
-  --content-max: 1200px;
-  --radius: 16px;
-  --font-sans: "Inter", "PingFang SC", "Noto Sans SC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "Roboto Mono", "SF Pro Display", "Menlo", monospace;
-
-  /* Shadows */
-  --shadow-card: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
-  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
-
-  /* ── Design System Tokens ── */
-
-  /* Border Radius Scale */
-  --radius-sm: 10px;
-  --radius-md: 14px;
-  --radius-lg: 20px;
-  --radius-xl: 24px;
-
-  /* Shadow Levels */
-  --shadow-flat: 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-raised: 0 4px 20px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-hover: 0 12px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-glow-gold: 0 0 0 3px rgba(255, 154, 139, 0.12);
-
-  /* Animation Easing */
-  --ease-bounce: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
-  --dur-fast: 0.2s;
-  --dur-normal: 0.3s;
-  --dur-slow: 0.5s;
-
-  /* Card Surfaces */
-  --surface-card: rgba(255, 255, 255, 0.7);
-  --surface-hover: rgba(255, 255, 255, 0.85);
-  --surface-glass: rgba(255, 255, 255, 0.6);
-  --surface-backdrop: rgba(0, 0, 0, 0.15);
-
-  /* Planet Personality Colors */
-  --planet-sun: #F2A900;
+  /* ── Planet Personality Colors (柔化版) ── */
+  --planet-sun: #D4A35A;
   --planet-moon: #9BC4D0;
-  --planet-mercury: #7B8D6F;
-  --planet-venus: #E8A0BF;
-  --planet-mars: #E8533F;
-  --planet-jupiter: #4B6BAA;
-  --planet-saturn: #5B6770;
+  --planet-mercury: #8A9A8A;
+  --planet-venus: #D4A0A0;
+  --planet-mars: #C97A6A;
+  --planet-jupiter: #7A8AA8;
+  --planet-saturn: #8A8A8A;
 }
 
-/* Element Plus Overrides - Using :root to match specificity */
+/* ═══════════════════════════════════════
+   Element Plus Variable Overrides
+   ═══════════════════════════════════════ */
 :root {
-  --el-color-primary: var(--color-gold);
-  --el-color-primary-light-3: #E1C773;
-  --el-color-primary-light-5: #E9D79B;
-  --el-color-primary-light-7: #F2E7C3;
-  --el-color-primary-light-8: #F6EFD7;
-  --el-color-primary-light-9: #FBF7EB;
-  --el-color-primary-dark-2: #AA8C2C;
-  
-  --el-color-success: var(--color-data-pos);
-  --el-color-warning: var(--color-data-neg);
-  --el-color-danger: var(--color-red);
-  --el-color-info: var(--color-indigo);
-  
-  --el-bg-color: #FFF5EE;
-  --el-bg-color-page: #FFF5EE;
-  --el-bg-color-overlay: rgba(255,255,255,0.9);
-  
+  --el-color-primary: var(--color-primary);
+  --el-color-primary-light-3: var(--color-primary-light);
+  --el-color-primary-light-5: #E8C9B4;
+  --el-color-primary-light-7: #F2DDD0;
+  --el-color-primary-light-8: #F7E9E0;
+  --el-color-primary-light-9: #FBF4EF;
+  --el-color-primary-dark-2: var(--color-primary-dark);
+
+  --el-color-success: var(--color-success);
+  --el-color-warning: var(--color-warning);
+  --el-color-danger: var(--color-danger);
+  --el-color-info: var(--color-info);
+
+  --el-bg-color: var(--bg-main);
+  --el-bg-color-page: var(--bg-main);
+  --el-bg-color-overlay: var(--bg-overlay);
+
   --el-text-color-primary: var(--text-primary);
-  --el-text-color-regular: var(--text-muted);
-  --el-text-color-secondary: var(--text-disabled);
-  --el-text-color-placeholder: var(--text-disabled);
-  
+  --el-text-color-regular: var(--text-secondary);
+  --el-text-color-secondary: var(--text-tertiary);
+  --el-text-color-placeholder: var(--text-muted);
+  --el-text-color-disabled: var(--text-muted);
+
   --el-border-color: var(--border-light);
   --el-border-color-light: var(--border-light);
-  --el-border-color-lighter: rgba(255, 255, 255, 0.05);
-  --el-border-color-extra-light: rgba(255, 255, 255, 0.02);
-  
-  --el-fill-color: rgba(0,0,0,0.03);
-  --el-fill-color-light: rgba(0,0,0,0.02);
-  --el-fill-color-lighter: rgba(255, 255, 255, 0.02);
+  --el-border-color-lighter: var(--border-light);
+  --el-border-color-extra-light: rgba(44, 38, 34, 0.04);
+
+  --el-fill-color: rgba(44, 38, 34, 0.04);
+  --el-fill-color-light: rgba(44, 38, 34, 0.03);
+  --el-fill-color-lighter: rgba(44, 38, 34, 0.02);
   --el-fill-color-blank: transparent;
-  
-  --el-mask-color: rgba(0,0,0,0.3);
-  
-  /* Input specific overrides */
-  --el-input-bg-color: rgba(0,0,0,0.02);
+
+  --el-mask-color: rgba(44, 38, 34, 0.3);
+
+  /* Input */
+  --el-input-bg-color: var(--bg-elevated);
   --el-input-border-color: var(--border-light);
-  --el-input-hover-border-color: var(--color-gold);
-  --el-input-focus-border-color: var(--color-gold);
+  --el-input-hover-border-color: var(--border-medium);
+  --el-input-focus-border-color: var(--color-primary);
   --el-input-text-color: var(--text-primary);
-  
-  /* DatePicker specific */
-  --el-datepicker-icon-color: var(--text-muted);
-  --el-datepicker-active-color: var(--color-gold);
-  --el-datepicker-hover-text-color: var(--color-gold);
-  
-  /* Select specific */
-  --el-select-input-color: var(--text-primary);
-  --el-select-input-focus-border-color: var(--color-gold);
-  
-  /* Button specific */
-  --el-button-bg-color: rgba(0,0,0,0.03);
+  --el-input-placeholder-color: var(--text-muted);
+
+  /* Button */
+  --el-button-bg-color: var(--bg-card);
   --el-button-border-color: var(--border-light);
   --el-button-text-color: var(--text-primary);
-  --el-button-hover-text-color: var(--color-gold);
-  --el-button-hover-bg-color: rgba(255, 255, 255, 0.1);
-  --el-button-hover-border-color: var(--color-gold);
+  --el-button-hover-text-color: var(--color-primary);
+  --el-button-hover-bg-color: var(--bg-elevated);
+  --el-button-hover-border-color: var(--color-primary-light);
+
+  /* DatePicker */
+  --el-datepicker-icon-color: var(--text-tertiary);
+  --el-datepicker-active-color: var(--color-primary);
+  --el-datepicker-hover-text-color: var(--color-primary);
+
+  /* Select */
+  --el-select-input-color: var(--text-primary);
+  --el-select-input-focus-border-color: var(--color-primary);
+
+  /* Dialog */
+  --el-dialog-bg-color: var(--bg-card);
+  --el-dialog-box-shadow: var(--shadow-raised);
 }
 
-/* Global Utilities */
+/* ═══════════════════════════════════════
+   Global Base Styles
+   ═══════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 html, body {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
   background: var(--bg-main);
   color: var(--text-primary);
   font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-  line-height: 1.6;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  min-width: 320px;
+  min-height: 100vh;
 }
 
-/* Date Picker & Popper Overrides */
+#app {
+  width: 100%;
+  min-height: 100vh;
+  text-align: left;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-smooth);
+}
+
+a:hover {
+  color: var(--color-primary-dark);
+}
+
+h1, h2, h3, h4, h5, h6, p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+img, video {
+  max-width: 100%;
+  display: block;
+}
+
+/* ═══════════════════════════════════════
+   Scrollbar
+   ═══════════════════════════════════════ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-medium);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-dark);
+}
+
+/* ═══════════════════════════════════════
+   Element Plus Component Overrides
+   ═══════════════════════════════════════ */
+
+/* Buttons */
+.el-button {
+  border-radius: var(--radius-full);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  height: 48px;
+  padding: 0 24px;
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.el-button--primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+  box-shadow: var(--shadow-card);
+}
+
+.el-button--primary:hover, .el-button--primary:focus {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-raised);
+}
+
+.el-button--primary:active {
+  transform: scale(0.98);
+}
+
+.el-button--default {
+  background: var(--bg-card);
+  border-color: var(--border-light);
+  color: var(--text-primary);
+}
+
+.el-button--default:hover, .el-button--default:focus {
+  background: var(--bg-elevated);
+  border-color: var(--border-medium);
+  color: var(--color-primary);
+}
+
+.el-button.is-round {
+  border-radius: var(--radius-full);
+}
+
+.el-button.is-plain {
+  background: transparent;
+}
+
+/* Input / Select / Textarea */
+.el-input__wrapper,
+.el-select__wrapper,
+.el-textarea__inner {
+  background-color: var(--bg-elevated) !important;
+  border: 1px solid var(--border-light) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: none !important;
+  color: var(--text-primary) !important;
+  transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.el-input__wrapper:hover,
+.el-select__wrapper:hover,
+.el-textarea__inner:hover {
+  border-color: var(--border-medium) !important;
+}
+
+.el-input__wrapper.is-focus,
+.el-select__wrapper.is-focus,
+.el-textarea__inner:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: var(--shadow-glow) !important;
+}
+
+.el-input__inner {
+  color: var(--text-primary);
+  font-size: var(--text-base);
+}
+
+.el-input__inner::placeholder {
+  color: var(--text-muted);
+}
+
+/* Dialog */
+.el-dialog {
+  background: var(--bg-card) !important;
+  border-radius: var(--radius-xl) !important;
+  box-shadow: var(--shadow-raised) !important;
+  border: 1px solid var(--border-light) !important;
+}
+
+.el-dialog__header {
+  padding: var(--space-5) var(--space-5) var(--space-3) !important;
+  margin-right: 0 !important;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.el-dialog__title {
+  color: var(--text-primary) !important;
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+}
+
+.el-dialog__headerbtn .el-dialog__close {
+  color: var(--text-tertiary);
+}
+
+.el-dialog__headerbtn:hover .el-dialog__close {
+  color: var(--color-primary);
+}
+
+.el-dialog__body {
+  color: var(--text-secondary) !important;
+  padding: var(--space-5) !important;
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+}
+
+.el-dialog__footer {
+  padding: var(--space-4) var(--space-5) !important;
+  border-top: 1px solid var(--border-light);
+}
+
+/* Popper / Dropdown / Cascader / DatePicker panels */
+.el-popper,
 .el-picker-panel,
 .el-date-range-picker,
 .el-time-panel,
 .el-cascader-panel,
 .el-select-dropdown,
 .el-dropdown-menu {
-  background: var(--glass-mask) !important;
-  backdrop-filter: blur(24px) !important;
+  background: var(--bg-card) !important;
   border: 1px solid var(--border-light) !important;
-  box-shadow: var(--shadow-card) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-raised) !important;
   color: var(--text-primary) !important;
 }
 
@@ -192,137 +454,123 @@ html, body {
 }
 
 .el-date-table td.today span {
-  color: var(--color-gold) !important;
-  font-weight: bold;
+  color: var(--color-primary) !important;
+  font-weight: var(--font-bold);
 }
 
 .el-date-table td.current:not(.disabled) span {
-  background-color: var(--color-gold) !important;
-  color: #000 !important;
+  background-color: var(--color-primary) !important;
+  color: #fff !important;
 }
 
 .el-date-table td:hover {
-  color: var(--color-gold) !important;
+  color: var(--color-primary) !important;
 }
 
 .el-picker-panel__icon-btn {
-  color: var(--text-muted) !important;
+  color: var(--text-tertiary) !important;
 }
 
 .el-picker-panel__icon-btn:hover {
-  color: var(--color-gold) !important;
+  color: var(--color-primary) !important;
 }
 
-.el-input__wrapper {
-  background-color: var(--el-input-bg-color) !important;
-}
-
-/* Dialog Overrides */
-.el-dialog {
-  background: var(--bg-card) !important; /* Nebula Grey */
-  border: 1px solid var(--border-light) !important;
-  box-shadow: var(--shadow-card) !important;
-  backdrop-filter: blur(20px);
-  --el-dialog-bg-color: transparent !important; /* Let custom background show */
-}
-
-.el-dialog__title {
-  color: var(--text-primary) !important;
-  font-family: var(--font-sans);
-  font-weight: 600;
-}
-
-.el-dialog__body {
-  color: var(--text-muted) !important;
-}
-
-.el-dialog__headerbtn .el-dialog__close {
-  color: var(--text-muted) !important;
-}
-
-.el-dialog__headerbtn:hover .el-dialog__close {
-  color: var(--color-gold) !important;
-}
-
-/* ── P0: 级联面板圆角统一 18px ── */
-.el-cascader-panel {
-  border-radius: 18px !important;
-  overflow: hidden;
-}
-.el-picker-panel {
-  border-radius: 18px !important;
-  overflow: hidden;
-}
-
-/* ── P0: 触摸目标 ≥ 44px ── */
 .el-cascader-node {
-  min-height: 44px !important;
-}
-.el-date-table td {
-  height: 44px !important;
+  min-height: 44px;
 }
 
-/* ── P0: 节点文字色温暖色 ── */
 .el-cascader-node__label {
-  color: #4a3728 !important;
-}
-.el-date-picker__header-label {
-  color: #4a3728 !important;
-  font-weight: 600 !important;
+  color: var(--text-primary);
 }
 
-/* ── P0: 选中态 & hover 样式 ── */
 .el-cascader-node.is-active,
 .el-cascader-node.in-active-path {
-  background: rgba(240, 170, 140, 0.12) !important;
-  font-weight: 600;
+  background: var(--color-primary-soft) !important;
+  color: var(--color-primary-dark);
+  font-weight: var(--font-semibold);
 }
+
 .el-cascader-node:not(.is-disabled):hover {
-  background: rgba(240, 170, 140, 0.06) !important;
+  background: rgba(184, 125, 90, 0.06) !important;
 }
 
-/* ── P0: 全局 popper 默认毛玻璃（兜底） ── */
-.el-picker__popper {
-  background: rgba(255, 255, 255, 0.92) !important;
-  backdrop-filter: blur(24px) !important;
-  border-radius: 18px !important;
-  border: 1px solid rgba(0, 0, 0, 0.06) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06) !important;
+/* Tabs */
+.el-tabs__item {
+  color: var(--text-secondary);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
 }
 
-/* ── Cosmic Date/Time Picker (星灵花园引导页深色主题) ── */
-.cosmic-popper {
-  background: rgba(24, 20, 40, 0.95) !important;
-  backdrop-filter: blur(24px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.06) !important;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4) !important;
-  color: rgba(235, 225, 250, 0.8) !important;
+.el-tabs__item.is-active {
+  color: var(--color-primary);
+  font-weight: var(--font-semibold);
 }
-.cosmic-popper .el-picker-panel__icon-btn {
-  color: rgba(200, 190, 220, 0.6) !important;
+
+.el-tabs__active-bar {
+  background-color: var(--color-primary);
 }
-.cosmic-popper .el-picker-panel__icon-btn:hover {
-  color: rgba(230, 220, 250, 0.9) !important;
+
+.el-tabs__nav-wrap::after {
+  background-color: var(--border-light);
 }
-.cosmic-popper .el-date-table td {
-  color: rgba(210, 200, 230, 0.7) !important;
+
+/* Form */
+.el-form-item__label {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
 }
-.cosmic-popper .el-date-table td.available:hover {
-  color: #fff !important;
+
+.el-radio__input.is-checked .el-radio__inner,
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary);
 }
-.cosmic-popper .el-date-table td.current span {
-  background: rgba(180, 150, 220, 0.5) !important;
-  color: #fff !important;
+
+.el-radio__label,
+.el-checkbox__label {
+  color: var(--text-primary);
 }
-.cosmic-popper .el-date-table td.today span {
-  color: rgba(200, 180, 230, 0.9) !important;
+
+/* Message / Notification */
+.el-message {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-raised) !important;
+  font-size: var(--text-sm) !important;
+  padding: 12px 20px !important;
+  min-width: auto !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-light) !important;
 }
-.cosmic-popper .el-time-spinner__item {
-  color: rgba(200, 190, 220, 0.6) !important;
+
+.el-message .el-message__content {
+  color: var(--text-secondary) !important;
+  font-weight: var(--font-medium);
 }
-.cosmic-popper .el-time-spinner__item.active {
-  color: rgba(230, 220, 250, 0.9) !important;
+
+.el-message .el-message__icon {
+  font-size: 18px;
 }
-.cosmic-popper .el-time-spinner__item:hover {
-  background: rgba(255, 255, 255, 0.04) !important;
+
+/* ═══════════════════════════════════════
+   Utility Classes (lightweight)
+   ═══════════════════════════════════════ */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
 }

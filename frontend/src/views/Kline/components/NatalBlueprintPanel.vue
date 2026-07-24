@@ -500,7 +500,7 @@ function formatFitScore(value: number) {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .blueprintSection {
   margin-bottom: 22px;
 }

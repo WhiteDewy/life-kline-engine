@@ -177,7 +177,7 @@
 
           <!-- ═══ 语音播报 ═══ -->
           <section class="section section--voice">
-            <VoicePlayer :text="summaryText" :style="'broadcast'" showLabel block />
+            <VoicePlayer :text="summaryText" voice-style="broadcast" showLabel block />
           </section>
         </div>
       </div>
@@ -325,7 +325,7 @@ function aspectClass(label: string): string {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 /* ═══════════════ Transition ═══════════════ */
 .direction-slide-enter-active {
   transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);

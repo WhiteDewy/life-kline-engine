@@ -195,7 +195,7 @@ async function sendResponse() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .consultation-flow {
   display: flex;
   flex-direction: column;

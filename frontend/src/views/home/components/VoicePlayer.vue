@@ -21,13 +21,13 @@ import { ref, computed, onUnmounted } from "vue";
 const props = withDefaults(
   defineProps<{
     text: string;
-    style?: "broadcast" | "whisper";
+    voiceStyle?: "broadcast" | "whisper";
     showLabel?: boolean;
     block?: boolean;
     size?: "normal" | "mini";
   }>(),
   {
-    style: "broadcast",
+    voiceStyle: "broadcast",
     showLabel: false,
     block: false,
     size: "normal",
@@ -86,8 +86,8 @@ function speak() {
 
   const utterance = new SpeechSynthesisUtterance(props.text);
   utterance.lang = "zh-CN";
-  utterance.rate = props.style === "whisper" ? 0.85 : 1.0;
-  utterance.pitch = props.style === "whisper" ? 0.9 : 1.0;
+  utterance.rate = props.voiceStyle === "whisper" ? 0.85 : 1.0;
+  utterance.pitch = props.voiceStyle === "whisper" ? 0.9 : 1.0;
 
   const zhVoice = getChineseVoice();
   if (zhVoice) {
@@ -150,7 +150,7 @@ onUnmounted(() => {
 });
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .voice-player-btn {
   display: inline-flex;
   align-items: center;

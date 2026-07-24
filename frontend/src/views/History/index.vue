@@ -76,14 +76,14 @@ onMounted(loadHistory);
   margin: 0 auto;
 }
 h2 {
-  color: #f8fafc;
+  color: var(--text-primary);
   font-size: 28px;
   margin: 0 0 24px;
 }
 .empty {
   text-align: center;
   padding: 60px 0;
-  color: #94a3b8;
+  color: var(--text-tertiary);
 }
 .empty p {
   margin: 0 0 16px;
@@ -107,11 +107,11 @@ h2 {
   border-color: rgba(212, 175, 55, 0.25);
 }
 .type {
-  color: #e2e8f0;
+  color: var(--text-secondary);
   font-weight: 600;
 }
 .date {
-  color: #64748b;
+  color: var(--text-tertiary);
   font-size: 13px;
 }
 </style>

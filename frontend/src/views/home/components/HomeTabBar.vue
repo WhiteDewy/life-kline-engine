@@ -1,5 +1,5 @@
 <template>
-  <nav class="tab-bar">
+  <nav class="home-tab-bar" aria-label="主导航">
     <button class="tab-btn" @click="$emit('garden')">
       <span class="tab-icon">🌸</span>
       <span class="tab-label">花园</span>
@@ -18,17 +18,21 @@
 </template>
 
 <script setup lang="ts">
-
-
-
 defineEmits<{
-  garden: []
-  'daily-question': []
-  council: []
-}>()
+  garden: [];
+  "daily-question": [];
+  council: [];
+}>();
 </script>
 
-<style scoped>
+<style scoped lang="less">
+.home-tab-bar {
+  display: flex;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
 .tab-bar {
   position: fixed;
   bottom: 0;
@@ -55,7 +59,7 @@ defineEmits<{
   -webkit-tap-highlight-color: transparent;
   transition: all 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
   user-select: none;
-  opacity: 0.65;
+  flex: 1;
 }
 
 .tab-btn:hover {

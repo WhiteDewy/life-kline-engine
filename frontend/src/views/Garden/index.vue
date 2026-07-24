@@ -246,7 +246,7 @@ watch(historyFilter, (f) => {
 onMounted(() => initGarden());
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .garden-page {
   min-height: 100vh;
   position: relative;
@@ -263,8 +263,8 @@ onMounted(() => initGarden());
 .garden-state { position: relative; z-index: 1; text-align: center; padding: 120px 20px; }
 .state-icon { font-size: 52px; margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
 @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
-.state-title { font-size: 22px; font-weight: 700; color: #4a3728; margin: 0 0 8px; }
-.state-sub { font-size: 14px; color: #8b7355; margin: 0 0 24px; }
+.state-title { font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px; }
+.state-sub { font-size: 14px; color: var(--text-secondary); margin: 0 0 24px; }
 .retry-btn { background: rgba(255,154,139,0.2) !important; border-color: rgba(255,154,139,0.3) !important; color: #4a3728 !important; }
 
 /* 内容区 */
@@ -287,16 +287,16 @@ onMounted(() => initGarden());
 }
 .history-btn {
   padding: 6px 14px; border-radius: 14px;
-  border: 1px solid rgba(0,0,0,0.08);
-  background: rgba(255,255,255,0.5);
-  font-size: 12px; font-weight: 600; color: #8b7355;
+  border: 1px solid var(--border-light);
+  background: var(--bg-card-glass);
+  font-size: 12px; font-weight: 600; color: var(--text-secondary);
   cursor: pointer; font-family: inherit; transition: all 0.2s;
   min-height: 44px;
 }
-.history-btn:hover { background: rgba(255,255,255,0.8); color: #4a3728; }
+.history-btn:hover { background: rgba(255,255,255,0.8); color: var(--text-primary); }
 
 .section-heading {
-  font-size: 18px; font-weight: 700; color: #4a3728; margin: 0;
+  font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0;
 }
 
 .diary-entry {

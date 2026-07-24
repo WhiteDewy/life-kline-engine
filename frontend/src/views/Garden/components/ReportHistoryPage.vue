@@ -65,7 +65,7 @@ function formatDate(iso: string): string {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .report-history { padding: 0 4px; }
 .rh-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
 .back-btn { padding: 6px 14px; border-radius: 14px; border: 1px solid rgba(0,0,0,0.08); background: rgba(255,255,255,0.6); font-size: 13px; font-weight: 600; color: #8b7355; cursor: pointer; font-family: inherit; }

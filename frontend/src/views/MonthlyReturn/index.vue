@@ -225,7 +225,7 @@ watch(
 );
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .page {
   min-height: 100vh;
   position: relative;
@@ -279,7 +279,7 @@ watch(
 .heroAside,
 .panel,
 .stateCard {
-  border: 1px solid rgba(0,0,0,0.06);
+  border: 1px solid var(--border-light);
   background: rgba(255,255,255, 0.72);
   backdrop-filter: blur(18px);
   border-radius: 24px;
@@ -336,7 +336,7 @@ watch(
   align-items: center;
   padding: 7px 12px;
   border-radius: 999px;
-  border: 1px solid rgba(0,0,0,0.06);
+  border: 1px solid var(--border-light);
   background: rgba(255, 255, 255, 0.04);
   color: var(--text-secondary);
   font-size: 12px;
@@ -444,11 +444,11 @@ watch(
 
 .ftPlanets {
   font-size: 14px;
-  color: #4a3728;
+  color: var(--text-primary);
 }
 
 .ftPlanets strong {
-  color: #4a3728;
+  color: var(--text-primary);
 }
 
 .ftAspect {
@@ -462,13 +462,13 @@ watch(
 
 .ftOrb {
   font-size: 11px;
-  color: #a89880;
+  color: var(--text-tertiary);
 }
 
 .ftText {
   margin: 0 0 10px;
   font-size: 13px;
-  color: #8b7355;
+  color: var(--text-secondary);
   line-height: 1.7;
 }
 

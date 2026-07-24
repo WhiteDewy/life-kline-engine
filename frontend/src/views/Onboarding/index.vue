@@ -464,7 +464,7 @@ function initCanvas() {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 /* ═══ 基底 ═══ */
 .onboard-page { min-height:100vh;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(175deg,#FFF5EE 0%,#FFEFE6 25%,#FFF0F5 55%,#F5F0FF 80%,#FDF5F0 100%);overflow:hidden; }
 .particle-canvas { position:absolute;inset:0;z-index:0;pointer-events:none; }
@@ -553,10 +553,10 @@ function initCanvas() {
 .manual-grid { display: grid; gap: 10px; margin-top: 8px; }
 .manual-field label { display: block; font-size: 11px; color: #b8a090; margin-bottom: 4px; }
 .manual-row { display: flex; align-items: center; gap: 4px; }
-.manual-row span { color: #8b7355; font-size: 13px; }
-.manual-num { width: 55px; padding: 4px 6px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5); font-size: 13px; color: #4a3028; text-align: center; outline: none; }
+.manual-row span { color: var(--text-secondary); font-size: 13px; }
+.manual-num { width: 55px; padding: 4px 6px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); background: var(--bg-card-glass); font-size: 13px; color: #4a3028; text-align: center; outline: none; }
 .manual-num:focus { border-color: rgba(255,160,130,0.3); }
-.manual-sel { padding: 4px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5); font-size: 13px; color: #4a3028; outline: none; }
+.manual-sel { padding: 4px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); background: var(--bg-card-glass); font-size: 13px; color: #4a3028; outline: none; }
 /* ── 宫位制 ── */
 .house-select-row { display:flex;gap:6px;padding:6px 8px;flex-wrap:wrap;justify-content:center; }
 .hs-chip { padding:8px 14px;border-radius:14px;border:1px solid rgba(0,0,0,0.04);background:rgba(255,255,255,0.5);color:#8b6f5f;font-size:12px;cursor:pointer;font-family:inherit;letter-spacing:1px;transition:all 0.3s;flex:1;min-width:70px; }

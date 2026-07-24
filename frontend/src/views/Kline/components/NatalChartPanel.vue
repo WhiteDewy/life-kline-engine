@@ -1578,7 +1578,7 @@ function houseLine(house: unknown, title?: string) {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .natal-section {
   margin-bottom: 24px;
 }

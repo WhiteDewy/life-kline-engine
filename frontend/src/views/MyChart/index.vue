@@ -186,7 +186,7 @@ onMounted(fetchData);
 
 .header-sub {
   margin: 4px 0 0;
-  color: #64748b;
+  color: var(--text-tertiary);
   font-size: 13px;
 }
 
@@ -194,8 +194,8 @@ onMounted(fetchData);
   padding: 8px 18px;
   border-radius: 999px;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  background: #fff;
-  color: #4a3728;
+  background: var(--bg-card);
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -213,7 +213,7 @@ onMounted(fetchData);
 .error {
   text-align: center;
   padding: 60px 16px;
-  color: #64748b;
+  color: var(--text-tertiary);
   font-size: 15px;
 }
 .error {
@@ -227,7 +227,7 @@ onMounted(fetchData);
 
 /* ── Tabs ── */
 .tabs-section {
-  background: #ffffff;
+  background: var(--bg-card);
   border-radius: 14px;
   border: 1px solid #e2e8f0;
   overflow: hidden;
@@ -245,7 +245,7 @@ onMounted(fetchData);
   padding: 14px 16px;
   border: none;
   background: transparent;
-  color: #64748b;
+  color: var(--text-tertiary);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -260,7 +260,7 @@ onMounted(fetchData);
 .tab-btn.active {
   color: #d4af37;
   border-bottom-color: #d4af37;
-  background: #ffffff;
+  background: var(--bg-card);
 }
 
 .tabs-content {
@@ -276,7 +276,7 @@ onMounted(fetchData);
 
 .pane-desc {
   margin: 0 0 16px;
-  color: #64748b;
+  color: var(--text-tertiary);
   font-size: 13px;
   line-height: 1.6;
 }

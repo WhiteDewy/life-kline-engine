@@ -450,7 +450,7 @@ const hasExpandedRulers = computed(() => {
 });
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .patternsSection {
   margin-bottom: 22px;
 }

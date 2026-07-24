@@ -83,7 +83,7 @@ const clouds = computed(() =>
     delay: -(Math.random() * 30),
     opacity: 0.3 + Math.random() * 0.4,
     scale: 0.6 + Math.random() * 1.2,
-    color: i % 2 === 0 ? "rgba(255,255,255,0.7)" : "rgba(255,240,245,0.5)",
+    color: i % 2 === 0 ? "rgba(255,255,255,0.7)" : "rgba(247,244,239,0.6)",
   }))
 );
 
@@ -96,16 +96,16 @@ const particles = computed(() =>
     delay: Math.random() * 6,
     duration: 4 + Math.random() * 6,
     color: [
-      "rgba(255, 154, 139, 0.3)",
-      "rgba(240, 192, 96, 0.3)",
-      "rgba(155, 196, 208, 0.3)",
-      "rgba(232, 160, 191, 0.25)",
+      "rgba(184, 125, 90, 0.25)",
+      "rgba(138, 154, 122, 0.22)",
+      "rgba(184, 169, 201, 0.22)",
+      "rgba(201, 154, 90, 0.20)",
     ][Math.floor(Math.random() * 4)],
   }))
 );
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .garden-scene {
   position: fixed;
   inset: 0;

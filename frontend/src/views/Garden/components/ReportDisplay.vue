@@ -69,7 +69,7 @@ function formatText(text: string): string {
 }
 </script>
 
-<style scoped>
+<style scoped lang="less">
 .report-display {
   padding: 0 4px;
 }
