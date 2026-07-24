@@ -201,9 +201,21 @@ class IntentRouter:
         # 2. 入口上下文优先
         if entry_context:
             source = entry_context.get("source", "")
-            if source == "daily_question" and entry_context.get("question_text"):
-                # 每日一问自带主题提示
-                pass  # topic_hint will handle this
+            if source == "daily_question" and entry_context.get("daily_question"):
+                # 每日一问自带主题提示，倾向于 personal 域
+                daily_q = entry_context.get("daily_question", "")
+                # 简单关键词映射，触发更准的 topic_hint
+                if any(kw in daily_q for kw in ["情绪", "感受", "内心", "自己", "想要", "渴望", "柔软"]):
+                    topic_hint = topic_hint or "personal"
+                elif any(kw in daily_q for kw in ["工作", "行动", "决定", "迈出", "争取", "勇气"]):
+                    topic_hint = topic_hint or "career"
+                elif any(kw in daily_q for kw in ["关系", "他人", "对话", "沟通", "表达"]):
+                    topic_hint = topic_hint or "marriage"
+                else:
+                    topic_hint = topic_hint or "personal"
+            elif source == "transit" and entry_context.get("transit_detail"):
+                # 今日走向自带主题（行运导向当下状态）
+                topic_hint = topic_hint or "personal"
 
         # 3. topic_hint 覆盖弱匹配
         if topic_hint and topic_hint in DOMAIN_KEYWORDS:
@@ -239,6 +251,47 @@ class IntentRouter:
             "emotional_state": emotional_state,
             "confidence": confidence,
         }
+
+    def route_garden_question(
+        self, user_message: str, category: str,
+    ) -> str | None:
+        """花园分类内的问题路由：匹配用户输入到具体的抓手问题 key。
+
+        基于 garden_catalog 的问题标签做关键词匹配，
+        返回最匹配的 question_key 或 None。
+        """
+        from .garden_catalog import get_category as gc
+
+        cat_def = gc(category)
+        if not cat_def:
+            return None
+
+        msg = user_message.lower().strip()
+        best_key: str | None = None
+        best_score = 0
+
+        for q in cat_def.questions:
+            score = 0
+            label_clean = q.label.replace("？", "").replace("?", "").replace("！", "")
+
+            # 从 label 中提取 2-4 字的关键词片段做滑动窗口匹配
+            for win in (4, 3, 2):
+                for i in range(len(label_clean) - win + 1):
+                    fragment = label_clean[i:i + win]
+                    if fragment in msg:
+                        score += win  # 越长窗口权重越高
+
+            # description 全词匹配
+            for desc_fragment in q.description.split("+"):
+                df = desc_fragment.strip()
+                if len(df) >= 2 and df in msg:
+                    score += 1
+
+            if score > best_score:
+                best_score = score
+                best_key = q.key
+
+        return best_key if best_score >= 2 else None
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -324,14 +377,18 @@ class ChartReader:
     # ── 飞星：宫主星飞入的宫位 ──
 
     def read_flystars(self, planet: str) -> list[dict[str, Any]]:
-        """返回该行星作为宫主星的飞星信息（从哪里飞到哪里）"""
+        """返回该行星作为宫主星的飞星信息（从哪里飞到哪里）——含 fortune 评估"""
         house_rulers = self._advanced.get("house_rulers", [])
+        flystar_fortunes = self._advanced.get("flystar_fortunes", {})
         flystars = []
         for hr in house_rulers:
             if hr.get("ruler", "").upper() == planet.upper():
                 from_house = hr.get("house", 0)
                 to_house = hr.get("ruler_house", 0)
                 if from_house and to_house and from_house != to_house:
+                    key = f"{from_house}R->{to_house}"
+                    fortune = flystar_fortunes.get(key, {})
+
                     flystars.append({
                         "from_house": from_house,
                         "from_house_title": hr.get("title", ""),
@@ -341,6 +398,12 @@ class ChartReader:
                         "flight_tone": hr.get("flight_tone", ""),
                         "flight_positive": hr.get("flight_positive", ""),
                         "flight_negative": hr.get("flight_negative", ""),
+                        "flight_note": hr.get("flight_note", ""),
+                        "late_five_note": hr.get("late_five_note"),
+                        "fortune_level": fortune.get("fortune_level", "neutral"),
+                        "fortune_score": fortune.get("fortune_score", 0),
+                        "fortune_summary": fortune.get("summary", ""),
+                        "fortune_recommendation": fortune.get("recommendation", ""),
                     })
         return flystars
 
@@ -452,8 +515,13 @@ class ChartReader:
         # 飞星
         flystars = self.read_flystars(planet)
         for fs in flystars[:2]:
+            tone_tag = ""
+            if fs.get("fortune_level") == "fortunate":
+                tone_tag = "·得吉"
+            elif fs.get("fortune_level") == "afflicted":
+                tone_tag = "·受克"
             evidence.append(
-                f"【飞星】第{fs['from_house']}宫主星飞入第{fs['to_house']}宫"
+                f"【飞星{tone_tag}】第{fs['from_house']}宫主星飞入第{fs['to_house']}宫"
                 f"「{fs['to_house_title']}」"
             )
 
@@ -624,11 +692,7 @@ _GUIDE_TEMPLATES: dict[str, str] = {
 
 
 class VoiceRenderer:
-    """参数化模板引擎。
-
-    三段式咨询结构：承接 → 镜映（过程+结果） → 引导。
-    核心逻辑：宫内星=过程，宫主星=结果。
-    """
+    """三层触发咨询：情感承接 → 按需星盘切入 → 概率主动延伸。"""
 
     def render(
         self,
@@ -636,112 +700,44 @@ class VoiceRenderer:
         structured_reading: dict,
         persona: dict | None,
         user_message: str,
+        entry_context: dict | None = None,
+        conversation_context: ConversationContext | None = None,
     ) -> EngineResponse:
+        from .characters.spirit_triggers import detect_topic_domains, get_planet_trigger
+
+        ctx = conversation_context or ConversationContext()
         domain = route_result["primary_domain"]
         emotional = route_result["emotional_state"]
+        planet_key = (persona or {}).get("planet") or ctx.planet or "SUN"
+        trigger = get_planet_trigger(planet_key)
+        acknowledgment = self._render_emotion_ack(user_message, trigger, emotional)
 
-        planet_in_house = structured_reading.get("planet_in_house", {})
-        rulerships = structured_reading.get("rulerships", [])
-        flystars = structured_reading.get("flystars", [])
-        aspects = structured_reading.get("aspects", {})
-        receptions = structured_reading.get("receptions", {})
+        should_enter, _ = self._should_enter_astro(
+            user_message, route_result, trigger, ctx, detect_topic_domains(user_message)
+        )
+        mirroring = ""
+        evidence: list[str] = []
         domain_data = structured_reading.get("domain", {})
-        evidence = structured_reading.get("evidence", [])
+        domain_label = domain_data.get("domain_label", DOMAIN_LABELS.get(domain, domain))
+        suggestion = domain_data.get("suggestion", "先尊重此刻真实的感受，再决定下一步").rstrip("。")
 
-        sign_label = planet_in_house.get("sign_label", "")
-        house = planet_in_house.get("house", 1)
-        house_label_str = planet_in_house.get("house_label", "")
-        dignity_code = planet_in_house.get("dignity_code", "peregrine")
-        dignity_label = planet_in_house.get("dignity_label", "")
+        if should_enter:
+            mirroring = self._render_astrology_part(structured_reading, domain_label)
+            guidance = trigger.guidance_template.format(suggestion=suggestion, name=trigger.name_zh)
+            evidence = structured_reading.get("evidence", [])
+        else:
+            guidance = self._render_pure_emotion_guide(trigger, emotional)
 
-        preview = user_message[:25] + ("……" if len(user_message) > 25 else "")
-        name = persona.get("name_zh", "") if persona else ""
-        planet_key = persona.get("planet", "") if persona else ""
+        extension = ""
+        if should_enter and ctx.turn_count >= 2 and random.random() < 0.3:
+            extension = self._render_proactive_extension(trigger, ctx)
 
-        # ── Phase 1: 承接 ──
-        templates = _ACKNOWLEDGE_BY_EMOTION.get(emotional, _ACKNOWLEDGE_BY_EMOTION["curious"])
-        ack_template = random.choice(templates)
-        acknowledgment = ack_template.format(preview=preview, name=name)
-
-        # ── Phase 2: 镜映（两段式：过程 → 结果） ──
-        dignity_note = _dignity_note(dignity_code)
-        core_theme = domain_data.get("core_theme", "你的星盘在这方面有独特的配置")
-        domain_label = domain_data.get("domain_label", domain)
-
-        # 2a. 过程层：宫内星 — 你怎么经历这个领域
-        process_text = (
-            f"先说过程——我落在{sign_label}，第{house}宫「{house_label_str}」。"
-            f"这是你怎么经历{domain_label}的方式：{core_theme}。"
-            f"{dignity_note}"
-        )
-
-        # 2b. 结果层：宫主星 — 这个领域最终走向哪里
-        result_parts = []
-        if rulerships:
-            houses_ruled = "、".join(
-                f"第{r['house']}宫「{r['house_title']}」" for r in rulerships[:3]
-            )
-            result_parts.append(f"再说结果——我掌管{houses_ruled}")
-
-        if flystars:
-            for fs in flystars[:2]:
-                summary = fs.get("flight_summary", "")
-                if summary:
-                    result_parts.append(
-                        f"第{fs['from_house']}宫主星飞到第{fs['to_house']}宫"
-                        f"「{fs['to_house_title']}」——{summary}"
-                    )
-                else:
-                    result_parts.append(
-                        f"第{fs['from_house']}宫主星飞到第{fs['to_house']}宫"
-                        f"「{fs['to_house_title']}」"
-                    )
-
-        # 2c. 影响层：相位
-        aspect_text = ""
-        planet_aspects = aspects.get("planet_aspects", [])
-        if planet_aspects:
-            supportive = [a for a in planet_aspects if a["nature"] == "supportive"]
-            challenging = [a for a in planet_aspects if a["nature"] == "challenging"]
-            if supportive:
-                aspect_text += f"吉相位方面，{supportive[0]['title']}——{supportive[0].get('summary', '')}。"
-            if challenging:
-                aspect_text += f"刑冲方面，{challenging[0]['title']}——{challenging[0].get('summary', '')}。"
-
-        # 2d. 影响层：接纳互溶
-        reception_text = ""
-        for rec in receptions.get("received", [])[:1]:
-            reception_text += f"接纳结构上，{rec['line']}。"
-        for mut in receptions.get("mutuals", [])[:1]:
-            reception_text += f"互溶关系上，{mut['line']}。"
-
-        # 组装镜映
-        mirroring = process_text
-        if result_parts:
-            mirroring += "\n\n" + "。".join(result_parts) + "。"
-        if aspect_text:
-            mirroring += "\n\n" + aspect_text
-        if reception_text:
-            mirroring += "\n\n" + reception_text
-
-        # ── 注入结构细节 ──
-        structure = domain_data.get("structure", "")
-        if structure:
-            lines = structure.replace("\n", " ").split("。")
-            short = "。".join(lines[:2]) + "。"
-            if len(short) > 20 and short not in mirroring:
-                mirroring += f"\n\n具体来说：{short}"
-
-        # ── Phase 3: 引导 ──
-        guide_template = _GUIDE_TEMPLATES.get(
-            planet_key, _GUIDE_TEMPLATES["SUN"]
-        )
-        suggestion = domain_data.get("suggestion", "相信你的星盘给出的方向")
-        suggestion = suggestion.rstrip("。")  # 防止模板句尾句号重复
-        guidance = guide_template.format(suggestion=suggestion)
-
-        # ── 组装 ──
-        full_text = f"{acknowledgment}\n\n{mirroring}\n\n{guidance}"
+        parts = [acknowledgment]
+        if mirroring:
+            parts.append(mirroring)
+        parts.append(guidance)
+        if extension:
+            parts.append(extension)
 
         return EngineResponse(
             domain=domain,
@@ -752,8 +748,57 @@ class VoiceRenderer:
             mirroring=mirroring,
             guidance=guidance,
             evidence=evidence,
-            full_text=full_text,
+            full_text="\n\n".join(part for part in parts if part),
         )
+
+    def _render_emotion_ack(self, message: str, trigger: Any, emotional: str) -> str:
+        """第一层只承接情感，禁止加入星盘术语。"""
+        choices = list(trigger.emotion_acks)
+        emotion_prefix = {
+            "anxious": "你现在有些不安，我听见了。",
+            "confused": "这种不确定确实会让人难受，我明白。",
+            "frustrated": "你心里的委屈和用力，我听见了。",
+            "hopeful": "我感受到你心里仍然有期待。",
+        }.get(emotional)
+        return emotion_prefix or random.choice(choices)
+
+    def _should_enter_astro(
+        self, message: str, route_result: dict, trigger: Any,
+        ctx: ConversationContext, topic_domains: list[str],
+    ) -> tuple[bool, str]:
+        if trigger.astro_delay_turns < 0:
+            return False, "disabled"
+        reached_depth = ctx.turn_count >= trigger.astro_delay_turns
+        has_planet_topic = any(k in message for k in trigger.astro_entry_keywords)
+        has_domain_topic = bool(topic_domains) or route_result.get("confidence", 0) >= 0.6
+        if reached_depth and (has_planet_topic or has_domain_topic):
+            return True, "topic"
+        if ctx.turn_count >= max(2, trigger.astro_delay_turns):
+            return True, "depth"
+        return False, "emotional_first"
+
+    def _render_astrology_part(self, reading: dict, domain_label: str) -> str:
+        """第二层只选一条核心星盘信息，避免倾倒完整技术结构。"""
+        planet = reading.get("planet_in_house", {})
+        domain = reading.get("domain", {})
+        core = domain.get("core_theme") or domain.get("psychology") or "你在这件事上有自己的节奏"
+        sign = planet.get("sign_label", "")
+        house = planet.get("house", 0)
+        placement = ""
+        if sign and house:
+            placement = f"从你的星盘看，{planet.get('planet_label', '这颗星')}落在{sign}第{house}宫，"
+        elif sign:
+            placement = f"从你的星盘看，{planet.get('planet_label', '这颗星')}落在{sign}，"
+        return f"{placement}它在{domain_label}上提醒的是：{core}。"
+
+    def _render_pure_emotion_guide(self, trigger: Any, emotional: str) -> str:
+        guides = trigger.emotion_guides or ["你可以先把最真实的感受说出来。"]
+        return random.choice(guides)
+
+    def _render_proactive_extension(self, trigger: Any, ctx: ConversationContext) -> str:
+        available = [topic for topic in trigger.proactive_topics if topic not in ctx.readings_given]
+        topic = random.choice(available or trigger.proactive_topics)
+        return f"如果你愿意，我们下一步也可以聊聊「{topic}」，不用现在就回答。"
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -793,6 +838,20 @@ class EngineAstrologer:
         if ctx is None:
             ctx = ConversationContext(planet=planet)
             self._conversations[key] = ctx
+        # API 调用可能每轮重建引擎，用客户端 history 恢复对话深度。
+        if history:
+            prior_user_turns = sum(
+                1 for item in history
+                if isinstance(item, dict) and item.get("role") in {"user", "human"}
+            )
+            ctx.turn_count = max(ctx.turn_count, prior_user_turns)
+            ctx.depth_level = min(ctx.turn_count, 2)
+
+        # 1.5 每日一问承接：把 daily_question 写入 user_message 让路由/preview 用上
+        if entry_context and entry_context.get("from_daily_question"):
+            daily_q = entry_context.get("daily_question", "").strip()
+            if daily_q and not user_message.strip():
+                user_message = daily_q
 
         # 2. 意图路由
         route_result = self.router.route(
@@ -847,6 +906,8 @@ class EngineAstrologer:
             structured_reading=structured_reading,
             persona=persona,
             user_message=user_message,
+            entry_context=entry_context,
+            conversation_context=ctx,
         )
         response.evidence = structured_reading.get("evidence", [])
 

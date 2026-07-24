@@ -104,7 +104,7 @@
             <div class="cp-h-label">宫位表</div>
             <div class="cp-h-grid">
               <div v-for="(h, i) in chartData.houses" :key="i" class="cp-h-cell">
-                <span class="h-num">{{ i + 1 }}</span>
+                <span class="h-num">{{ Number(i) + 1 }}</span>
                 <span class="h-sign">{{ h.sign_label || h.sign || '?' }}</span>
               </div>
             </div>
@@ -120,10 +120,9 @@ import { ref, computed, reactive, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { useAuth } from "@/utils/auth";
 import { apiClient } from "@/config/api";
-import { PLANET_COLORS } from "@/config/zodiac";
 
 const router = useRouter();
-const { token, profiles, loadMe } = useAuth();
+const { profiles, loadMe } = useAuth();
 
 const loading = ref(true);
 const saving = ref(false);

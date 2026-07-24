@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
 const props = defineProps<{
   visible: boolean;
@@ -59,6 +59,10 @@ const props = defineProps<{
 defineEmits<{ close: [] }>();
 
 const cardEl = ref<HTMLElement | null>(null);
+
+onMounted(() => {
+  void cardEl.value;
+});
 const canNativeShare = ref(
   typeof navigator !== "undefined" && !!navigator.share
 );

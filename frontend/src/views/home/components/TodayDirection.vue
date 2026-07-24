@@ -198,7 +198,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   close: [];
-  'chat-with-spirit': [payload: { planet: string; detail: string }];
+  'chat-with-spirit': [payload: { planet: string; detail: string; transit?: any }];
 }>();
 
 // ── 折叠/展开状态 ──
@@ -269,7 +269,7 @@ function emitChat(planet: string, label: string, transit: any) {
   const detail = transit
     ? `${label}${transit.aspect_label || ''}你的本命${transit.natal_label || ''}（orb ${transit.orb || ''}°）`
     : `${label}行运`;
-  emit('chat-with-spirit', { planet, detail });
+  emit('chat-with-spirit', { planet, detail, transit });
 }
 
 function emitRetroChat(planet: string, label: string) {

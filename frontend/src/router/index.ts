@@ -27,6 +27,17 @@ const router = createRouter({
       component: () => import("@/views/MonthlyReturn/index.vue"),
     },
     {
+      path: "/my-chart",
+      name: "my-chart",
+      component: () => import("@/views/MyChart/index.vue"),
+    },
+    {
+      path: "/natal-chart/:reportId",
+      name: "natal-chart",
+      component: () => import("@/views/NatalChart/index.vue"),
+      meta: { requiresAuth: true },
+    },
+    {
       path: "/history",
       name: "history",
       component: () => import("@/views/History/index.vue"),
@@ -44,12 +55,22 @@ const router = createRouter({
     {
       path: "/spirit-garden",
       name: "spirit-garden",
-      component: () => import("@/views/Wanxiang/index.vue"),
+      component: () => import("@/views/Garden/index.vue"),
+    },
+    {
+      path: "/spirit-garden/history",
+      name: "garden-history",
+      component: () => import("@/views/Garden/index.vue"),
     },
     {
       path: "/spirit-garden/:planet",
       name: "spirit-detail",
-      component: () => import("@/views/Wanxiang/index.vue"),
+      component: () => import("@/views/Garden/index.vue"),
+    },
+    {
+      path: "/constellation-stories",
+      name: "constellation-stories",
+      component: () => import("@/views/ConstellationStories/index.vue"),
     },
     {
       path: "/profile",
@@ -59,9 +80,7 @@ const router = createRouter({
   ],
 });
 
-// ── 路由守卫 ──
-const PUBLIC_ROUTES = ["/login"];
-
+// ── 路由守卫（主应用，Admin CMS 已迁移到独立项目 admin-frontend/） ──
 router.beforeEach((to, _from, next) => {
   const token = localStorage.getItem("lk_token");
 

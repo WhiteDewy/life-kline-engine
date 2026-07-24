@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Sibling project (should be tracked in its own root)
+../admin-frontend/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

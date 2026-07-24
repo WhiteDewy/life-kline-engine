@@ -259,10 +259,21 @@ class DomainAnalyzer(ABC):
             base = max(base, pw.get("CHART_RULER", 1.3))
         return base
 
-    def analyze(self, chart: Any) -> DomainReport:
+    def analyze(self, chart: Any, question_key: str = "") -> DomainReport:
         traditional = self._analyze_traditional(chart)
         modern = self._analyze_modern(chart)
+        if question_key:
+            q_result = self._analyze_question(chart, question_key)
+            if q_result:
+                traditional = {**traditional, **q_result.get("traditional", {})}
+                modern = {**modern, **q_result.get("modern", {})}
         return self._fuse(traditional, modern, chart)
+
+    def _analyze_question(self, chart: Any, question_key: str) -> dict[str, Any] | None:
+        """可选复写：针对具体抓手问题的差异化分析。
+        返回 {"traditional": {...}, "modern": {...}} 或 None（回退到通用分析）。
+        """
+        return None
 
     @abstractmethod
     def _analyze_traditional(self, chart: Any) -> dict[str, Any]:

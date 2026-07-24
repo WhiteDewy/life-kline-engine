@@ -97,6 +97,100 @@
             </div>
           </section>
 
+          <!-- ═══ v2.5 新增: 格局检测 ═══ -->
+
+          <section v-if="visibleEnclosures.length" class="readingBlock">
+            <div class="blockTitle">夹辅围荣格局</div>
+            <p class="blockSummary">
+              古典占星中的行星包围格局——两颗星体将中间星体"夹辅"，决定其掌管的领域是得助力还是承压力。
+            </p>
+            <div class="readingGrid">
+              <article
+                v-for="item in visibleEnclosures"
+                :key="`${item.left_planet}-${item.enclosed_planet}-${item.right_planet}`"
+                class="readingCard"
+                :class="{
+                  enclosureBenefic: item.pattern_type === 'benefic_enclosure',
+                  enclosureMalefic: item.pattern_type === 'malefic_siege',
+                }"
+              >
+                <div class="readingHead">
+                  <span class="enclosureBadge" :class="item.pattern_type">
+                    {{ enclosureTypeLabel(item.pattern_type) }}
+                  </span>
+                  <h3 class="readingTitle">{{ item.description }}</h3>
+                </div>
+                <p class="readingSummary">{{ item.significance }}</p>
+              </article>
+            </div>
+          </section>
+
+          <section v-if="visibleAspectPatterns.length" class="readingBlock">
+            <div class="blockTitle">相位格局</div>
+            <p class="blockSummary">
+              星体间的特殊几何构型——T三角、大十字、大三角、风筝等，揭示了人生中持续运作的底层能量模式。
+            </p>
+            <div class="readingGrid">
+              <article
+                v-for="item in visibleAspectPatterns"
+                :key="`${item.pattern_type}-${item.planets.join('-')}`"
+                class="readingCard"
+                :class="{ patternHigh: item.severity === 'high' }"
+              >
+                <div class="readingHead">
+                  <span
+                    class="patternBadge"
+                    :class="item.pattern_type"
+                  >
+                    {{ patternTypeLabel(item.pattern_type) }}
+                  </span>
+                  <span
+                    v-if="item.severity === 'high'"
+                    class="severityBadge"
+                  >高张力</span>
+                </div>
+                <p class="readingSummary">{{ item.description }}</p>
+                <p class="readingRisk" v-if="item.severity === 'high'">
+                  {{ item.interpretation }}
+                </p>
+                <p v-else class="threadSummary">{{ item.interpretation }}</p>
+                <div v-if="item.houses?.length" class="metaRow">
+                  <span
+                    v-for="h in item.houses"
+                    :key="h"
+                    class="metaChip"
+                  >第{{ h }}宫</span>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section
+            v-if="interceptionInfo && (hasInterceptedSigns || hasExpandedRulers)"
+            class="ruleBlock"
+          >
+            <div class="blockTitle">宫位劫夺</div>
+            <p class="blockSummary">
+              宫位劫夺会影响宫主星的权柄——被劫夺则话语权减弱，扩权则管理范围增加。
+            </p>
+            <div class="ruleChips">
+              <span
+                v-for="(sign, house) in interceptionInfo.intercepted_signs"
+                :key="`int-${house}`"
+                class="ruleChip intBadge"
+              >
+                第{{ house }}宫劫夺 {{ sign }}
+              </span>
+              <span
+                v-for="(houses, ruler) in interceptionInfo.expanded_rulers"
+                :key="`exp-${ruler}`"
+                class="ruleChip expBadge"
+              >
+                {{ ruler }}权柄扩张至 {{ (houses as number[]).join('、') }}宫
+              </span>
+            </div>
+          </section>
+
           <details v-if="hasTechnicalEvidence" class="innerFold">
             <summary class="innerSummary">
               <div>
@@ -133,9 +227,24 @@
                         <div class="rulerKicker">{{ item.title }} · {{ item.notation }}</div>
                         <h3 class="rulerTitle">{{ item.line }}</h3>
                       </div>
-                      <span v-if="item.flight_tone_label" class="toneChip">
-                        {{ item.flight_tone_label }}
-                      </span>
+                      <div class="rulerBadges">
+                        <span
+                          v-if="item.flight_tone_label"
+                          class="toneChip"
+                        >
+                          {{ item.flight_tone_label }}
+                        </span>
+                        <span
+                          v-if="fortuneForRuler(item.house, item.ruler_house)"
+                          class="fortuneChip"
+                          :class="fortuneLevelClass(fortuneForRuler(item.house, item.ruler_house).fortune_level)"
+                        >
+                          {{ fortuneLevelLabel(fortuneForRuler(item.house, item.ruler_house).fortune_level) }}
+                          <span class="fortuneScore">
+                            {{ fortuneForRuler(item.house, item.ruler_house).fortune_score > 0 ? '+' : '' }}{{ fortuneForRuler(item.house, item.ruler_house).fortune_score.toFixed(0) }}
+                          </span>
+                        </span>
+                      </div>
                     </div>
 
                     <p v-if="item.flight_summary" class="rulerSummary">{{ item.flight_summary }}</p>
@@ -225,7 +334,10 @@ const hasContent = computed(() => {
       patterns?.mutual_receptions?.length ||
       patterns?.core_threads?.length ||
       patterns?.pattern_readings?.length ||
-      patterns?.derived_houses?.length
+      patterns?.derived_houses?.length ||
+      patterns?.enclosure_patterns?.length ||
+      patterns?.aspect_patterns?.length ||
+      patterns?.interception_info
   );
 });
 
@@ -263,6 +375,57 @@ const hasTechnicalEvidence = computed(() => {
   );
 });
 
+const visibleEnclosures = computed(() =>
+  Array.isArray(props.advancedPatterns?.enclosure_patterns)
+    ? props.advancedPatterns.enclosure_patterns
+    : []
+);
+
+const visibleAspectPatterns = computed(() =>
+  Array.isArray(props.advancedPatterns?.aspect_patterns)
+    ? props.advancedPatterns.aspect_patterns
+    : []
+);
+
+const flystarFortunes = computed(() =>
+  props.advancedPatterns?.flystar_fortunes || {}
+);
+
+const interceptionInfo = computed(() =>
+  props.advancedPatterns?.interception_info || null
+);
+
+function fortuneLevelLabel(level: string) {
+  if (level === "fortunate") return "得吉";
+  if (level === "afflicted") return "受克";
+  return "中性";
+}
+
+function fortuneLevelClass(level: string) {
+  if (level === "fortunate") return "fortuneGood";
+  if (level === "afflicted") return "fortuneBad";
+  return "fortuneNeutral";
+}
+
+function patternTypeLabel(type: string) {
+  const labels: Record<string, string> = {
+    t_square: "T三角",
+    grand_cross: "大十字",
+    grand_trine: "大三角",
+    kite: "风筝",
+  };
+  return labels[type] || type;
+}
+
+function enclosureTypeLabel(type: string) {
+  const labels: Record<string, string> = {
+    benefic_enclosure: "吉星围荣",
+    malefic_siege: "凶星夹困",
+    mixed_enclosure: "吉凶夹辅",
+  };
+  return labels[type] || type;
+}
+
 function visiblePoints(points: unknown, limit = 3) {
   return Array.isArray(points) ? points.slice(0, limit) : [];
 }
@@ -270,6 +433,21 @@ function visiblePoints(points: unknown, limit = 3) {
 function visibleLinks(links: unknown, limit = 3) {
   return Array.isArray(links) ? links.slice(0, limit) : [];
 }
+
+function fortuneForRuler(sourceHouse: number, targetHouse: number) {
+  const key = `${sourceHouse}R->${targetHouse}`;
+  return flystarFortunes.value[key] || null;
+}
+
+const hasInterceptedSigns = computed(() => {
+  const info = interceptionInfo.value;
+  return info && Object.keys(info.intercepted_signs || {}).length > 0;
+});
+
+const hasExpandedRulers = computed(() => {
+  const info = interceptionInfo.value;
+  return info && Object.keys(info.expanded_rulers || {}).length > 0;
+});
 </script>
 
 <style scoped>
@@ -600,6 +778,126 @@ function visibleLinks(links: unknown, limit = 3) {
 
 .derivedHint {
   opacity: 0.9;
+}
+
+/* ── v2.5 格局与fortune样式 ── */
+
+.rulerBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.fortuneChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.fortuneChip.fortuneGood {
+  color: #065f46;
+  background: rgba(52, 211, 153, 0.14);
+  border: 1px solid rgba(52, 211, 153, 0.28);
+}
+
+.fortuneChip.fortuneBad {
+  color: #991b1b;
+  background: rgba(248, 113, 113, 0.14);
+  border: 1px solid rgba(248, 113, 113, 0.28);
+}
+
+.fortuneChip.fortuneNeutral {
+  color: #92400e;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.24);
+}
+
+.fortuneScore {
+  opacity: 0.7;
+  font-weight: 400;
+}
+
+.enclosureBadge,
+.patternBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.enclosureBadge.benefic_enclosure {
+  color: #065f46;
+  background: rgba(52, 211, 153, 0.16);
+}
+
+.enclosureBadge.malefic_siege {
+  color: #991b1b;
+  background: rgba(248, 113, 113, 0.16);
+}
+
+.enclosureBadge.mixed_enclosure {
+  color: #92400e;
+  background: rgba(251, 191, 36, 0.14);
+}
+
+.enclosureBenefic {
+  border-color: rgba(52, 211, 153, 0.18);
+}
+
+.enclosureMalefic {
+  border-color: rgba(248, 113, 113, 0.18);
+}
+
+.patternBadge.t_square {
+  color: #991b1b;
+  background: rgba(248, 113, 113, 0.16);
+}
+
+.patternBadge.grand_cross {
+  color: #7f1d1d;
+  background: rgba(220, 38, 38, 0.2);
+}
+
+.patternBadge.grand_trine {
+  color: #065f46;
+  background: rgba(52, 211, 153, 0.16);
+}
+
+.patternBadge.kite {
+  color: #1e40af;
+  background: rgba(96, 165, 250, 0.16);
+}
+
+.severityBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #991b1b;
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.patternHigh {
+  border-color: rgba(248, 113, 113, 0.18);
+}
+
+.intBadge {
+  color: #92400e;
+  background: rgba(251, 191, 36, 0.12);
+}
+
+.expBadge {
+  color: #065f46;
+  background: rgba(52, 211, 153, 0.12);
 }
 
 @media (max-width: 1100px) {

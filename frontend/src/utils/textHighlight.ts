@@ -50,7 +50,7 @@ export function highlightEmotion(text: string): string {
       if (count >= MAX_PER_PARA) break;
       applied.add(match.index);
       count++;
-      const matched = match[1];
+      const matched = match[1] ?? "";
       const before = result.slice(0, match.index);
       const after = result.slice(match.index + matched.length);
       result = `${before}<mark class="${pattern.class}">${matched}</mark>${after}`;

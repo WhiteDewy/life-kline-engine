@@ -3,6 +3,8 @@ diary_engine.py — 星灵日记引擎
 
 基于用户对话上下文生成星灵日记条目，支持情绪关键词提取、
 模板化条目生成和 JSON 文件存储。
+
+v1.1：支持多风格（极简打卡 / 对话记录 / 自我反思 / 星灵 / 摘要）。
 """
 
 from __future__ import annotations
@@ -16,6 +18,26 @@ from typing import Any, Optional
 
 from .constants import Planet
 from .service import PLANET_LABELS
+from .spirit_diary_styles import (
+    DiaryStyle,
+    DiaryRenderContext,
+    EMOTIONAL_KEYWORDS_HINT,
+    energy_label,
+    estimate_energy_level,
+    get_style_previews,
+    infer_action,
+    infer_closing,
+    infer_conclusion,
+    infer_evening_expectation,
+    infer_insight,
+    infer_topic_tag,
+    render_diary,
+)
+
+try:
+    from backend import dao as _dao
+except Exception:
+    _dao = None  # 数据库不可用时回退到 JSON
 
 
 # ============================================================================
@@ -77,6 +99,11 @@ class DiaryEntry:
     entry_text: str
     spirit_planet: Optional[str] = None
     mood_emoji: Optional[str] = None
+    diary_style: str = "summary"            # check_in / dialogue / reflection / spirit / summary
+    energy_level: int = 50                  # 电量 0-100
+    topic_tag: str = ""                     # 例如 "工作"
+    topic_tag_hash: str = ""                # 例如 "#打工人日常"
+    evening_expectation: str = ""           # 下班后的期待
     created_at: str = ""
     updated_at: str = ""
 
@@ -85,10 +112,16 @@ class DiaryEntry:
 
 
 class DiaryEngine:
-    """星灵日记引擎"""
+    """星灵日记引擎
 
-    def __init__(self, diary_dir: str):
+    默认把每条 entry 写入 SQLite 的 star_diary 表（数据库为单一可信源）。
+    失败时自动回退写入 JSON 文件，保证旧调用方不被打断。
+    """
+
+    def __init__(self, diary_dir: str, user_id: str = "", profile_id: str = ""):
         self.diary_dir = diary_dir
+        self.user_id = user_id
+        self.profile_id = profile_id
 
     # ========================================================================
     # 条目生成
@@ -100,48 +133,249 @@ class DiaryEngine:
         chat_context: str,
         spirit_planet: str = "",
         mood_emoji: str = "",
+        user_messages: Optional[list[str]] = None,
+        spirit_responses: Optional[list[str]] = None,
+        diary_style: str = "summary",
+        evening_expectation: str = "",
     ) -> DiaryEntry:
-        """
-        从对话上下文中提取关键词并生成日记条目。
+        """从分角色对话生成日记；缺少新字段时兼容旧 chat_context。
 
         Args:
-            report_id: 报告 ID
-            chat_context: 对话上下文（字符串或消息列表）
-            spirit_planet: 星灵行星 key（如 "VENUS"）
-            mood_emoji: 可选的情绪 emoji
+            diary_style: 日记风格 (check_in / dialogue / reflection / spirit / summary)
+            evening_expectation: 用户下班后的期待（CHECK_IN 风格需要）
         """
+        user_messages, spirit_responses = self._normalize_messages(
+            chat_context, user_messages, spirit_responses
+        )
+        user_context = "\n".join(user_messages).strip() or (chat_context or "")
+        structured_context = json.dumps(
+            {"user_messages": user_messages, "spirit_responses": spirit_responses},
+            ensure_ascii=False,
+        )
         now_str = datetime.now(timezone.utc).isoformat()
         today_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        keywords = self._extract_keywords(user_context)
 
-        # 提取情绪关键词
-        keywords = self._extract_keywords(chat_context)
-
-        # 确定 mood_emoji
         if not mood_emoji and keywords:
             mood_emoji = MOOD_EMOJI_MAP.get(keywords[0], "")
 
-        # 生成条目文本
-        entry_text = self._generate_entry_text(
-            chat_context=chat_context,
-            spirit_planet=spirit_planet,
+        # 解析风格
+        try:
+            style = DiaryStyle(diary_style)
+        except ValueError:
+            style = DiaryStyle.SUMMARY
+
+        topic_hint = self._pick_topic_hint(user_context, keywords)
+        topic_label, topic_tag = infer_topic_tag(user_context, fallback="日常")
+        # 优先使用 topic_hint（与旧逻辑一致），否则用 infer_topic_tag
+        topic = topic_hint or topic_label
+
+        planet_label = self._safe_planet_label(spirit_planet)
+        energy_level = estimate_energy_level(user_context, keywords)
+        insight_text = self._pick_best_spirit_insight(spirit_responses) or self._pick_guide(keywords)
+
+        user_summary = self._summarize(" ".join(user_messages), 220)
+        if not user_summary:
+            user_summary = "你没有说很多，但愿意停下来看看自己此刻的状态。"
+
+        # 渲染上下文（多风格统一）
+        ctx = DiaryRenderContext(
+            date=today_date,
+            weekday=self._weekday_label(today_date),
+            title=self._pick_title(keywords, topic),
+            mood_emoji=mood_emoji or "✨",
+            energy_level=energy_level,
+            energy_label=energy_label(energy_level),
+            user_content_summary=user_summary,
+            spirit_insight=insight_text or "你已经做得够好了。",
+            evening_expectation=evening_expectation or infer_evening_expectation(user_context),
+            insight=infer_insight(keywords, topic),
+            conclusion=infer_conclusion(topic),
+            action=infer_action(topic, mood_emoji),
+            spirit_guidance=self._pick_guide(keywords),
+            planet_label=planet_label,
+            topic=topic,
+            topic_tag=topic,
+            topic_tag_line=(topic_tag + " ") if topic_tag else "",
+            closing=infer_closing(user_context, planet_label),
             keywords=keywords,
         )
+
+        entry_text = render_diary(style, ctx)
 
         entry = DiaryEntry(
-            id=uuid.uuid4().hex[:12],
-            report_id=report_id,
-            date=today_date,
-            keywords=keywords,
-            entry_text=entry_text,
-            spirit_planet=spirit_planet or None,
-            mood_emoji=mood_emoji or None,
-            created_at=now_str,
-            updated_at=now_str,
+            id=uuid.uuid4().hex[:12], report_id=report_id, date=today_date,
+            keywords=keywords, entry_text=entry_text,
+            spirit_planet=spirit_planet or None, mood_emoji=mood_emoji or None,
+            diary_style=style.value,
+            energy_level=energy_level,
+            topic_tag=topic_tag,
+            evening_expectation=ctx.evening_expectation,
+            created_at=now_str, updated_at=now_str,
         )
 
-        # 保存到文件
-        self._save_entry(entry)
+        if _dao is not None:
+            try:
+                row = _dao.insert_star_diary(
+                    report_id=report_id, keywords=keywords, entry_text=entry_text,
+                    chat_context=structured_context, spirit_planet=spirit_planet or "",
+                    spirit_planet_label=planet_label,
+                    mood_emoji=mood_emoji or "", user_id=self.user_id,
+                    profile_id=self.profile_id, source="chat",
+                    user_content_summary=user_summary,
+                    spirit_content_summary=self._summarize(insight_text, 160),
+                    diary_style=style.value,
+                    energy_level=energy_level,
+                    topic_tag=topic_tag,
+                    evening_expectation=ctx.evening_expectation,
+                )
+                if row:
+                    entry.id = row.get("id", entry.id)
+                    entry.created_at = row.get("created_at", entry.created_at)
+            except Exception:
+                pass
+
+        try:
+            self._save_entry(entry)
+        except Exception:
+            pass
         return entry
+
+    # ------------------------------------------------------------------
+    # 多风格预览（前端可选风格使用）
+    # ------------------------------------------------------------------
+
+    def get_style_suggestions(
+        self,
+        report_id: str,
+        chat_context: str = "",
+        spirit_planet: str = "",
+        mood_emoji: str = "",
+        user_messages: Optional[list[str]] = None,
+        spirit_responses: Optional[list[str]] = None,
+    ) -> list[dict]:
+        """返回所有可选风格 + 预览。用于前端风格选择面板。"""
+        user_messages, spirit_responses = self._normalize_messages(
+            chat_context, user_messages, spirit_responses
+        )
+        user_context = "\n".join(user_messages).strip() or (chat_context or "")
+        keywords = self._extract_keywords(user_context)
+        if not mood_emoji and keywords:
+            mood_emoji = MOOD_EMOJI_MAP.get(keywords[0], "")
+        topic_hint = self._pick_topic_hint(user_context, keywords)
+        topic_label, topic_tag = infer_topic_tag(user_context, fallback="日常")
+        topic = topic_hint or topic_label
+        planet_label = self._safe_planet_label(spirit_planet)
+        energy_level = estimate_energy_level(user_context, keywords)
+        insight_text = self._pick_best_spirit_insight(spirit_responses) or self._pick_guide(keywords)
+        user_summary = self._summarize(" ".join(user_messages), 220) or "你没有说很多。"
+
+        ctx = DiaryRenderContext(
+            date=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            weekday=self._weekday_label(datetime.now(timezone.utc).strftime("%Y-%m-%d")),
+            title=self._pick_title(keywords, topic),
+            mood_emoji=mood_emoji or "✨",
+            energy_level=energy_level,
+            energy_label=energy_label(energy_level),
+            user_content_summary=user_summary,
+            spirit_insight=insight_text or "你已经做得够好了。",
+            evening_expectation=infer_evening_expectation(user_context),
+            insight=infer_insight(keywords, topic),
+            conclusion=infer_conclusion(topic),
+            action=infer_action(topic, mood_emoji),
+            spirit_guidance=self._pick_guide(keywords),
+            planet_label=planet_label,
+            topic=topic,
+            topic_tag=topic,
+            topic_tag_line=(topic_tag + " ") if topic_tag else "",
+            closing=infer_closing(user_context, planet_label),
+            keywords=keywords,
+        )
+        return get_style_previews(ctx)
+
+    @staticmethod
+    def _safe_planet_label(spirit_planet: str) -> str:
+        try:
+            return PLANET_LABELS.get(Planet(spirit_planet), "星灵") if spirit_planet else "星灵"
+        except (ValueError, KeyError):
+            return "星灵"
+
+    @staticmethod
+    def _weekday_label(date_str: str) -> str:
+        """'YYYY-MM-DD' → '周四'"""
+        try:
+            d = datetime.strptime(date_str, "%Y-%m-%d")
+            cn = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
+            return cn[d.weekday()]
+        except Exception:
+            return ""
+
+    @staticmethod
+    def _pick_title(keywords: list[str], topic: str) -> str:
+        """为 DIALOGUE 风格生成标题。"""
+        if "疲惫" in keywords or "累" in (topic or ""):
+            return "打工人的一天"
+        if topic == "感情":
+            return "心动的瞬间"
+        if topic == "家庭":
+            return "家的二三事"
+        if topic == "自我":
+            return "和自己聊聊"
+        return "今天的小记录"
+
+    def _normalize_messages(
+        self, chat_context: str, user_messages: Optional[list[str]],
+        spirit_responses: Optional[list[str]],
+    ) -> tuple[list[str], list[str]]:
+        """清理分角色消息，并尝试读取结构化 JSON 旧参数。"""
+        users = [str(x).strip() for x in (user_messages or []) if str(x).strip()]
+        spirits = [str(x).strip() for x in (spirit_responses or []) if str(x).strip()]
+        if not users and chat_context:
+            try:
+                payload = json.loads(chat_context)
+                if isinstance(payload, dict):
+                    users = [str(x).strip() for x in payload.get("user_messages", []) if str(x).strip()]
+                    spirits = spirits or [str(x).strip() for x in payload.get("spirit_responses", []) if str(x).strip()]
+            except (json.JSONDecodeError, TypeError):
+                users = [chat_context.strip()]
+        return users, spirits
+
+    def _pick_best_spirit_insight(self, responses: Optional[list[str]]) -> str:
+        """只留一句较完整、带行动或接纳意味的星灵启发。"""
+        candidates: list[str] = []
+        for response in responses or []:
+            for sentence in response.replace("\n", "。").split("。"):
+                sentence = sentence.strip(" ，；：.!！？")
+                if 8 <= len(sentence) <= 80:
+                    candidates.append(sentence)
+        if not candidates:
+            return ""
+        markers = ("可以", "允许", "值得", "不必", "先", "试着", "提醒", "相信")
+        return max(candidates, key=lambda s: (sum(m in s for m in markers), min(len(s), 45)))
+
+    @staticmethod
+    def _summarize(text: str, limit: int) -> str:
+        return " ".join((text or "").split())[:limit]
+
+    def _generate_diary_text(
+        self, user_messages: list[str], spirit_response: str, topic: str,
+        keywords: list[str], spirit_planet: str,
+    ) -> str:
+        """用户叙述占正文主体，星灵回复最多保留一句。"""
+        try:
+            planet_label = PLANET_LABELS.get(Planet(spirit_planet), "星灵") if spirit_planet else "星灵"
+        except ValueError:
+            planet_label = "星灵"
+        opening = f"今天你和{planet_label}聊了关于「{topic}」的事。" if topic else f"今天你和{planet_label}聊了一会儿。"
+        user_text = self._summarize(" ".join(user_messages), 300)
+        if not user_text:
+            user_text = "你没有说很多，但愿意停下来看看自己此刻的状态。"
+        parts = [opening, f"你说起了：{user_text}"]
+        if spirit_response:
+            parts.append(f"留给你的一句启发是：{spirit_response}。")
+        if keywords:
+            parts.append(f"（关键词：{'、'.join(keywords[:3])}）")
+        return "\n\n".join(parts)
 
     def _extract_keywords(self, chat_context: str) -> list[str]:
         """从对话中提取情绪关键词，最多返回 5 个"""
@@ -181,32 +415,101 @@ class DiaryEngine:
         spirit_planet: str,
         keywords: list[str],
     ) -> str:
-        """基于模板生成日记文本"""
+        """基于用户真实对话生成日记文本（方案A：对话摘要型）。
+
+        目标：让日记内容是用户对话的摘要，而不是通用模板句。
+        结构：
+          1) 起头「今天你和星灵聊了关于…话题」
+          2) 摘要用户原话（最多 220 字）
+          3) 星灵给到的回应/方向
+          4) 关键词仅做末尾的标签展示
+        """
         planet_label = PLANET_LABELS.get(
             Planet(spirit_planet), "星灵"
         ) if spirit_planet else "星灵"
 
-        kw_str = "、".join(keywords) if keywords else "平静"
+        chat_clean = (chat_context or "").strip()
+        if not chat_clean:
+            chat_clean = "今天没有特别的事情想说，但你还是来了。"
 
-        # 选择模板
-        template = SPIRIT_TEMPLATES.get(spirit_planet, GENERIC_TEMPLATE)
+        # 主题判定：挑选用户原话里最有可能的关键词当话题
+        topic_hint = self._pick_topic_hint(chat_clean, keywords)
+        kw_str = "、".join(keywords[:3]) if keywords else ""
 
-        # 构建动作描述
-        user_message = chat_context[:100].strip() if chat_context else "今天没有特别的事情"
-        action = self._pick_action_phrase(user_message)
+        # 用户原话摘要（去掉空行）
+        user_lines = [
+            line.strip() for line in chat_clean.splitlines() if line.strip()
+        ]
+        user_excerpt = " ".join(user_lines)[:220].strip()
 
-        entry_text = template.format(
-            planet_label=planet_label,
-            keywords=kw_str,
-            action=action,
-        )
+        parts: list[str] = []
 
-        # 附加用户原话摘要
-        if chat_context and len(chat_context) > 20:
-            summary = chat_context[:150].strip()
-            entry_text += f"\n\n你说：{summary}"
+        # 1) 起头
+        if topic_hint:
+            parts.append(f"今天你和{planet_label}聊了关于「{topic_hint}」的话题。")
+        else:
+            parts.append(f"今天你和{planet_label}聊了一会儿。")
 
-        return entry_text
+        # 2) 用户原话摘要
+        if user_excerpt:
+            parts.append(f"你提到：{user_excerpt}")
+
+        # 3) 星灵回应方向（按关键词选一句简短的指引）
+        if keywords:
+            guide = self._pick_guide(keywords)
+            parts.append(f"{planet_label}对你说：{guide}")
+
+        # 4) 关键词标签（不作为正文叙事）
+        if kw_str:
+            parts.append(f"（关键词：{kw_str}）")
+
+        return "\n\n".join(parts)
+
+    def _pick_topic_hint(self, chat_context: str, keywords: list[str]) -> str:
+        """根据对话内容挑选一个具体的话题短语。"""
+        # 先用主题词典
+        topic_map: list[tuple[list[str], str]] = [
+            (["工作", "老板", "同事", "项目", "加班", "汇报"], "工作压力"),
+            (["感情", "恋爱", "对象", "分手", "暧昧", "喜欢"], "感情"),
+            (["家庭", "爸妈", "父母", "亲人", "孩子"], "家庭"),
+            (["学业", "考试", "论文", "学校", "毕业"], "学业"),
+            (["金钱", "钱", "工资", "房租", "消费", "欠"], "金钱"),
+            (["朋友", "社交", "人脉"], "关系"),
+            (["自己", "自卑", "焦虑", "失眠", "迷茫", "未来"], "自我状态"),
+        ]
+        for words, label in topic_map:
+            for w in words:
+                if w in chat_context:
+                    return label
+
+        # 没有命中就用关键词中的第一个情绪词
+        if keywords:
+            return keywords[0]
+        return ""
+
+    def _pick_guide(self, keywords: list[str]) -> str:
+        """根据情绪关键词选一句简短指引。"""
+        guide_map: dict[str, str] = {
+            "委屈": "先把感受放下来，你不需要证明自己的对错。",
+            "不甘": "把力气放在你能改变的事上，而不是输赢上。",
+            "期待": "给期待留一个期限，也给自己留一条退路。",
+            "害怕": "允许自己慢一点，恐惧常常不是阻止你，是提醒你。",
+            "勇敢": "你已经比想象中走得更远了。",
+            "迷茫": "先走一步，再调方向，地图会在路上长出来。",
+            "坚定": "把今天的选择，写给未来的你看。",
+            "温暖": "这一份温度值得被记录下来，反复使用。",
+            "孤独": "你不是一个人——星灵在这一侧陪着你。",
+            "渴望": "渴望本身就是方向，承认它，比否定它更勇敢。",
+            "释然": "放下的那一刻不是妥协，是你把自己还给自己。",
+            "困惑": "允许自己暂时没有答案，问题也在等你准备好。",
+            "感动": "把这些被看见的瞬间存起来，那是你的燃料。",
+            "疲惫": "今天可以只做重要的事，不必把所有事都做完。",
+            "充实": "把这份充实的感觉写下来，是你对今天的盖章。",
+        }
+        for kw in keywords:
+            if kw in guide_map:
+                return guide_map[kw]
+        return "今天就到这里，明天继续。"
 
     def _pick_action_phrase(self, context: str) -> str:
         """根据上下文选择匹配的动作短语"""
@@ -274,6 +577,35 @@ class DiaryEngine:
             limit: 返回数量
             offset: 偏移量
         """
+        # 优先从数据库读取
+        if _dao is not None:
+            try:
+                rows = _dao.list_star_diary(
+                    report_id=report_id, limit=limit, offset=offset,
+                )
+                if rows:
+                    out: list[DiaryEntry] = []
+                    for r in rows:
+                        out.append(DiaryEntry(
+                            id=r["id"],
+                            report_id=r["report_id"],
+                            date=r.get("date") or r.get("entry_date", ""),
+                            keywords=list(r.get("keywords") or []),
+                            entry_text=r.get("entry_text") or r.get("text") or "",
+                            spirit_planet=r.get("spirit_planet") or None,
+                            mood_emoji=r.get("mood_emoji") or None,
+                            diary_style=r.get("diary_style", "summary"),
+                            energy_level=int(r.get("energy_level", 50) or 50),
+                            topic_tag=r.get("topic_tag", ""),
+                            topic_tag_hash=r.get("topic_tag", ""),
+                            evening_expectation=r.get("evening_expectation", ""),
+                            created_at=r.get("created_at", ""),
+                            updated_at=r.get("updated_at", ""),
+                        ))
+                    return out
+            except Exception:
+                pass
+
         entries = self._load_entries(report_id)
         # 按时间倒序排列
         entries.sort(key=lambda e: e.get("created_at", ""), reverse=True)

@@ -90,7 +90,7 @@ const topMood = computed(() => {
   if (!moods.length) return "—";
   const counts: Record<string, number> = {};
   moods.forEach((m: any) => { counts[m.mood] = (counts[m.mood] || 0) + 1; });
-  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
 });
 
 // 寄语

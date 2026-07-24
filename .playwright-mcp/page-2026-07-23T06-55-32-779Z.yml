@@ -1,0 +1,19 @@
+- main [ref=f1e4]:
+  - generic [ref=f1e6]:
+    - generic [ref=f1e13]:
+      - heading "星 灵 花 园" [level=1] [ref=f1e14]:
+        - generic [ref=f1e15]: 星
+        - generic [ref=f1e16]: 灵
+        - generic [ref=f1e17]: 花
+        - generic [ref=f1e18]: 园
+      - paragraph [ref=f1e19]: 十颗星辰，在你的心灵花园里苏醒
+    - generic [ref=f1e31]:
+      - generic [ref=f1e32]:
+        - generic [ref=f1e33]: "+86"
+        - textbox "请输入手机号" [ref=f1e35]: "18513821306"
+      - generic [ref=f1e36]:
+        - textbox "验证码" [disabled] [ref=f1e37]
+        - button "获取验证码" [disabled] [ref=f1e38]
+      - button "直接进入花园" [disabled] [ref=f1e39]
+      - button "返回一键登录" [ref=f1e40] [cursor=pointer]
+    - generic [ref=f1e27] [cursor=pointer]: 同意 《用户协议》和 《隐私政策》

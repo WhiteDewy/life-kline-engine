@@ -86,9 +86,9 @@ function getCurrentZodiacSeason(): string {
  */
 export function getCurrentVideo(): string {
   const season = getCurrentZodiacSeason();
-  if (VIDEO_URLS[season]) return VIDEO_URLS[season];
+  if (VIDEO_URLS[season]) return VIDEO_URLS[season] as string;
   if (AVAILABLE_VIDEOS.length > 0) {
-    return AVAILABLE_VIDEOS[Math.floor(Math.random() * AVAILABLE_VIDEOS.length)];
+    return AVAILABLE_VIDEOS[Math.floor(Math.random() * AVAILABLE_VIDEOS.length)] as string;
   }
   return "";
 }
@@ -109,5 +109,5 @@ export function getVideoBySign(sign: string): string {
 export function getNextVideo(currentUrl: string): string {
   if (AVAILABLE_VIDEOS.length <= 1) return currentUrl;
   const idx = AVAILABLE_VIDEOS.indexOf(currentUrl);
-  return AVAILABLE_VIDEOS[(idx + 1) % AVAILABLE_VIDEOS.length];
+  return AVAILABLE_VIDEOS[(idx + 1) % AVAILABLE_VIDEOS.length] as string;
 }

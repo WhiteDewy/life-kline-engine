@@ -781,11 +781,12 @@ const ASPECTS: AspectLine[] = [
   },
 ];
 
-const legendItems = [
+const _legendItems = [
   { label: "\u5211/\u51b2", kind: "challenging", y: 12 },
   { label: "\u62f1/\u516d\u5408", kind: "supportive", y: 28 },
   { label: "\u6885\u82b1\u76f8", kind: "special", y: 44 },
 ];
+void _legendItems;
 
 const aspectClipId = `aspect-clip-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -811,7 +812,7 @@ const houseCusps = computed<NatalHouse[]>(() => {
   return Array.from({ length: 12 }, (_, index) => {
     const longitude = normalizeLongitude(ascLongitude + index * 30);
     const signIndex = Math.floor(longitude / 30) % 12;
-    const sign = SIGN_SEQUENCE[signIndex];
+    const sign = (SIGN_SEQUENCE[signIndex] ?? "ARIES") as string;
     return {
       house: index + 1,
       sign,
@@ -881,12 +882,13 @@ const orderedPlanets = computed<PlanetView[]>(() => {
       const meaning = getPlanetMeaning(key);
       const detail = Array.from(new Set([record.gift, record.reason].filter(Boolean))).join(" ");
 
+      const metaSafe = meta!;
       return {
         key,
-        label: meta.label,
-        shortLabel: meta.shortLabel,
-        glyph: meta.glyph,
-        color: signMeta?.color || meta.color,
+        label: metaSafe.label,
+        shortLabel: metaSafe.shortLabel,
+        glyph: metaSafe.glyph,
+        color: signMeta?.color || metaSafe.color,
         sign: record.sign || "",
         signLabel,
         degree,
@@ -975,10 +977,11 @@ const zodiacDegreeTicks = computed(() =>
 const zodiacSignLabels = computed(() =>
   SIGN_SEQUENCE.map((sign, index) => {
     const longitude = index * 30 + 15;
+    const meta = SIGN_META[sign]!;
     return {
       sign,
-      glyph: SIGN_META[sign].glyph,
-      color: SIGN_META[sign].color,
+      glyph: meta.glyph,
+      color: meta.color,
       position: pointOnCircle(longitude, ZODIAC_LABEL_RADIUS),
     };
   })
@@ -1031,7 +1034,7 @@ const axisLabels = computed(() => {
       const cusp = houseCusps.value.find((entry) => entry.house === item.house);
       if (!cusp) return null;
       const longitude = longitudeFromSign(cusp.sign, cusp.degree) ?? 0;
-      const meta = axisMeta[item.label] || axisMeta.ASC;
+      const meta = axisMeta[item.label] || axisMeta.ASC!;
       const basePosition = pointOnCircle(longitude, AXIS_LABEL_RADIUS);
       return {
         label: item.label,
@@ -1052,7 +1055,7 @@ const axisLabels = computed(() => {
 const cuspMarkers = computed(() =>
   houseCusps.value.map((cusp) => {
     const longitude = longitudeFromSign(cusp.sign, cusp.degree) ?? 0;
-    const signMeta = SIGN_META[cusp.sign] || SIGN_META.ARIES;
+    const signMeta = SIGN_META[cusp.sign] || SIGN_META.ARIES!;
     return {
       house: cusp.house,
       glyph: signMeta.glyph,
@@ -1066,7 +1069,7 @@ const cuspMarkers = computed(() =>
 
 const houseCuspDetails = computed(() =>
   houseCusps.value.map((cusp) => {
-    const signMeta = SIGN_META[cusp.sign] || SIGN_META.ARIES;
+    const signMeta = SIGN_META[cusp.sign] || SIGN_META.ARIES!;
     return {
       house: cusp.house,
       signLabel: cusp.sign_label || signMeta.label,
@@ -1127,8 +1130,8 @@ const planetMarkers = computed<PlanetMarkerView[]>(() => {
   });
 
   if (placed.length > 1) {
-    const first = placed[0];
-    const last = placed[placed.length - 1];
+    const first = placed[0]!;
+    const last = placed[placed.length - 1]!;
     if (first.relativeLongitude + 360 - last.relativeLongitude < minimumGap) {
       const lane = last.lane + 1;
       const radius = PLANET_BASE_RADIUS - lane * laneStep;
@@ -1171,8 +1174,8 @@ const aspectRecords = computed<AspectRecord[]>(() => {
 
   for (let index = 0; index < planets.length; index += 1) {
     for (let cursor = index + 1; cursor < planets.length; cursor += 1) {
-      const left = planets[index];
-      const right = planets[cursor];
+      const left = planets[index]!;
+      const right = planets[cursor]!;
       const distance = angularDistance(left.longitude, right.longitude);
       const matched = ASPECTS
         .map((aspect) => ({
@@ -1195,7 +1198,7 @@ const aspectRecords = computed<AspectRecord[]>(() => {
         summary: matched.summary,
         delta: matched.delta,
         closeness: matched.orb - matched.delta,
-        direction: aspectDirection(left, right, matched.angle, matched.delta),
+        direction: aspectDirection(left, right!, matched.angle, matched.delta),
         start: pointOnCircle(left.longitude, ASPECT_POINT_RADIUS),
         end: pointOnCircle(right.longitude, ASPECT_POINT_RADIUS),
       });
@@ -1328,7 +1331,7 @@ const receptionRows = computed(() =>
       };
     })
     .filter(
-      (item): item is { receiver: string; position: string; guests: string; line: string } =>
+      (item: { receiver: string; position: string; guests: string; line: string } | null): item is { receiver: string; position: string; guests: string; line: string } =>
         Boolean(item)
     )
 );
@@ -1341,14 +1344,14 @@ const mutualReceptionRows = computed(() =>
 );
 
 const relationFeatureRows = computed(() => {
-  const receptionFeatures = receptionRows.value.map((row) => ({
+  const receptionFeatures = receptionRows.value.map((row: { receiver: string; guests: string; position: string; line: string }) => ({
     type: copy.receptionTable,
     combination: `${row.receiver} / ${row.guests}`,
     position: row.position,
     line: row.line,
   }));
 
-  const mutualFeatures = mutualReceptionRows.value.map((row) => ({
+  const mutualFeatures = mutualReceptionRows.value.map((row: { pair: string; line: string }) => ({
     type: copy.mutualReceptionTable,
     combination: row.pair,
     position: copy.unknown,
@@ -1556,7 +1559,6 @@ function aspectDirection(
 ): "applying" | "separating" | "exact" {
   if (delta < 0.2) return "exact";
 
-  const currentDiff = angularDistance(left.longitude, right.longitude);
   const nextLeft = normalizeLongitude(left.longitude + left.speed);
   const nextRight = normalizeLongitude(right.longitude + right.speed);
   const nextDiff = angularDistance(nextLeft, nextRight);

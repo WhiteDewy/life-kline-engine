@@ -13,6 +13,15 @@ tools:
   - Bash(git *)
   - mcp__playwright__browser_navigate
   - mcp__playwright__browser_snapshot
+---
+
+# === 启动前必读 ===
+
+开始工作前，先读取以下 memory 文件获取项目背景：
+
+1. 读取 `memory/MEMORY.md` 获取 memory 索引
+2. 根据任务类型读取相关 memory 文件
+3. 重要发现需写入 memory 并更新索引
   - mcp__playwright__browser_click
   - mcp__playwright__browser_type
   - mcp__playwright__browser_find

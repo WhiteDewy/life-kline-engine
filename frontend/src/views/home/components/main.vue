@@ -102,9 +102,8 @@
         :moon-sign-label="homeData.moonSignLabel.value"
         :gender="homeData.userGender.value"
         @close="showProfile = false"
-        @go-garden="goGarden"
+        @go-chart="goChart"
         @go-history="goHistory"
-        @go-onboarding="goOnboarding"
         @go-profile="goProfile"
         @go-diary="goDiary"
         @logout="doLogout"
@@ -163,6 +162,7 @@
         :entries="homeData.diaryEntries.value"
         :loading="false"
         @close="showDiary = false"
+        @refresh="onDiaryRefresh"
       />
 
       <!-- ═══ 今日走向 ═══ -->
@@ -172,7 +172,7 @@
         :today-star-spirit="homeData.todayStarSpirit.value"
         :date-label="homeData.dateLabel.value"
         @close="showDirection = false"
-        @chat-with-spirit="onTransitChat($event.planet, $event.detail)"
+        @chat-with-spirit="onTransitChat($event)"
       />
 
       <!-- ═══ 新人引导 ═══ -->
@@ -181,23 +181,29 @@
         :today-star-spirit="homeData.todayStarSpirit.value"
         :todays-planet-profile="homeData.todaysPlanetProfile?.value"
         :daily-question="homeData.dailyQuestion.value?.question || ''"
-        @close="showOnboarding = false"
+        @close="onOnboardingClosed"
+      />
+
+      <!-- ═══ 灵犀占卜（占位） ═══ -->
+      <DivinationPlaceholder
+        :visible="showDivination"
+        @close="showDivination = false"
       />
     </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from "vue";
+import { ref, onMounted, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useHomeData } from "@/composables/useHomeData";
 import { useAuth } from "@/utils/auth";
 import { PLANET_COLORS } from "@/config/zodiac";
 import { apiClient } from "@/config/api";
-import GardenScene from "@/views/Wanxiang/components/GardenScene.vue";
-import SpiritAvatar from "@/views/Wanxiang/components/SpiritAvatar.vue";
+import GardenScene from "@/components/garden/GardenScene.vue";
+import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
 import SpiritChatBubble from "@/views/Wanxiang/components/SpiritChatBubble.vue";
-import ThemeSwitcher from "@/views/Wanxiang/components/ThemeSwitcher.vue";
+import ThemeSwitcher from "@/components/garden/ThemeSwitcher.vue";
 import HomeTabBar from "./HomeTabBar.vue";
 import ProfileOverlay from "./ProfileOverlay.vue";
 import HomeCouncil from "./HomeCouncil.vue";
@@ -206,6 +212,7 @@ import SpiritOracle from "./SpiritOracle.vue";
 import StarSpiritDiary from "./StarSpiritDiary.vue";
 import TodayDirection from "./TodayDirection.vue";
 import OnboardingFlow from "./OnboardingFlow.vue";
+import DivinationPlaceholder from "@/views/Garden/components/DivinationPlaceholder.vue";
 
 const router = useRouter();
 const homeData = useHomeData();
@@ -262,11 +269,13 @@ const showDiary = ref(false);
 const showDirection = ref(false);
 const chatVisible = ref(false);
 const showOnboarding = ref(false);
+const showDivination = ref(false);
 
 // ── 面板互斥：打开一个时关闭其他 ──
 function openDailyQuestion() {
   showDirection.value = false;
   showCouncil.value = false;
+  showDivination.value = false;
   showDailyQuestion.value = true;
 }
 
@@ -295,7 +304,11 @@ const chatEntryContext = ref<{
   source: string;
   transit_planet?: string;
   transit_detail?: string;
+  transit_aspect?: string;
+  transit_natal?: string;
+  transit_orb?: number | null;
   daily_question?: string;
+  from_daily_question?: boolean;
   previous_spirit?: string;
   previous_chats_today?: number;
 }>({ source: "" });
@@ -306,16 +319,26 @@ const chatBubbleRef = ref<any>(null);
 // 视频随星灵动态切换
 // ═══════════════════════════════════════
 
+// 切换星灵：先关闭触发归档 → nextTick 后再打开新星灵
+async function switchToSpirit() {
+  if (chatVisible.value) {
+    chatVisible.value = false;
+    await nextTick();
+  }
+}
+
 function openChat() {
-  const sp = homeData.sunProfile.value;
-  chatPlanet.value = "SUN";
-  chatSymbol.value = sp?.persona?.symbol || "☉";
-  chatName.value = homeData.sunName.value;
-  chatArchetype.value = homeData.sunArchetype.value;
-  chatColor.value = homeData.sunColor.value;
-  chatGreeting.value = sp?.personalized_greeting || "";
-  homeData.setActivePlanet("SUN");
-  chatVisible.value = true;
+  switchToSpirit().then(() => {
+    const sp = homeData.sunProfile.value;
+    chatPlanet.value = "SUN";
+    chatSymbol.value = sp?.persona?.symbol || "☉";
+    chatName.value = homeData.sunName.value;
+    chatArchetype.value = homeData.sunArchetype.value;
+    chatColor.value = homeData.sunColor.value;
+    chatGreeting.value = sp?.personalized_greeting || "";
+    homeData.setActivePlanet("SUN");
+    chatVisible.value = true;
+  });
 }
 
 function openStarSpiritChat() {
@@ -324,53 +347,50 @@ function openStarSpiritChat() {
     openChat();
     return;
   }
-  chatPlanet.value = ss.planet;
-  chatSymbol.value = ss.symbol || "★";
-  chatName.value = ss.planet_label || "星灵";
-  chatArchetype.value = ss.sign_label || "";
-  chatColor.value = homeData.todaysPlanetProfile?.value?.persona?.visual_color || "#F2A900";
-  chatGreeting.value = "";
-  chatEntryContext.value = {
-    source: "today_star_spirit",
-    daily_question: homeData.dailyQuestion.value?.question || "",
-    previous_chats_today: todayChatCounts.value[ss.planet] || 0,
-  };
-  todayChatCounts.value[ss.planet] = (todayChatCounts.value[ss.planet] || 0) + 1;
-  homeData.setActivePlanet(ss.planet);
-  showDailyQuestion.value = false;
-  chatVisible.value = true;
+  switchToSpirit().then(() => {
+    chatPlanet.value = ss.planet;
+    chatSymbol.value = ss.symbol || "★";
+    chatName.value = ss.planet_label || "星灵";
+    chatArchetype.value = ss.sign_label || "";
+    chatColor.value = homeData.todaysPlanetProfile?.value?.persona?.visual_color || "#F2A900";
+    chatGreeting.value = "";
+    chatEntryContext.value = {
+      source: "today_star_spirit",
+      daily_question: homeData.dailyQuestion.value?.question || "",
+      from_daily_question: !!(homeData.dailyQuestion.value?.question || "").trim(),
+      previous_chats_today: todayChatCounts.value[ss.planet] || 0,
+    };
+    todayChatCounts.value[ss.planet] = (todayChatCounts.value[ss.planet] || 0) + 1;
+    homeData.setActivePlanet(ss.planet);
+    showDailyQuestion.value = false;
+    chatVisible.value = true;
+  });
 }
 
 function onCouncilPlanetChat(p: any) {
-  chatPlanet.value = p.planet;
-  chatSymbol.value = p.symbol;
-  chatName.value = p.shortName;
-  chatArchetype.value = p.archetypeShort;
-  chatColor.value = p.color;
-  chatGreeting.value = p.greeting;
-  chatEntryContext.value = {
-    source: "council",
-    previous_chats_today: todayChatCounts.value[p.planet] || 0,
-  };
-  todayChatCounts.value[p.planet] = (todayChatCounts.value[p.planet] || 0) + 1;
-  // 切换视频到该星灵落座星座
-  homeData.setActivePlanet(p.planet);
-  showCouncil.value = false;
-  chatVisible.value = true;
+  switchToSpirit().then(() => {
+    chatPlanet.value = p.planet;
+    chatSymbol.value = p.symbol;
+    chatName.value = p.shortName;
+    chatArchetype.value = p.archetypeShort;
+    chatColor.value = p.color;
+    chatGreeting.value = p.greeting;
+    chatEntryContext.value = {
+      source: "council",
+      previous_chats_today: todayChatCounts.value[p.planet] || 0,
+    };
+    todayChatCounts.value[p.planet] = (todayChatCounts.value[p.planet] || 0) + 1;
+    homeData.setActivePlanet(p.planet);
+    showCouncil.value = false;
+    chatVisible.value = true;
+  });
 }
 
 function onCouncilSignChat(s: any) {
-  chatPlanet.value = "SUN";
-  chatSymbol.value = s.emoji;
-  chatName.value = s.name;
-  chatArchetype.value = `${s.element}象 · ${s.hasPlanets ? '已有星体落座' : '潜在能量'}`;
-  chatColor.value = s.color;
-  chatGreeting.value = s.hasPlanets
-    ? `你好呀，我是${s.name}——你的星盘里有一些行星落在我这里，让我跟你聊聊这意味着什么。`
-    : `虽然你的星盘里暂时没有行星落在${s.name}，但这不代表你没有这份能量。让我告诉你${s.name}的本质，也许你会发现你早就拥有了它。`;
-  homeData.setActiveSign(s.key);
+  // 星座模式：不再打开星灵聊天，改为跳转到星座神话故事页
   showCouncil.value = false;
-  chatVisible.value = true;
+  homeData.setActiveSign(s.key);
+  router.push({ path: "/constellation-stories", query: { sign: s.key } });
 }
 
 async function closeChatAndGenerateDiary(msgs: Array<{ role: string; text: string }>) {
@@ -397,40 +417,63 @@ function handleBackdropClose() {
   closeChatAndGenerateDiary(msgs);
 }
 
-function onTransitChat(transitPlanet: string, transitDetail: string) {
-  const profile = homeData.planetProfiles.value?.planet_characters?.[transitPlanet];
-  chatPlanet.value = transitPlanet;
-  chatSymbol.value = profile?.symbol || "";
-  chatName.value = profile?.persona?.name_zh || transitPlanet;
-  chatArchetype.value = profile?.persona?.archetype_zh || "";
-  chatColor.value = profile?.persona?.visual_color || "#ccc";
-  chatGreeting.value = profile?.personalized_greeting || "";
-  chatEntryContext.value = {
-    source: "transit",
-    transit_planet: transitPlanet,
-    transit_detail: transitDetail,
-    previous_chats_today: todayChatCounts.value[transitPlanet] || 0,
-  };
-  todayChatCounts.value[transitPlanet] = (todayChatCounts.value[transitPlanet] || 0) + 1;
-  homeData.setActivePlanet(transitPlanet);
-  showCouncil.value = false;
-  chatVisible.value = true;
+function onTransitChat(payload: { planet: string; detail: string; transit?: any }) {
+  const { planet: transitPlanet, detail: transitDetail, transit } = payload;
+  switchToSpirit().then(() => {
+    const profile = homeData.planetProfiles.value?.planet_characters?.[transitPlanet];
+    chatPlanet.value = transitPlanet;
+    chatSymbol.value = profile?.symbol || "";
+    chatName.value = profile?.persona?.name_zh || transitPlanet;
+    chatArchetype.value = profile?.persona?.archetype_zh || "";
+    chatColor.value = profile?.persona?.visual_color || "#ccc";
+    chatGreeting.value = profile?.personalized_greeting || "";
+    chatEntryContext.value = {
+      source: "transit",
+      transit_planet: transitPlanet,
+      transit_detail: transitDetail,
+      transit_aspect: transit?.aspect_label || "",
+      transit_natal: transit?.natal_label || "",
+      transit_orb: transit?.orb ?? null,
+      previous_chats_today: todayChatCounts.value[transitPlanet] || 0,
+    };
+    todayChatCounts.value[transitPlanet] = (todayChatCounts.value[transitPlanet] || 0) + 1;
+    homeData.setActivePlanet(transitPlanet);
+    showCouncil.value = false;
+    chatVisible.value = true;
+  });
 }
 
 // ═══════════════════════════════════════
 // 导航
 // ═══════════════════════════════════════
 
-function goGarden() {
-  // 花园按钮当前已经处于主页（花园模式），无需跳转
-  // 如果未来需要跳转具体视图，可以在这里修改
-}
+function goGarden() { router.push("/spirit-garden"); }
+function goChart() { router.push("/my-chart"); }
 function goHistory() { router.push("/history"); }
-function goOnboarding() { router.push("/onboarding"); }
 function goProfile() { router.push("/profile"); }
+function onOnboardingClosed() {
+  showOnboarding.value = false;
+  // 新用户完成导览后若无档案，跳转出生信息采集
+  const { profiles } = useAuth();
+  if (!profiles.value?.length) {
+    router.push("/onboarding");
+  }
+}
 function goDiary() {
   showProfile.value = false;
   showDiary.value = true;
+}
+
+/** 星灵日记条目编辑/删除后，从后端重新拉取时间线 */
+async function onDiaryRefresh() {
+  const lastId = homeData.reportId.value;
+  if (!lastId) return;
+  try {
+    const res = await apiClient.get(`/spirit-diary/${lastId}?limit=30&offset=0`);
+    if (res.data?.status === "success") {
+      homeData.diaryEntries.value = res.data.data?.entries || res.data.data || [];
+    }
+  } catch { /* 静默失败，下次刷新会重试 */ }
 }
 function doLogout() {
   homeData.logout();

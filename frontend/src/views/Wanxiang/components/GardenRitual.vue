@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
-import SpiritAvatar from "./SpiritAvatar.vue";
+import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
 import type { FeaturedPlanet } from "@/utils/types";
 
 const props = defineProps<{

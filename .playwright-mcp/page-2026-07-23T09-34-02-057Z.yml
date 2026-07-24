@@ -1,0 +1,137 @@
+- generic [ref=f30e1]:
+  - main [ref=f30e4]:
+    - generic [ref=f30e1199]:
+      - generic [ref=f30e1200]:
+        - button "←" [ref=f30e1201] [cursor=pointer]
+        - heading "编辑档案" [level=1] [ref=f30e1202]
+        - button "保存" [disabled] [ref=f30e1203]
+      - generic [ref=f30e1204]:
+        - generic [ref=f30e1205]:
+          - generic [ref=f30e1206]: 昵称
+          - textbox [ref=f30e1207]
+        - generic [ref=f30e1208]:
+          - generic [ref=f30e1209]: 性别
+          - generic [ref=f30e1210]:
+            - button "♀ 女性" [ref=f30e1211] [cursor=pointer]:
+              - generic [ref=f30e1212]: ♀
+              - generic [ref=f30e1213]: 女性
+            - button "♂ 男性" [ref=f30e1214] [cursor=pointer]:
+              - generic [ref=f30e1215]: ♂
+              - generic [ref=f30e1216]: 男性
+        - generic [ref=f30e1217]:
+          - generic [ref=f30e1218]: 出生日期
+          - combobox "选择日期" [expanded] [active] [ref=f30e1225]
+        - generic [ref=f30e1226]:
+          - generic [ref=f30e1227]: 出生时间
+          - combobox "选择时间" [ref=f30e1236]
+        - generic [ref=f30e1237]:
+          - generic [ref=f30e1238]: 出生地点
+          - textbox "省/市/区（重新选择将覆盖）" [ref=f30e1242]
+          - generic [ref=f30e1247]:
+            - generic [ref=f30e1248]: 选择地点后自动获取坐标
+            - button "获取坐标" [ref=f30e1249] [cursor=pointer]
+          - generic [ref=f30e1250]:
+            - generic [ref=f30e1251]: GMT +8.00
+            - generic [ref=f30e1253] [cursor=pointer]:
+              - generic:
+                - combobox [ref=f30e1255]
+                - generic [ref=f30e1256]: GMT +8.00
+          - group [ref=f30e1261]:
+            - generic "手动调整经纬度▼" [ref=f30e1262] [cursor=pointer]
+            - option "N" [selected]
+            - option "S"
+            - option "E" [selected]
+            - option "W"
+        - generic [ref=f30e1263]:
+          - generic [ref=f30e1264]: 现居地
+          - textbox "省/市/区（重新选择将覆盖）" [ref=f30e1268]
+          - generic [ref=f30e1273]:
+            - generic [ref=f30e1274]: 选择地点后自动获取坐标
+            - button "获取坐标" [ref=f30e1275] [cursor=pointer]
+          - group [ref=f30e1276]:
+            - generic "手动调整经纬度▼" [ref=f30e1277] [cursor=pointer]
+            - option "N" [selected]
+            - option "S"
+            - option "E" [selected]
+            - option "W"
+        - generic [ref=f30e1278]:
+          - generic [ref=f30e1279]: 夏令时
+          - button "☀️未开启 1986-1991年间出生请注意" [ref=f30e1280] [cursor=pointer]:
+            - text: ☀️未开启
+            - generic [ref=f30e1281]: 1986-1991年间出生请注意
+        - generic [ref=f30e1282]:
+          - generic [ref=f30e1283]: 宫位制
+          - generic [ref=f30e1284]:
+            - button "阿卡比特" [ref=f30e1285] [cursor=pointer]
+            - button "普拉西度" [ref=f30e1286] [cursor=pointer]
+            - button "整宫制" [ref=f30e1287] [cursor=pointer]
+            - button "柯赫" [ref=f30e1288] [cursor=pointer]
+  - dialog [ref=f30e1289]:
+    - generic [ref=f30e1292]:
+      - generic [ref=f30e1293]:
+        - generic [ref=f30e1294]:
+          - button "Previous Year" [ref=f30e1295] [cursor=pointer]
+          - button "Previous Month" [ref=f30e1299] [cursor=pointer]
+        - button "2026" [ref=f30e1303] [cursor=pointer]
+        - button "July" [ref=f30e1304] [cursor=pointer]
+        - generic [ref=f30e1305]:
+          - button "Next Month" [ref=f30e1306] [cursor=pointer]
+          - button "Next Year" [ref=f30e1310] [cursor=pointer]
+      - grid "Use the arrow keys and enter to select the day of the month" [ref=f30e1315]:
+        - rowgroup [ref=f30e1316]:
+          - row [ref=f30e1317]:
+            - columnheader "Sunday" [ref=f30e1318]: Sun
+            - columnheader "Monday" [ref=f30e1319]: Mon
+            - columnheader "Tuesday" [ref=f30e1320]: Tue
+            - columnheader "Wednesday" [ref=f30e1321]: Wed
+            - columnheader "Thursday" [ref=f30e1322]: Thu
+            - columnheader "Friday" [ref=f30e1323]: Fri
+            - columnheader "Saturday" [ref=f30e1324]: Sat
+          - row [ref=f30e1325]:
+            - gridcell "28" [ref=f30e1326] [cursor=pointer]
+            - gridcell "29" [ref=f30e1329] [cursor=pointer]
+            - gridcell "30" [ref=f30e1332] [cursor=pointer]
+            - gridcell "1" [ref=f30e1335] [cursor=pointer]
+            - gridcell "2" [ref=f30e1338] [cursor=pointer]
+            - gridcell "3" [ref=f30e1341] [cursor=pointer]
+            - gridcell "4" [ref=f30e1344] [cursor=pointer]
+          - row [ref=f30e1347]:
+            - gridcell "5" [ref=f30e1348] [cursor=pointer]
+            - gridcell "6" [ref=f30e1351] [cursor=pointer]
+            - gridcell "7" [ref=f30e1354] [cursor=pointer]
+            - gridcell "8" [ref=f30e1357] [cursor=pointer]
+            - gridcell "9" [ref=f30e1360] [cursor=pointer]
+            - gridcell "10" [ref=f30e1363] [cursor=pointer]
+            - gridcell "11" [ref=f30e1366] [cursor=pointer]
+          - row [ref=f30e1369]:
+            - gridcell "12" [ref=f30e1370] [cursor=pointer]
+            - gridcell "13" [ref=f30e1373] [cursor=pointer]
+            - gridcell "14" [ref=f30e1376] [cursor=pointer]
+            - gridcell "15" [ref=f30e1379] [cursor=pointer]
+            - gridcell "16" [ref=f30e1382] [cursor=pointer]
+            - gridcell "17" [ref=f30e1385] [cursor=pointer]
+            - gridcell "18" [ref=f30e1388] [cursor=pointer]
+          - row [ref=f30e1391]:
+            - gridcell "19" [ref=f30e1392] [cursor=pointer]
+            - gridcell "20" [ref=f30e1395] [cursor=pointer]
+            - gridcell "21" [ref=f30e1398] [cursor=pointer]
+            - gridcell "22" [ref=f30e1401] [cursor=pointer]
+            - gridcell "23" [ref=f30e1404] [cursor=pointer]
+            - gridcell "24" [ref=f30e1407] [cursor=pointer]
+            - gridcell "25" [ref=f30e1410] [cursor=pointer]
+          - row [ref=f30e1413]:
+            - gridcell "26" [ref=f30e1414] [cursor=pointer]
+            - gridcell "27" [ref=f30e1417] [cursor=pointer]
+            - gridcell "28" [ref=f30e1420] [cursor=pointer]
+            - gridcell "29" [ref=f30e1423] [cursor=pointer]
+            - gridcell "30" [ref=f30e1426] [cursor=pointer]
+            - gridcell "31" [ref=f30e1429] [cursor=pointer]
+            - gridcell "1" [ref=f30e1432] [cursor=pointer]
+          - row [ref=f30e1435]:
+            - gridcell "2" [ref=f30e1436] [cursor=pointer]
+            - gridcell "3" [ref=f30e1439] [cursor=pointer]
+            - gridcell "4" [ref=f30e1442] [cursor=pointer]
+            - gridcell "5" [ref=f30e1445] [cursor=pointer]
+            - gridcell "6" [ref=f30e1448] [cursor=pointer]
+            - gridcell "7" [ref=f30e1451] [cursor=pointer]
+            - gridcell "8" [ref=f30e1454] [cursor=pointer]

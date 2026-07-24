@@ -876,7 +876,7 @@ EngineResponse  → {full_text, evidence, ...}
 
 | 端点 | 说明 |
 |------|------|
-| `POST /api/spirit-chat/{id}` | 引擎占星师（永远在线） + AI 增强（需权限） |
+| `POST /api/spirit-chat/{id}` | 三层触发星灵对话（先情感承接，按话题/深度切入星盘，深聊后概率延伸）；响应兼容 `response` 并新增 `user_message` / `spirit_response` |
 | `GET /api/pricing` | 完整定价信息 |
 | `GET /api/access/{user_id}` | 用户权限状态 |
 

@@ -78,7 +78,7 @@
             :planets="report.natal_chart?.planets || {}"
             :houses="report.natal_chart?.houses || []"
             :ascendant="report.natal_chart?.ascendant"
-            :aspects="report.natal_chart?.major_aspects || []"
+            :aspects="aspectsForWheel"
             :size="360"
           />
         </div>
@@ -313,7 +313,6 @@ const report = ref<LifeReport | null>(null);
 const activeReportId = ref("");
 
 // ── 付费墙 ──
-const showPricing = ref(false);
 const showPayment = ref(false);
 const paymentPlanKey = ref("full");
 const chatOpen = ref(false);
@@ -324,6 +323,16 @@ const activeCharacter = ref("");
 const characterProfiles = computed(() => (report.value as any)?.characters || null);
 const hasCharacters = computed(() => !!characterProfiles.value?.characters);
 const dailyActivation = ref<any>(null);
+
+const aspectsForWheel = computed(() => {
+  const raw = (report.value?.natal_chart?.major_aspects || []) as Array<Record<string, any>>;
+  return raw.map((item) => ({
+    title: String(item.title || ""),
+    strength: Number(item.strength || 0),
+    nature: String(item.nature || "mixed"),
+    summary: item.summary,
+  }));
+});
 
 const currentCharacter = computed(() => {
   if (!activeCharacter.value || !characterProfiles.value?.characters) return null;
@@ -367,7 +376,7 @@ function hasAllDomains() {
   if (!activeReportId.value) return true;
   return hasFullAccess(activeReportId.value);
 }
-function onUnlockDomain(key: string) {
+function onUnlockDomain(_key: string) {
   paymentPlanKey.value = "domain";
   showPayment.value = true;
 }
@@ -420,7 +429,7 @@ interface ClassifiedPara {
 const classifiedParas = computed<ClassifiedPara[]>(() => {
   const paras = heroParagraphs.value;
   const total = paras.length;
-  return paras.map((text, i) => {
+  return paras.map((text: string, i: number) => {
     let type: ClassifiedPara["type"] = "observation";
     if (text.includes("而且现在——")) {
       type = "transit";

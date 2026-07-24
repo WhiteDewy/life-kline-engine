@@ -51,7 +51,7 @@
               format="YYYY-MM-DD HH:mm"
               value-format="YYYY-MM-DDTHH:mm"
               placeholder="选择你的生日和时间"
-              popper-class="warm-picker"
+              popper-class="heal-popper"
             />
           </div>
 
@@ -96,7 +96,7 @@
         <el-tabs v-model="locationMode">
           <el-tab-pane label="自动获取" name="auto">
             <el-form-item label="出生地区">
-              <el-cascader v-model="selectedOptions" :options="regionData" clearable filterable
+              <el-cascader v-model="selectedOptions" :options="regionData" clearable filterable popper-class="heal-popper"
                 placeholder="省 / 市 / 区" style="width: 100%" @change="handleAddressChange" />
             </el-form-item>
             <el-button type="primary" plain :loading="geoLoading" :disabled="!form.birthPlace" @click="autoGeocode">
@@ -158,6 +158,7 @@ import { apiClient } from "@/config/api";
 import { FEATURED_EXAMPLES, HOMEPAGE_EXAMPLE_VISIBLE } from "@/config/examples";
 import { getTestUserProfileByKey } from "@/config/testProfiles";
 import { composeCoordinateValue, formatCoordinateLabel, formatTimezoneLabel, splitCoordinateParts } from "@/utils/coordinates";
+import { textToRegionCodes } from "@/utils/regions";
 
 const route = useRoute();
 const router = useRouter();
@@ -173,7 +174,7 @@ const placeDialogOpen = ref(false);
 const locationMode = ref<"auto" | "custom">("auto");
 const selectedOptions = ref<string[]>([]);
 const geoLoading = ref(false);
-const manualCoords = reactive({ latDegrees: 0, latMinutes: 0, latDirection: "N" as const, lonDegrees: 0, lonMinutes: 0, lonDirection: "E" as const });
+const manualCoords = reactive({ latDegrees: 0, latMinutes: 0, latDirection: "N" as "N" | "S", lonDegrees: 0, lonMinutes: 0, lonDirection: "E" as "E" | "W" });
 
 const DEFAULT = { name: "夏天", gender: "女", birthDatetime: "1991-03-21T09:25", birthPlace: "山西省陵川县附城镇青杨庄村", lat: 35.7, lon: 113.35, timezone: 8 };
 const form = reactive({ ...DEFAULT });
@@ -210,8 +211,8 @@ function handleAddressChange(codes: string[]) {
 function syncManualCoordsFromForm() {
   const lat = splitCoordinateParts(Number(form.lat), "latitude");
   const lon = splitCoordinateParts(Number(form.lon), "longitude");
-  manualCoords.latDegrees = lat.degrees; manualCoords.latMinutes = lat.minutes; manualCoords.latDirection = lat.direction;
-  manualCoords.lonDegrees = lon.degrees; manualCoords.lonMinutes = lon.minutes; manualCoords.lonDirection = lon.direction;
+  manualCoords.latDegrees = lat.degrees; manualCoords.latMinutes = lat.minutes; manualCoords.latDirection = lat.direction as "N" | "S";
+  manualCoords.lonDegrees = lon.degrees; manualCoords.lonMinutes = lon.minutes; manualCoords.lonDirection = lon.direction as "E" | "W";
 }
 function syncFormCoordsFromManual() {
   form.lat = composeCoordinateValue(manualCoords.latDegrees, manualCoords.latMinutes, manualCoords.latDirection, "latitude");
@@ -240,7 +241,13 @@ function resetForm() {
   const p = (key ? getTestUserProfileByKey(key) : null) || DEFAULT;
   Object.assign(form, p);
   syncManualCoordsFromForm();
-  selectedOptions.value = [];
+  // 恢复 cascader 选中状态
+  if (p && p !== DEFAULT && form.birthPlace) {
+    const codes = textToRegionCodes(form.birthPlace);
+    selectedOptions.value = codes || [];
+  } else {
+    selectedOptions.value = [];
+  }
 }
 async function onSubmit() {
   if (!canSubmit.value) return;

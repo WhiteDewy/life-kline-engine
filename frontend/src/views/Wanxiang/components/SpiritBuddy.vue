@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import SpiritAvatar from "./SpiritAvatar.vue";
+import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
 
 defineProps<{
   planet: string;

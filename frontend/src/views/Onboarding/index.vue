@@ -59,6 +59,7 @@
         <p class="s-sub">越精确，星盘与你的共振越深</p>
 
         <div class="form-stack">
+          <!-- 公历/农历切换 -->
           <div class="toggle-row">
             <button :class="{ on: calendarType === 'solar' }" @click="calendarType = 'solar'">☀️ 公历</button>
             <button :class="{ on: calendarType === 'lunar' }" @click="calendarType = 'lunar'">🌙 农历</button>
@@ -71,8 +72,71 @@
           <el-time-picker v-model="birthTime" placeholder="选择时间" format="HH:mm" value-format="HH:mm" class="f-picker" popper-class="heal-popper" />
 
           <div class="f-label">出生地点</div>
-          <div class="glass-inp">
-            <input v-model="birthPlace" class="g-inp" placeholder="城市名，如 北京" />
+          <el-cascader
+            v-model="birthRegionCodes"
+            :options="regionData"
+            :props="{ label: 'label', value: 'value', children: 'children' }"
+            clearable filterable
+            placeholder="省 / 市 / 区"
+            class="f-cascader"
+            popper-class="heal-popper"
+            @change="onBirthRegionChange"
+          />
+          <div class="coord-bar">
+            <span class="coord-text" v-if="birthCoordLabel">{{ birthCoordLabel }}</span>
+            <span class="coord-text" v-else>选择地点后自动获取坐标</span>
+            <button class="geo-btn" :disabled="geoLoading" @click="autoGeocode">
+              {{ geoLoading ? '获取中...' : '获取坐标' }}
+            </button>
+          </div>
+
+          <!-- 手动坐标入口 -->
+          <details class="manual-coord" :open="showManualCoord">
+            <summary class="manual-coord-summary" @click.prevent="showManualCoord = !showManualCoord">
+              📐 手动填写经纬度（自动获取失败时使用）{{ showManualCoord ? '▲' : '▼' }}
+            </summary>
+            <div class="manual-grid">
+              <div class="manual-field">
+                <label>纬度</label>
+                <div class="manual-row">
+                  <input type="number" v-model.number="manualBirthLat.deg" min="0" max="90" class="manual-num" @input="applyManualCoords" />
+                  <span>°</span>
+                  <input type="number" v-model.number="manualBirthLat.min" min="0" max="59" class="manual-num" @input="applyManualCoords" />
+                  <span>′</span>
+                  <select v-model="manualBirthLat.dir" class="manual-sel" @change="applyManualCoords">
+                    <option>N</option><option>S</option>
+                  </select>
+                </div>
+              </div>
+              <div class="manual-field">
+                <label>经度</label>
+                <div class="manual-row">
+                  <input type="number" v-model.number="manualBirthLon.deg" min="0" max="180" class="manual-num" @input="applyManualCoords" />
+                  <span>°</span>
+                  <input type="number" v-model.number="manualBirthLon.min" min="0" max="59" class="manual-num" @input="applyManualCoords" />
+                  <span>′</span>
+                  <select v-model="manualBirthLon.dir" class="manual-sel" @change="applyManualCoords">
+                    <option>E</option><option>W</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </details>
+
+          <div class="f-label">现居地</div>
+          <el-cascader
+            v-model="residenceRegionCodes"
+            :options="regionData"
+            :props="{ label: 'label', value: 'value', children: 'children' }"
+            clearable filterable
+            placeholder="省 / 市 / 区"
+            class="f-cascader"
+            popper-class="heal-popper"
+            @change="onResidenceRegionChange"
+          />
+          <div class="coord-bar">
+            <span class="coord-text" v-if="residenceCoordLabel">{{ residenceCoordLabel }}</span>
+            <span class="coord-text" v-else>选择地点后自动获取坐标</span>
           </div>
 
           <!-- 夏令时 -->
@@ -81,20 +145,9 @@
               <span>☀️ 夏令时</span>
               <span class="dls-hint">{{ daylightSaving ? '已开启' : '未开启' }}</span>
             </button>
-            <p class="dls-note">1986-1991年间出生请注意</p>
+            <p class="dls-note">{{ dstHint }}</p>
           </div>
 
-          <!-- 宫位制 -->
-          <div class="f-label">宫位制</div>
-          <div class="glass-inp house-select-row">
-            <button
-              v-for="hs in houseSystemOptions"
-              :key="hs.value"
-              class="hs-chip"
-              :class="{ on: houseSystem === hs.value }"
-              @click="houseSystem = hs.value"
-            >{{ hs.label }}</button>
-          </div>
         </div>
 
         <button class="main-btn" :disabled="!canSubmit" @click="submitBirth">绘制我的星图</button>
@@ -156,13 +209,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, nextTick } from "vue";
+import { ref, reactive, computed, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import { useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
+import { regionData, codeToText } from "element-china-area-data";
 import { useAuth } from "@/utils/auth";
 import { apiClient } from "@/config/api";
+import { formatCoordinateLabel, splitCoordinateParts, composeCoordinateValue } from "@/utils/coordinates";
+import { textToRegionCodes } from "@/utils/regions";
+import { Lunar } from "lunar-javascript";
 
 const router = useRouter();
-const { saveProfile } = useAuth();
+const { saveProfile, profiles, loadMe } = useAuth();
 
 const step = ref(1);
 const nickname = ref("");
@@ -171,63 +229,192 @@ const calendarType = ref<"solar" | "lunar">("solar");
 const birthDate = ref<Date | null>(null);
 const birthTime = ref<Date | null>(null);
 const birthPlace = ref("");
+const birthLat = ref(0);
+const birthLon = ref(0);
+const birthRegionCodes = ref<string[]>([]);
+const residencePlace = ref("");
+const residenceLat = ref(0);
+const residenceLon = ref(0);
+const residenceRegionCodes = ref<string[]>([]);
 const daylightSaving = ref(false);
-const houseSystem = ref("B");
+const geoLoading = ref(false);
+const showManualCoord = ref(false);
+const manualBirthLat = reactive({ deg: 0, min: 0, dir: "N" as "N" | "S" });
+const manualBirthLon = reactive({ deg: 0, min: 0, dir: "E" as "E" | "W" });
 const ni = ref<HTMLInputElement | null>(null);
 const canSubmit = computed(() => birthDate.value && birthTime.value && birthPlace.value.trim());
 const birthDateStr = computed(() => { if (!birthDate.value) return ""; return typeof birthDate.value === "string" ? birthDate.value : (birthDate.value as Date).toISOString().slice(0, 10); });
 
-const NICKNAMES = ["追星星的人","月光旅人","银河漫游者","晨曦微光","晚风轻轻","星辰大海","云端之上","深海鲸鱼","北极星的眼泪","夏日萤火","冬日暖阳","风铃草","薄荷糖","小宇宙","半糖去冰","森林里的鹿","海边的小贝壳","南山南","北方的雪","向日葵"];
+const birthCoordLabel = computed(() => {
+  if (!birthLat.value && !birthLon.value) return "";
+  return `${formatCoordinateLabel(birthLat.value, "latitude")} / ${formatCoordinateLabel(birthLon.value, "longitude")}`;
+});
+const residenceCoordLabel = computed(() => {
+  if (!residenceLat.value && !residenceLon.value) return "";
+  return `${formatCoordinateLabel(residenceLat.value, "latitude")} / ${formatCoordinateLabel(residenceLon.value, "longitude")}`;
+});
+const dstHint = computed(() => {
+  const year = birthDate.value ? new Date(birthDate.value).getFullYear() : 0;
+  if (year >= 1986 && year <= 1991) return "你出生于中国夏令时期，建议开启";
+  return "1986-1991年间出生请注意";
+});
 
-const houseSystemOptions = [
-  { value: "B", label: "阿卡比特" },
-  { value: "P", label: "普拉西度" },
-  { value: "W", label: "整宫制" },
-  { value: "K", label: "柯赫" },
-];
+function onBirthRegionChange(codes: string[]) {
+  if (!codes?.length) { birthPlace.value = ""; return; }
+  birthPlace.value = codes.map(c => codeToText[c] || "").join(" ");
+}
+function onResidenceRegionChange(codes: string[]) {
+  if (!codes?.length) { residencePlace.value = ""; return; }
+  residencePlace.value = codes.map(c => codeToText[c] || "").join(" ");
+}
+
+async function autoGeocode() {
+  if (!birthPlace.value) { ElMessage.warning("请先选择出生地点"); return; }
+  geoLoading.value = true;
+  try {
+    const r = await apiClient.post("/geocode", { query: birthPlace.value });
+    if (r.data?.status === "success" && r.data?.data) {
+      birthLat.value = Number(r.data.data.lat);
+      birthLon.value = Number(r.data.data.lon);
+      ElMessage.success("坐标已获取");
+    } else {
+      ElMessage.warning("获取失败，请检查地点名称");
+    }
+  } catch {
+    ElMessage.warning("获取失败，请检查地点名称");
+  } finally {
+    geoLoading.value = false;
+  }
+}
+
+function syncManualFromForm() {
+  const lat = splitCoordinateParts(birthLat.value, "latitude");
+  const lon = splitCoordinateParts(birthLon.value, "longitude");
+  manualBirthLat.deg = lat.degrees;
+  manualBirthLat.min = lat.minutes;
+  manualBirthLat.dir = lat.direction as "N" | "S";
+  manualBirthLon.deg = lon.degrees;
+  manualBirthLon.min = lon.minutes;
+  manualBirthLon.dir = lon.direction as "E" | "W";
+}
+
+function applyManualCoords() {
+  birthLat.value = composeCoordinateValue(manualBirthLat.deg, manualBirthLat.min, manualBirthLat.dir, "latitude");
+  birthLon.value = composeCoordinateValue(manualBirthLon.deg, manualBirthLon.min, manualBirthLon.dir, "longitude");
+}
+
+// 进入 step 3 时预填已有 profile
+watch(step, async (s) => {
+  if (s === 3) {
+    if (!profiles.value?.length) {
+      try { await loadMe(); } catch { /* 静默失败 */ }
+    }
+    const p = profiles.value?.[0];
+    if (p) {
+      if (p.birth_time) {
+        const dt = new Date(p.birth_time);
+        birthDate.value = dt;
+        birthTime.value = dt;
+      }
+      birthPlace.value = p.birth_place || "";
+      birthLat.value = p.lat || 0;
+      birthLon.value = p.lon || 0;
+      if (p.birth_place) {
+        const codes = textToRegionCodes(p.birth_place);
+        if (codes) birthRegionCodes.value = codes;
+      }
+      residencePlace.value = p.residence_place || "";
+      residenceLat.value = p.residence_lat || 0;
+      residenceLon.value = p.residence_lon || 0;
+      if (p.residence_place) {
+        const codes = textToRegionCodes(p.residence_place);
+        if (codes) residenceRegionCodes.value = codes;
+      }
+      daylightSaving.value = !!p.daylight_saving;
+      syncManualFromForm();
+      if (!p.lat && !p.lon) showManualCoord.value = true;
+    }
+  }
+});
+
+// 农历转公历
+function lunarToSolar(lunarDateStr: string): string {
+  const parts = lunarDateStr.split("-");
+  const y = Number(parts[0]), m = Number(parts[1]), d = Number(parts[2]);
+  try {
+    const lunar = Lunar.fromYmd(y, m, d);
+    const solar = lunar.getSolar();
+    const mm = String(solar.getMonth()).padStart(2, "0");
+    const dd = String(solar.getDay()).padStart(2, "0");
+    return `${solar.getYear()}-${mm}-${dd}`;
+  } catch {
+    return lunarDateStr;
+  }
+}
+
+const NICKNAMES = ["追星星的人","月光旅人","银河漫游者","晨曦微光","晚风轻轻","星辰大海","云端之上","深海鲸鱼","北极星的眼泪","夏日萤火","冬日暖阳","风铃草","薄荷糖","小宇宙","半糖去冰","森林里的鹿","海边的小贝壳","南山南","北方的雪","向日葵"];
 const randomSuggestions = ref<string[]>([]);
 function shuffle() { randomSuggestions.value = [...NICKNAMES].sort(() => Math.random() - 0.5).slice(0, 4); }
-function randomNickname() { const pool = NICKNAMES.filter(n => n !== nickname.value); nickname.value = pool[Math.floor(Math.random() * pool.length)]; }
+function randomNickname() { const pool = NICKNAMES.filter(n => n !== nickname.value); nickname.value = pool[Math.floor(Math.random() * pool.length)] ?? ""; }
 shuffle();
 function goStep(n: number) { step.value = n; if (n === 1) { shuffle(); nextTick(() => ni.value?.focus()); } if (n === 3) shuffle(); }
 function after(fn: () => void, ms: number) { setTimeout(fn, ms); }
 
-const awakeningReportId = ref("");
-
 async function submitBirth() {
   if (!canSubmit.value) return;
-  const ds = birthDateStr.value;
+
+  // 农历转换
+  let dateStr = birthDateStr.value;
+  if (calendarType.value === "lunar") {
+    dateStr = lunarToSolar(dateStr);
+  }
+
   const ts = typeof birthTime.value === "string" ? birthTime.value : (birthTime.value as Date).toTimeString().slice(0, 5);
-  const iso = `${ds}T${ts}:00`;
+  const iso = `${dateStr}T${ts}:00`;
   step.value = 4; awakenPhase.value = "card"; showCard.value = false;
 
-  // 地理编码：根据出生地点获取坐标
-  let lat = 39.9, lon = 116.4;
-  const place = birthPlace.value.trim();
-  if (place) {
+  // 如果没有手动获取坐标，尝试自动 geocode
+  let lat = birthLat.value || 39.9;
+  let lon = birthLon.value || 116.4;
+  if (!birthLat.value && !birthLon.value && birthPlace.value.trim()) {
     try {
-      const geoRes = await apiClient.post("/geocode", { address: place });
-      if (geoRes.data?.lat != null && geoRes.data?.lon != null) {
-        lat = geoRes.data.lat;
-        lon = geoRes.data.lon;
-      } else {
-        import("@/utils/toast").then(({ toast }) => toast.info("未能定位到该城市，将使用默认坐标", "info"));
+      const geoRes = await apiClient.post("/geocode", { query: birthPlace.value.trim() });
+      if (geoRes.data?.data?.lat != null && geoRes.data?.data?.lon != null) {
+        lat = Number(geoRes.data.data.lat);
+        lon = Number(geoRes.data.data.lon);
       }
-    } catch {
-      import("@/utils/toast").then(({ toast }) => toast.info("地理编码服务暂不可用，使用默认坐标", "info"));
-    }
+    } catch { /* fall through */ }
+  }
+
+  // 现居地 geocode
+  let rLat = residenceLat.value;
+  let rLon = residenceLon.value;
+  if (!rLat && !rLon && residencePlace.value.trim()) {
+    try {
+      const geoRes = await apiClient.post("/geocode", { query: residencePlace.value.trim() });
+      if (geoRes.data?.data?.lat != null && geoRes.data?.data?.lon != null) {
+        rLat = Number(geoRes.data.data.lat);
+        rLon = Number(geoRes.data.data.lon);
+      }
+    } catch { /* fall through */ }
   }
 
   try {
-    await saveProfile({ name: nickname.value, gender: gender.value, birth_time: iso, lat, lon, timezone: 8, daylight_saving: daylightSaving.value, house_system: houseSystem.value });
+    await saveProfile({
+      name: nickname.value, gender: gender.value, birth_time: iso,
+      lat, lon, timezone: 8,
+      birth_place: birthPlace.value,
+      daylight_saving: daylightSaving.value, house_system: "B",
+      residence_place: residencePlace.value, residence_lat: rLat, residence_lon: rLon,
+    });
     const res = await apiClient.post("/analyses", {
       analysis_type: "natal_blueprint",
-      subjects: [{ name: nickname.value, gender: gender.value, birth_time: iso, lat, lon, timezone: 8, daylight_saving: daylightSaving.value, house_system: houseSystem.value }],
+      subjects: [{ name: nickname.value, gender: gender.value, birth_time: iso, lat, lon, timezone: 8, daylight_saving: daylightSaving.value, house_system: "B" }],
       });
     if (res.data?.status === "success") {
-      awakeningReportId.value = res.data.report_id || "";
+      const reportId = res.data.report_id || "";
       try {
-        const d = await apiClient.get(`/analyses/${awakeningReportId.value}`);
+        const d = await apiClient.get(`/analyses/${reportId}`);
         if (d.data?.status === "success") {
           const nc = d.data.data.natal_chart;
           if (nc) {
@@ -347,6 +534,29 @@ function initCanvas() {
 .dls-btn.on { background:rgba(240,170,140,0.12);color:#5c3d3a; }
 .dls-hint { font-size:11px;opacity:0.6; }
 .dls-note { margin:0;font-size:10px;color:#c4b0a5;text-align:center;letter-spacing:1px; }
+
+/* 级联选择器 */
+.f-cascader { width:100%; }
+.f-cascader :deep(.el-input__wrapper) { background:rgba(255,255,255,0.55) !important;border:1px solid rgba(0,0,0,0.04) !important;border-radius:18px !important;box-shadow:none !important;padding:12px 16px !important;backdrop-filter:blur(16px) !important; }
+.f-cascader :deep(.el-input__inner) { color:#4a3028 !important;font-family:inherit !important; }
+
+/* 坐标栏 */
+.coord-bar { display:flex;align-items:center;gap:10px; }
+.coord-text { flex:1;font-size:12px;color:#a89880; }
+.geo-btn { padding:4px 12px;border-radius:10px;border:1px solid rgba(0,0,0,0.08);background:rgba(255,255,255,0.5);color:#8b7355;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.2s; }
+.geo-btn:hover:not(:disabled) { background:rgba(255,255,255,0.7);border-color:rgba(255,154,139,0.2); }
+.geo-btn:disabled { opacity:0.5; }
+
+/* 手动坐标 */
+.manual-coord { margin-top: 2px; }
+.manual-coord-summary { font-size: 12px; color: #b8a090; cursor: pointer; user-select: none; }
+.manual-grid { display: grid; gap: 10px; margin-top: 8px; }
+.manual-field label { display: block; font-size: 11px; color: #b8a090; margin-bottom: 4px; }
+.manual-row { display: flex; align-items: center; gap: 4px; }
+.manual-row span { color: #8b7355; font-size: 13px; }
+.manual-num { width: 55px; padding: 4px 6px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5); font-size: 13px; color: #4a3028; text-align: center; outline: none; }
+.manual-num:focus { border-color: rgba(255,160,130,0.3); }
+.manual-sel { padding: 4px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5); font-size: 13px; color: #4a3028; outline: none; }
 /* ── 宫位制 ── */
 .house-select-row { display:flex;gap:6px;padding:6px 8px;flex-wrap:wrap;justify-content:center; }
 .hs-chip { padding:8px 14px;border-radius:14px;border:1px solid rgba(0,0,0,0.04);background:rgba(255,255,255,0.5);color:#8b6f5f;font-size:12px;cursor:pointer;font-family:inherit;letter-spacing:1px;transition:all 0.3s;flex:1;min-width:70px; }

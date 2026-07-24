@@ -3797,6 +3797,26 @@ class LifeKlineService:
             derived_houses=derived_houses,
             planet_profiles=planet_profiles,
         )
+        # 劫夺检测
+        try:
+            from .flight_fortune import detect_interception
+            houses_raw = [
+                (item["sign"], item["degree"])
+                for item in natal_chart.get("houses", [])[:12]
+            ]
+            interception_info = detect_interception(houses_raw)
+        except Exception:
+            interception_info = {"intercepted_signs": {}, "expanded_rulers": {}}
+
+        # 综合飞星 fortune 数据（为每个宫主星计算，传入aspect数据）
+        flystar_fortunes = self._build_flystar_fortunes(house_rulers, planet_profiles, aspect_cache)
+
+        # 夹辅/围荣格局检测
+        enclosure_patterns = self._detect_enclosures(natal_chart, planet_profiles)
+
+        # 相位格局检测（T三角/大十字/大三角/风筝）
+        aspect_patterns = self._detect_aspect_patterns(natal_chart, aspect_cache, planet_profiles)
+
         return {
             "summary": "把几宫主飞几宫、同一行星统领哪些宫位，先拆成规则层，再进入现实语言解释。",
             "house_rulers": house_rulers,
@@ -3806,6 +3826,10 @@ class LifeKlineService:
             "derived_houses": derived_houses,
             "core_threads": core_threads,
             "pattern_readings": pattern_readings,
+            "interception_info": interception_info,
+            "flystar_fortunes": flystar_fortunes,
+            "enclosure_patterns": enclosure_patterns,
+            "aspect_patterns": aspect_patterns,
         }
 
     def _build_house_ruler_map(
@@ -3944,9 +3968,34 @@ class LifeKlineService:
         }
 
     def _flight_catalog_tone(self, profile: Optional[Dict[str, Any]]) -> str:
+        """升级版飞星基调判断 — 综合尊贵+相位+接纳+宫位+特殊状态"""
         if not profile:
             return "mixed"
 
+        try:
+            from .flight_fortune import evaluate_flight_fortune
+
+            planet_name = str(profile.get("planet", ""))
+            sign_name = str(profile.get("sign", ""))
+            degree = float(profile.get("degree", 0))
+            house = int(profile.get("house", 0))
+
+            if planet_name and sign_name:
+                fortune = evaluate_flight_fortune(
+                    planet_name=planet_name,
+                    sign_name=sign_name,
+                    degree=degree,
+                    house=house,
+                )
+                if fortune.fortune_level == "fortunate":
+                    return "supported"
+                elif fortune.fortune_level == "afflicted":
+                    return "challenged"
+                return "mixed"
+        except Exception:
+            pass
+
+        # 降级：使用原有简单逻辑
         supportive = float(profile.get("supportive_aspects", 0.0))
         challenging = float(profile.get("challenging_aspects", 0.0))
         dignity = profile.get("dignity")
@@ -3988,10 +4037,196 @@ class LifeKlineService:
             "tone": tone,
             "tone_label": tone_label,
             "note": (
-                f"{source_house}R飞{target_house}宫在这套飞星表里的底色是“{entry['summary']}”。"
+                f"{source_house}R飞{target_house}宫在这套飞星表里的底色是"
+                f"\"{entry['summary']}\"。"
                 f" 当前这条线{tone_label}：{interpretation}"
             ),
         }
+
+    def _build_flystar_fortunes(
+        self,
+        house_rulers: list[Dict[str, Any]],
+        planet_profiles: Dict[Planet, Dict[str, Any]],
+        aspect_cache: Dict[Planet, list[Dict[str, Any]]] | None = None,
+    ) -> dict[str, Any]:
+        """为每个宫主星飞星链路计算综合 fortune 评估"""
+        fortunes: dict[str, Any] = {}
+        try:
+            from .flight_fortune import evaluate_flight_fortune
+        except ImportError:
+            return fortunes
+
+        for hr in house_rulers:
+            ruler = hr.get("ruler", "")
+            source = hr.get("house", 0)
+            target = hr.get("ruler_house", 0)
+            if not ruler or not target or source == target:
+                continue
+
+            try:
+                profile = planet_profiles.get(Planet(ruler)) if ruler else None
+            except (ValueError, KeyError):
+                profile = None
+
+            if not profile:
+                continue
+
+            sign_name = hr.get("ruler_sign", "")
+            degree = float(profile.get("degree", 0))
+            house = target
+
+            # 提取该行星的相位数据
+            aspects: list[dict[str, Any]] = []
+            if aspect_cache:
+                try:
+                    planet_key = Planet(ruler)
+                    cached_aspects = aspect_cache.get(planet_key, [])
+                    for a in cached_aspects:
+                        aspects.append({
+                            "planet1": str(a.get("planet1", "")),
+                            "planet2": str(a.get("planet2", "")),
+                            "title": str(a.get("title", "")),
+                            "nature": str(a.get("nature", "mixed")),
+                            "strength": float(a.get("strength", 0.5)),
+                        })
+                except (ValueError, KeyError):
+                    pass
+
+            fortune = evaluate_flight_fortune(
+                planet_name=ruler,
+                sign_name=sign_name or str(profile.get("sign", "")),
+                degree=degree,
+                house=house,
+                aspects=aspects,
+            )
+            key = f"{source}R->{target}"
+            fortunes[key] = fortune.to_dict()
+
+        return fortunes
+
+    def _detect_enclosures(
+        self,
+        natal_chart: Dict[str, Any],
+        planet_profiles: Dict[Planet, Dict[str, Any]],
+    ) -> list[Dict[str, Any]]:
+        """检测行星夹辅/围荣格局"""
+        try:
+            from .flight_fortune import detect_planetary_enclosures
+        except ImportError:
+            return []
+
+        # 从 natal_chart.planets 获取准确的黄经
+        planets_payload = natal_chart.get("planets", {})
+        planet_positions: list[dict[str, Any]] = []
+        for planet_key, planet_data in planets_payload.items():
+            lon = float(planet_data.get("longitude", 0))
+            house = int(planet_data.get("house", 0))
+            if lon > 0 and house > 0:
+                planet_positions.append({
+                    "planet": planet_key,
+                    "longitude": lon,
+                    "house": house,
+                })
+
+        enclosures = detect_planetary_enclosures(planet_positions)
+        return [e.to_dict() for e in enclosures]
+
+    def _detect_aspect_patterns(
+        self,
+        natal_chart: Dict[str, Any],
+        aspect_cache: Dict[Planet, list[Dict[str, Any]]],
+        planet_profiles: Dict[Planet, Dict[str, Any]],
+    ) -> list[Dict[str, Any]]:
+        """检测T三角/大十字/大三角/风筝等相位格局（含外行星）"""
+        try:
+            from .flight_fortune import detect_aspect_patterns
+        except ImportError:
+            return []
+
+        # 归一化行星名和相位类型
+        def _norm_planet(p: Any) -> str:
+            """'Planet.MOON' -> 'MOON'"""
+            s = str(p)
+            return s.split(".")[-1] if "." in s else s.upper()
+
+        def _norm_type(t: Any) -> str:
+            """'AspectType.SQUARE' -> 'SQUARE'"""
+            s = str(t)
+            return s.split(".")[-1] if "." in s else s.upper()
+
+        # 从 aspect_cache 提取所有不重复的相位
+        seen: set[tuple[str, str, str]] = set()
+        all_aspects: list[dict[str, Any]] = []
+        for items in aspect_cache.values():
+            for a in items:
+                p1 = _norm_planet(a.get("planet1", ""))
+                p2 = _norm_planet(a.get("planet2", ""))
+                atype = _norm_type(a.get("type", ""))
+                if not p1 or not p2:
+                    continue
+                key = tuple(sorted([p1, p2]) + [atype])
+                if key in seen:
+                    continue
+                seen.add(key)
+                all_aspects.append({
+                    "planet1": p1,
+                    "planet2": p2,
+                    "type": atype,
+                    "strength": float(a.get("strength", 0.5)),
+                })
+
+        # 补充：传统行星与外行星（天海冥）的相位
+        outer_planets = [Planet.URANUS, Planet.NEPTUNE, Planet.PLUTO]
+        all_planets_data = natal_chart.get("planets", {})
+        for outer in outer_planets:
+            outer_key = outer.value  # "PLUTO" etc.
+            outer_data = all_planets_data.get(outer_key, {})
+            outer_lon = float(outer_data.get("longitude", 0))
+            if outer_lon <= 0:
+                continue
+            for trad_key, trad_data in all_planets_data.items():
+                if trad_key in ("NORTH_NODE", "SOUTH_NODE", "CHIRON", "JUNO", "CERES", "PALLAS", "VESTA"):
+                    continue
+                if trad_key == outer_key:
+                    continue
+                trad_lon = float(trad_data.get("longitude", 0))
+                if trad_lon <= 0:
+                    continue
+                diff = abs(trad_lon - outer_lon) % 360
+                diff = min(diff, 360 - diff)
+                for angle, orb, atype in [
+                    (0, 8.0, "CONJUNCTION"),
+                    (60, 5.0, "SEXTILE"),
+                    (90, 6.0, "SQUARE"),
+                    (120, 6.0, "TRINE"),
+                    (180, 6.0, "OPPOSITION"),
+                ]:
+                    if abs(diff - angle) <= orb:
+                        key = tuple(sorted([trad_key, outer_key]) + [atype])
+                        if key not in seen:
+                            seen.add(key)
+                            all_aspects.append({
+                                "planet1": trad_key,
+                                "planet2": outer_key,
+                                "type": atype,
+                                "strength": 0.6,
+                            })
+                        break
+
+        # 构建 planet->house 映射（统一使用归一化行星名）
+        planet_house_map: dict[str, int] = {}
+        for planet, profile in planet_profiles.items():
+            key = _norm_planet(planet)
+            planet_house_map[key] = int(profile.get("house", 0))
+        for outer in outer_planets:
+            ok = outer.value
+            od = all_planets_data.get(ok, {})
+            oh = int(od.get("house", 0))
+            if oh > 0:
+                planet_house_map[ok] = oh
+
+        patterns = detect_aspect_patterns(all_aspects, planet_house_map)
+        return [p.to_dict() for p in patterns]
 
     def _build_ruler_groups(
         self,

@@ -176,7 +176,7 @@ export function getPlanetMeaning(value?: string | null): PlanetMeaningEntry | nu
 
   const mappedKey = PLANET_LABEL_TO_KEY[raw];
   if (mappedKey) {
-    return PLANET_MEANINGS[mappedKey];
+    return PLANET_MEANINGS[mappedKey] ?? null;
   }
 
   return null;

@@ -35,7 +35,7 @@
         <text x="180" y="192" text-anchor="middle" font-size="11" fill="#8b7355" font-weight="600">画像</text>
 
         <!-- 7 条射线 + 行星节点 -->
-        <g v-for="(ray, i) in rays" :key="ray.planet">
+        <g v-for="ray in rays" :key="ray.planet">
           <!-- 射线 -->
           <line
             :x1="180" :y1="180"

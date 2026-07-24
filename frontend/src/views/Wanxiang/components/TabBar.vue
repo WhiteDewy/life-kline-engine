@@ -23,7 +23,7 @@ defineEmits<{
   select: [key: string];
 }>();
 
-const tabs = [
+const tabs: Array<{ key: string; icon: string; label: string; badge?: string }> = [
   { key: "garden", icon: "🌸", label: "花园" },
   { key: "codex", icon: "📜", label: "宝典" },
   { key: "journal", icon: "💎", label: "日记" },

@@ -181,10 +181,11 @@ const signSegments = computed(() => {
     const midR = (ringR.value + outerR.value) / 2;
     const symPos = polarToXY(midR, midAngle);
 
+    const segData = SIGN_DATA[i]!;
     segs.push({
       path,
-      symbol: SIGN_DATA[i].symbol,
-      element: SIGN_DATA[i].element,
+      symbol: segData.symbol,
+      element: segData.element,
       symbolX: symPos.x,
       symbolY: symPos.y,
     });
@@ -208,7 +209,7 @@ const houseLabels = computed(() => {
   if (!props.houses?.length) return [];
   return props.houses.map((h, i) => {
     const lon = signLongitude(h.sign_label || h.sign, h.degree || 0);
-    const nextH = props.houses![(i + 1) % 12];
+    const nextH = props.houses![(i + 1) % 12]!;
     const nextLon = signLongitude(nextH.sign_label || nextH.sign, nextH.degree || 0);
     let midLon = (lon + (nextLon < lon ? nextLon + 360 : nextLon)) / 2;
     if (midLon >= 360) midLon -= 360;
@@ -280,7 +281,7 @@ const planetPoints = computed(() => {
       x: pos.x, y: pos.y,
       tagX: tagPos.x, tagY: tagPos.y,
       glyph: PLANET_GLYPHS[key] || "●",
-      signTag: signIdx >= 0 ? SIGN_DATA[signIdx].symbol : "",
+      signTag: signIdx >= 0 ? SIGN_DATA[signIdx]!.symbol : "",
       radius: key === "SUN" ? 12 : key === "MOON" ? 11 : 8,
       key,
     });
@@ -307,8 +308,8 @@ const aspectLines = computed(() => {
       return null;
     };
 
-    const key1 = findKey(parts[0]);
-    const key2 = findKey(parts[2]);
+    const key1 = findKey(parts[0] ?? "");
+    const key2 = findKey(parts[2] ?? "");
     if (!key1 || !key2) continue;
 
     const p1 = planets[key1];

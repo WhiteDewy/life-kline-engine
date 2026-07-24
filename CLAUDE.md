@@ -160,6 +160,46 @@ Life phases scored as financial candlesticks:
 
 Provider chain: AMap (if key set) → Nominatim global → Nominatim CN → maps.co. AMap GCJ-02 coordinates are converted back to WGS84.
 
+## Agent Memory Management
+
+所有 subagent 必须遵循的内存读写规范：
+
+### 1. Spawn 时自动读取相关 memory
+- Agent 启动时，先读取 `memory/MEMORY.md` 获取索引
+- 根据任务类型读取相关 memory 文件（如 product-positioning.md、main-page-architecture.md 等）
+- 将 relevant memory 内容注入 prompt 上下文
+
+### 2. 任务完成后自动写入 memory
+- 重要决策、产品方向、技术架构变更 → 写入 memory
+- 使用 Write 工具，文件放 `memory/` 目录
+- 更新 `memory/MEMORY.md` 的索引
+
+### 3. Memory 文件格式
+```markdown
+---
+name: <short-kebab-case-slug>
+description: <one-line summary>
+metadata:
+  type: user | feedback | project | reference
+---
+
+<content>
+
+**Why:** <why this matters>
+**How to apply:** <how to use this fact>
+```
+
+### 4. memory/MEMORY.md 索引格式
+```markdown
+- [Title](file.md) — hook
+```
+
+### 5. Types of memory
+- `user` — 用户角色，专业度、偏好
+- `feedback` — 用户对工作的反馈
+- `project` — 进行中的工作、目标、约束
+- `reference` — 外部资源、文档链接
+
 ## Key Conventions
 
 - Chinese astrological terminology throughout (庙旺/失势/落陷, 法达, 飞星, etc.)

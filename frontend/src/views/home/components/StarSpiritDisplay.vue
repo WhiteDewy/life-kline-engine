@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import SpiritAvatar from "@/views/Wanxiang/components/SpiritAvatar.vue";
+import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
 
 const props = defineProps<{
   planet: string

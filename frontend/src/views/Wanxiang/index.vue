@@ -26,6 +26,14 @@
       <el-button round size="large" class="retry-btn" @click="loadGarden">重新尝试</el-button>
     </section>
 
+    <!-- ═══ 缺少档案：引导完成 onboarding ═══ -->
+    <section v-else-if="needsProfile" class="garden-state">
+      <div class="state-icon">🌱</div>
+      <h2 class="state-title">先把你的星盘交给花园</h2>
+      <p class="state-sub">星灵们需要知道你的出生信息，才能为你登场。</p>
+      <el-button round size="large" class="retry-btn" @click="goOnboarding">开始录入档案</el-button>
+    </section>
+
     <!-- ═══ 主内容 ═══ -->
     <template v-else-if="gardenReady">
       <!-- ── Tab 内容区 ── -->
@@ -107,7 +115,7 @@
               <!-- 星座维度：信息卡片 -->
               <template v-else>
                 <SignInfoCard
-                  v-for="(card, i) in signCardList"
+                  v-for="card in signCardList"
                   :key="card.sign"
                   :sign="card.sign"
                   :symbol="card.symbol"
@@ -276,9 +284,14 @@ const router = useRouter();
 
 const loading = ref(true);
 const error = ref("");
+const needsProfile = ref(false);
 const activeReportId = ref("");
 const activeTab = ref("garden");
 const viewDimension = ref<"planets" | "signs">("planets");
+
+function goOnboarding() {
+  router.push({ name: "onboarding" });
+}
 
 const planetProfiles = ref<PlanetCharacterProfilesData | null>(null);
 const characterProfiles = ref<any>(null); // 12 星座角色数据
@@ -291,18 +304,21 @@ const SIGN_SYMBOLS = SIGN_EMOJI_MAP;
 const activePlanet = ref("");
 const selectedSpirit = ref<SpiritDisplay | null>(null);
 const isChatting = ref(false);
-const chatEntryContext = ref<Record<string, any> | undefined>(undefined);
+const chatEntryContext = ref<{
+  source: string;
+  transit_planet?: string;
+  transit_detail?: string;
+  daily_question?: string;
+  previous_spirit?: string;
+  previous_chats_today?: number;
+  from_daily_question?: boolean;
+} | undefined>(undefined);
 const guideDone = ref(false);
 const showGlossary = ref(false);
 const currentTheme = ref(
   localStorage.getItem("spirit_garden_theme") || "cream"
 );
-
 // 用户星盘信息（用于匹配 24 张太阳星灵图片）
-const sunSign = computed(() => {
-  const sun = planetProfiles.value?.planet_characters?.["SUN"];
-  return (sun as any)?.sign || "";
-});
 const userGender = computed(() => ""); // 从 report 的 user_info 获取，后续接入
 const shareData = ref<{
   symbol: string; name: string; archetype: string; color: string;
@@ -314,6 +330,7 @@ const planetColors = PLANET_COLORS_CLASSICAL
 async function loadGarden() {
   loading.value = true;
   error.value = "";
+  needsProfile.value = false;
 
   try {
     const reportId = (route.params.id || route.query.id) as string | undefined;
@@ -352,28 +369,37 @@ async function loadGarden() {
       }
     }
 
+    // 没有报告：尝试从用户已保存的档案生成一份 natal 报告
     if (!data) {
-      const fb = await apiClient.post<any>("/analyses", {
-        analysis_type: "natal_blueprint",
-        subjects: [
-          {
-            name: "夏天",
-            gender: "女",
-            birth_time: "1991-03-21T09:25:00",
-            lat: 35.7,
-            lon: 113.35,
-            timezone: 8,
-          },
-        ],
-      });
-      if (fb.data?.status === "success") {
-        data = fb.data.data;
-        activeReportId.value = fb.data.report_id || "";
+      try {
+        const meRes = await apiClient.get<any>("/me");
+        const profiles = meRes.data?.profiles || [];
+        if (profiles.length > 0) {
+          const p = profiles[0];
+          const res = await apiClient.post<any>("/analyses", {
+            analysis_type: "natal_blueprint",
+            subjects: [{
+              name: p.name || "",
+              gender: p.gender || "",
+              birth_time: p.birth_time,
+              lat: p.lat,
+              lon: p.lon,
+              timezone: p.timezone,
+            }],
+          });
+          if (res.data?.status === "success") {
+            data = res.data.data;
+            activeReportId.value = res.data.report_id || "";
+          }
+        }
+      } catch {
+        // /me 失败或没有档案，继续走引导流程
       }
     }
 
     if (!data) {
-      error.value = "无法加载星盘数据，请稍后重试。";
+      // 不再使用硬编码的"夏天"测试档案 — 引导用户完成 onboarding
+      needsProfile.value = true;
       return;
     }
 
@@ -492,6 +518,7 @@ const spiritList = computed<SpiritDisplay[]>(() => {
 });
 
 // 12 星座角色列表（归一化为 SpiritDisplay）
+// 暂时未使用——保留供将来版本扩展 12 星座维度
 const signSpiritList = computed<SpiritDisplay[]>(() => {
   const chars = characterProfiles.value?.characters || {};
   const activationScores = dailyActivation.value?.activation_scores || {};
@@ -541,6 +568,8 @@ const signSpiritList = computed<SpiritDisplay[]>(() => {
     })
     .filter(Boolean) as SpiritDisplay[];
 });
+// 暴露给模板（占位）；真正消费方待接入
+defineExpose({ signSpiritList });
 
 const activeSpiritList = computed(() => spiritList.value);
 
@@ -583,7 +612,7 @@ const signCardList = computed(() => {
         isAscendant: ch.is_ascendant || false,
       };
     })
-    .filter(Boolean);
+    .filter((c): c is NonNullable<typeof c> => Boolean(c));
 });
 
 function onViewSpirit(planet: string) {

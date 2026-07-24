@@ -81,7 +81,8 @@
         <input
           v-model="inputText"
           class="chat-input"
-          :placeholder="'和' + name + '说点什么...'"
+          :disabled="isThinking"
+          :placeholder="isThinking ? (name + '正在回应你的问题……') : ('和' + name + '说点什么...')"
           @keyup.enter="sendMessage"
         />
         <button
@@ -106,7 +107,7 @@
 <script setup lang="ts">
 import { ref, nextTick, watch } from "vue";
 import { apiClient } from "@/config/api";
-import SpiritAvatar from "./SpiritAvatar.vue";
+import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
 import VoicePlayer from "@/views/home/components/VoicePlayer.vue";
 
 interface EngineReading {
@@ -138,6 +139,7 @@ const props = defineProps<{
     daily_question?: string;
     previous_spirit?: string;
     previous_chats_today?: number;
+    from_daily_question?: boolean;
   };
 }>();
 
@@ -202,8 +204,25 @@ async function sendMessage() {
   });
   isThinking.value = false;
 
+  // ── 实时保存到星灵日记 ──
+  saveDiaryEntry(text, apiResponse);
+
   await nextTick();
   scrollToBottom();
+}
+
+async function saveDiaryEntry(userText: string, spiritReply: string) {
+  if (!props.reportId || !props.planet) return;
+  try {
+    const chatContext = `用户：${userText.slice(0, 300)}\n${props.name}：${spiritReply.slice(0, 300)}`;
+    await apiClient.post(`/spirit-diary/${props.reportId}/entry`, {
+      chat_context: chatContext,
+      spirit_planet: props.planet,
+      mood_emoji: "",
+    });
+  } catch (e) {
+    console.error("[Diary] 保存日记失败:", e);
+  }
 }
 
 function scrollToBottom() {
@@ -217,14 +236,53 @@ function toggleEvidence(index: number) {
 }
 
 watch(
-  () => props.visible,
-  (v) => {
-    if (v) {
+  () => [props.visible, props.planet],
+  (newVals, oldVals) => {
+    const [v, p] = newVals;
+    const [oldV, oldP] = oldVals || [undefined, undefined];
+    if (!v) return;
+    const isFirstMount = oldV === undefined && v === true;
+    const isPlanetSwitch = oldV === true && p !== oldP;
+    if (v && (isFirstMount || v !== oldV || isPlanetSwitch)) {
       messages.value = [];
       inputText.value = "";
+      const ctx = props.entryContext;
+      if (ctx?.from_daily_question && ctx?.daily_question?.trim()) {
+        nextTick(() => autoInitFromDaily(ctx?.daily_question?.trim() ?? ""));
+      }
     }
-  }
+  },
+  { deep: false, immediate: true }
 );
+
+async function autoInitFromDaily(dailyQuestion: string) {
+  if (!props.reportId || !props.planet || isThinking.value) return;
+  isThinking.value = true;
+  try {
+    const res = await apiClient.post(`/spirit-chat/${props.reportId}`, {
+      planet: props.planet,
+      message: dailyQuestion,
+      history: [],
+      entry_context: props.entryContext,
+    });
+    if (res.data?.status === "success") {
+      const data = res.data.data || {};
+      messages.value.push({
+        role: "spirit",
+        text: data.response || "",
+        engine_reading: data.engine_reading?.evidence?.length
+          ? data.engine_reading
+          : undefined,
+      });
+      saveDiaryEntry(dailyQuestion, data.response || "");
+    }
+  } catch (e) {
+    console.error("[AutoInit] 失败:", e);
+  }
+  isThinking.value = false;
+  await nextTick();
+  scrollToBottom();
+}
 
 defineExpose({ messages });
 </script>

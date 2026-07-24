@@ -130,6 +130,7 @@ const councilSpirits = computed(() => {
       return {
         ...p,
         matchScore: matchScore + (p.core_strength || 0),
+        color: p.persona?.visual_color || "#999",
       };
     })
     .sort((a, b) => b.matchScore - a.matchScore);

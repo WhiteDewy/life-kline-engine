@@ -244,6 +244,52 @@ html, body {
   color: var(--color-gold) !important;
 }
 
+/* ── P0: 级联面板圆角统一 18px ── */
+.el-cascader-panel {
+  border-radius: 18px !important;
+  overflow: hidden;
+}
+.el-picker-panel {
+  border-radius: 18px !important;
+  overflow: hidden;
+}
+
+/* ── P0: 触摸目标 ≥ 44px ── */
+.el-cascader-node {
+  min-height: 44px !important;
+}
+.el-date-table td {
+  height: 44px !important;
+}
+
+/* ── P0: 节点文字色温暖色 ── */
+.el-cascader-node__label {
+  color: #4a3728 !important;
+}
+.el-date-picker__header-label {
+  color: #4a3728 !important;
+  font-weight: 600 !important;
+}
+
+/* ── P0: 选中态 & hover 样式 ── */
+.el-cascader-node.is-active,
+.el-cascader-node.in-active-path {
+  background: rgba(240, 170, 140, 0.12) !important;
+  font-weight: 600;
+}
+.el-cascader-node:not(.is-disabled):hover {
+  background: rgba(240, 170, 140, 0.06) !important;
+}
+
+/* ── P0: 全局 popper 默认毛玻璃（兜底） ── */
+.el-picker__popper {
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(24px) !important;
+  border-radius: 18px !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06) !important;
+}
+
 /* ── Cosmic Date/Time Picker (星灵花园引导页深色主题) ── */
 .cosmic-popper {
   background: rgba(24, 20, 40, 0.95) !important;

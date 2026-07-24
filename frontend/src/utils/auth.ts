@@ -79,6 +79,12 @@ export function useAuth() {
     lat: number;
     lon: number;
     timezone?: number;
+    birth_place?: string;
+    daylight_saving?: boolean;
+    house_system?: string;
+    residence_place?: string;
+    residence_lat?: number;
+    residence_lon?: number;
   }) {
     const res = await apiClient.post("/profiles", data, {
       headers: { Authorization: `Bearer ${token.value}` },

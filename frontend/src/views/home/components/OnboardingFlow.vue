@@ -7,7 +7,7 @@
           <div class="step-icon">🌌</div>
           <h1 class="step-title">星灵花园</h1>
           <p class="step-tagline">以星辰为据，与心对话。</p>
-          <p class="step-text">22位星灵，22面镜子。每一次对话，都是和自己的相遇。</p>
+          <p class="step-text">十位星灵，十面镜子。每一次对话，都是和自己的相遇。</p>
           <div class="step-dots">
             <span v-for="i in 6" :key="i" class="dot" :class="{ 'dot--active': i - 1 === currentStep }"></span>
           </div>
@@ -127,7 +127,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import SpiritAvatar from "@/views/Wanxiang/components/SpiritAvatar.vue";
+import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
 
 const props = defineProps<{
   visible: boolean;

@@ -24,7 +24,7 @@
         <h1 class="brand-title">
           <span v-for="(c, i) in '星灵花园'" :key="i" class="brand-char" :style="{ animationDelay: 0.3 + i * 0.07 + 's' }">{{ c }}</span>
         </h1>
-        <p class="brand-sub">十颗星辰，在你的花园里苏醒</p>
+        <p class="brand-sub">十颗星辰，在你的心灵花园里苏醒</p>
       </div>
 
       <!-- ── 一键登录 ── -->
@@ -122,7 +122,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useAuth, isDevBypassPhone } from "@/utils/auth";
 
@@ -186,37 +186,9 @@ async function doSmsLogin() {
   verifying.value = false;
 }
 
-// ── 柔光粒子画布 ──
+// ── 柔光粒子画布（占位） ──
 const particleCanvas = ref<HTMLCanvasElement | null>(null);
-let animId = 0;
-let onResize: (() => void) | null = null;
-
-function initParticles() {
-  const c = particleCanvas.value; if (!c) return;
-  const ctx = c.getContext("2d"); if (!ctx) return;
-  const dpr = window.devicePixelRatio || 1;
-  onResize = () => { c.width = window.innerWidth * dpr; c.height = window.innerHeight * dpr; c.style.width = window.innerWidth + "px"; c.style.height = window.innerHeight + "px"; };
-  onResize(); window.addEventListener("resize", onResize);
-  const motes: { x: number; y: number; r: number; vx: number; vy: number; a: number; phase: number }[] = [];
-  for (let i = 0; i < 40; i++) {
-    motes.push({ x: Math.random() * window.innerWidth * dpr, y: Math.random() * window.innerHeight * dpr, r: 1 + Math.random() * 3, vx: (Math.random() - 0.5) * 0.3, vy: -0.2 - Math.random() * 0.4, a: 0.2 + Math.random() * 0.5, phase: Math.random() * Math.PI * 2 });
-  }
-  function draw() {
-    ctx!.clearRect(0, 0, c!.width, c!.height); const t = Date.now();
-    for (const m of motes) {
-      m.x += m.vx; m.y += m.vy;
-      if (m.y < -20) { m.y = c!.height + 20; m.x = Math.random() * c!.width; }
-      if (m.x < -20) m.x = c!.width + 20;
-      if (m.x > c!.width + 20) m.x = -20;
-      const alpha = m.a * (0.5 + 0.5 * Math.sin(t * 0.001 + m.phase));
-      ctx!.beginPath(); ctx!.arc(m.x, m.y, m.r, 0, Math.PI * 2);
-      ctx!.fillStyle = `rgba(255,220,200,${alpha.toFixed(2)})`; ctx!.fill();
-      if (m.r > 2) { ctx!.beginPath(); ctx!.arc(m.x, m.y, m.r * 4, 0, Math.PI * 2); ctx!.fillStyle = `rgba(255,200,180,${(alpha * 0.12).toFixed(3)})`; ctx!.fill(); }
-    }
-    animId = requestAnimationFrame(draw);
-  }
-  draw();
-}
+void particleCanvas;
 
 function sparkStyle(i: number) { const a = (i / 6) * 360; return { '--a': a + 'deg', animationDelay: i * 0.5 + 's' }; }
 </script>

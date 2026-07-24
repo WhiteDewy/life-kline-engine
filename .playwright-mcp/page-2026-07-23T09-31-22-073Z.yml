@@ -1,0 +1,89 @@
+- generic [ref=f30e1]:
+  - main [ref=f30e4]:
+    - generic [ref=f30e301]:
+      - generic [ref=f30e303]:
+        - generic [ref=f30e304]:
+          - generic [ref=f30e305]: 🪐
+          - heading "认识你自己" [level=1] [ref=f30e306]
+          - paragraph [ref=f30e307]: 帮我画出你出生那一刻的天空——那是你人生的出厂设置
+        - generic [ref=f30e308]:
+          - generic [ref=f30e309]:
+            - generic [ref=f30e310]:
+              - generic [ref=f30e311]: 你的称呼
+              - textbox "怎么称呼你？" [ref=f30e312]: 夏天
+            - generic [ref=f30e313]:
+              - generic [ref=f30e314]: 性别
+              - generic [ref=f30e315]:
+                - button "♀ 女" [ref=f30e316] [cursor=pointer]
+                - button "♂ 男" [ref=f30e317] [cursor=pointer]
+          - generic [ref=f30e318]:
+            - generic [ref=f30e319]: 出生日期和时间
+            - combobox "选择你的生日和时间" [ref=f30e328]: 1991-03-21 09:25
+          - generic [ref=f30e329]:
+            - generic [ref=f30e330]: 出生地点
+            - generic [ref=f30e331] [cursor=pointer]:
+              - generic [ref=f30e332]: 山西省陵川县附城镇青杨庄村
+              - generic [ref=f30e333]: 📍
+            - generic [ref=f30e334]:
+              - generic [ref=f30e335]: 35°42′N
+              - generic [ref=f30e336]: ·
+              - generic [ref=f30e337]: 113°21′E
+              - generic [ref=f30e338]: ·
+              - generic [ref=f30e339]: GMT +8.00
+          - button "开始探索 🪐" [ref=f30e340] [cursor=pointer]
+          - paragraph [ref=f30e341]: 生成报告大约需要 10 秒
+          - generic [ref=f30e342]:
+            - generic [ref=f30e343]: 或者
+            - button "看看 小夏 的报告 →" [ref=f30e344] [cursor=pointer]
+            - button "看看 阿正 的报告 →" [ref=f30e345] [cursor=pointer]
+      - dialog "设置出生地点" [ref=f30e347]:
+        - generic [ref=f30e348]:
+          - generic [ref=f30e349]:
+            - heading "设置出生地点" [level=2] [ref=f30e350]
+            - button "Close this dialog" [ref=f30e351] [cursor=pointer]
+          - generic [ref=f30e357]:
+            - tablist [ref=f30e361]:
+              - tab "自动获取" [selected] [ref=f30e363]
+              - tab "手动填写" [ref=f30e364]
+            - tabpanel "自动获取" [ref=f30e366]:
+              - generic [ref=f30e367]:
+                - generic [ref=f30e368]: 出生地区
+                - textbox "出生地区" [active] [ref=f30e373]:
+                  - /placeholder: 省 / 市 / 区
+              - button "自动获取坐标" [ref=f30e378] [cursor=pointer]
+          - generic [ref=f30e380]:
+            - button "取消" [ref=f30e381] [cursor=pointer]
+            - button "保存地点" [ref=f30e383] [cursor=pointer]
+  - tooltip [ref=f30e385]:
+    - menu [ref=f30e389]:
+      - menuitem "北京市" [ref=f30e390] [cursor=pointer]
+      - menuitem "天津市" [ref=f30e395] [cursor=pointer]
+      - menuitem "河北省" [ref=f30e400] [cursor=pointer]
+      - menuitem "山西省" [ref=f30e405] [cursor=pointer]
+      - menuitem "内蒙古自治区" [ref=f30e410] [cursor=pointer]
+      - menuitem "辽宁省" [ref=f30e415] [cursor=pointer]
+      - menuitem "吉林省" [ref=f30e420] [cursor=pointer]
+      - menuitem "黑龙江省" [ref=f30e425] [cursor=pointer]
+      - menuitem "上海市" [ref=f30e430] [cursor=pointer]
+      - menuitem "江苏省" [ref=f30e435] [cursor=pointer]
+      - menuitem "浙江省" [ref=f30e440] [cursor=pointer]
+      - menuitem "安徽省" [ref=f30e445] [cursor=pointer]
+      - menuitem "福建省" [ref=f30e450] [cursor=pointer]
+      - menuitem "江西省" [ref=f30e455] [cursor=pointer]
+      - menuitem "山东省" [ref=f30e460] [cursor=pointer]
+      - menuitem "河南省" [ref=f30e465] [cursor=pointer]
+      - menuitem "湖北省" [ref=f30e470] [cursor=pointer]
+      - menuitem "湖南省" [ref=f30e475] [cursor=pointer]
+      - menuitem "广东省" [ref=f30e480] [cursor=pointer]
+      - menuitem "广西壮族自治区" [ref=f30e485] [cursor=pointer]
+      - menuitem "海南省" [ref=f30e490] [cursor=pointer]
+      - menuitem "重庆市" [ref=f30e495] [cursor=pointer]
+      - menuitem "四川省" [ref=f30e500] [cursor=pointer]
+      - menuitem "贵州省" [ref=f30e505] [cursor=pointer]
+      - menuitem "云南省" [ref=f30e510] [cursor=pointer]
+      - menuitem "西藏自治区" [ref=f30e515] [cursor=pointer]
+      - menuitem "陕西省" [ref=f30e520] [cursor=pointer]
+      - menuitem "甘肃省" [ref=f30e525] [cursor=pointer]
+      - menuitem "青海省" [ref=f30e530] [cursor=pointer]
+      - menuitem "宁夏回族自治区" [ref=f30e535] [cursor=pointer]
+      - menuitem "新疆维吾尔自治区" [ref=f30e540] [cursor=pointer]

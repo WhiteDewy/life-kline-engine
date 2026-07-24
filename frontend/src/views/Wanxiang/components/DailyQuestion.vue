@@ -36,7 +36,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import SpiritAvatar from "./SpiritAvatar.vue";
+import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
 import type { PlanetCharacterProfilesData, PlanetCharacterProfile } from "@/utils/types";
 
 const props = defineProps<{
@@ -46,7 +46,6 @@ const props = defineProps<{
 const answered = ref(false);
 const answeredBy = ref<any>(null);
 const answerText = ref("");
-const questionIndex = ref(0);
 
 // 每日问题库（按天轮换）
 const questionBank = [
@@ -100,7 +99,7 @@ function getAnswer(spirit: any) {
     `从我的位置看过去——你问的其实是另一个更深的问题。不急，我们慢慢来。`,
     `我听到了。你知道吗，有时候问题本身比答案更重要。今天这个问题就是个好问题。`,
   ];
-  answerText.value = tpls[Math.floor(Math.random() * tpls.length)];
+  answerText.value = tpls[Math.floor(Math.random() * tpls.length)] ?? "";
   answered.value = true;
 }
 </script>

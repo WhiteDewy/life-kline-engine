@@ -1,0 +1,21 @@
+{
+  "description": "Agent model configuration - 切换时运行 python switch_model.py <profile>",
+  "env_var": "DEFAULT_MODEL",
+  "profiles": {
+    "deepseek": {
+      "description": "DeepSeek V4 系列",
+      "default": "deepseek-v4-flash",
+      "pm": "deepseek-v4-pro"
+    },
+    "minimax": {
+      "description": "MiniMax M2.7 系列",
+      "default": "MiniMax-M2.7",
+      "pm": "MiniMax-M2.7"
+    },
+    "claude": {
+      "description": "Claude Opus/Sonnet/Haiku 系列",
+      "default": "claude-sonnet-5",
+      "pm": "claude-opus-4-8"
+    }
+  }
+}

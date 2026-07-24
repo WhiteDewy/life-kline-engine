@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import SpiritAvatar from "@/views/Wanxiang/components/SpiritAvatar.vue";
+import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
 
 defineProps<{
   signLabel: string

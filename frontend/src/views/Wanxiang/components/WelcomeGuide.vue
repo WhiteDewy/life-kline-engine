@@ -75,7 +75,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import SpiritAvatar from "./SpiritAvatar.vue";
+import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
 import type { PlanetCharacterProfilesData, PlanetCharacterProfile } from "@/utils/types";
 
 const props = defineProps<{

@@ -219,17 +219,39 @@ def build_spirit_system_prompt(report_data: dict, planet: str, topic: str = "per
     if entry_context:
         source = entry_context.get("source", "")
         if source == "transit":
-            transit_text = entry_context.get("transit_text", "")
+            transit_detail = entry_context.get("transit_detail", "")
+            transit_aspect = entry_context.get("transit_aspect", "")
+            transit_natal = entry_context.get("transit_natal", "")
+            aspect_hint = (
+                f"这是一个{transit_aspect}相位，对本命{transit_natal}。"
+                if transit_aspect and transit_natal
+                else ""
+            )
             preamble = (
-                f"⚠️ 用户因为一个行运相位来找你：{transit_text}\n"
+                f"⚠️ 用户因为今天的行运来找你：{transit_detail}\n"
+                f"{aspect_hint}"
                 f"从这个具体的天象出发，给ta当下的感受一些回应。\n\n"
             )
         elif source == "daily_question":
-            question = entry_context.get("question_text", "")
+            question = entry_context.get("daily_question", "")
             preamble = (
                 f"⚠️ 用户刚刚回答了一个每日一问：{question}\n"
-                f"从这个问题切入，展开和ta的对话。\n\n"
+                f"从这个问题切入，用温暖、欢迎的语气展开和ta的对话。\n\n"
             )
+        elif source == "today_star_spirit":
+            daily_q = entry_context.get("daily_question", "")
+            if daily_q:
+                preamble = (
+                    f"⚠️ 你是今天的引路星灵——用户今天第一个来见的就是你，"
+                    f"而且ta刚刚看了每日一问：{daily_q}\n"
+                    f"用温暖、欢迎的语气开启今天的对话，像一个今天的守护者。"
+                    f"可以自然地承接那个问题。\n\n"
+                )
+            else:
+                preamble = (
+                    "⚠️ 你是今天的引路星灵——用户今天第一个来见的就是你。"
+                    "用温暖、欢迎的语气开启今天的对话，像一个今天的守护者。\n\n"
+                )
         elif source == "today_star_spirit":
             preamble = (
                 "⚠️ 你是今天的引路星灵——用户今天第一个来见的就是你。"
@@ -411,6 +433,53 @@ def build_fallback_response(planet: str, persona: dict | None,
     template = random.choice(templates) if templates else "我听到了。你在想什么？"
     preview = user_message[:30] + ("……" if len(user_message) > 30 else "")
     return template.format(preview=preview)
+
+
+# ═══════════════════════════════════════════════════════════════
+# 星语者 System Prompt 构建
+# ═══════════════════════════════════════════════════════════════
+
+def build_star_speaker_system_prompt(report_data: dict) -> str:
+    """构建星语者（AI 占星师）的 System Prompt。
+
+    星语者不同于星灵——它不是单一星体人格，而是一位能看到全盘的占星师。
+    它融合古典占星（论事）和现代占星（心理），既给判断也给温度。
+    """
+    chart = report_data.get("natal_chart", {})
+    asc = chart.get("ascendant", {})
+    sig = chart.get("signature", "")
+    chart_ruler_label = chart.get("chart_ruler_label", "")
+    dominant = chart.get("dominant_planets", [])
+    dom_labels = [d.get("label", "") for d in dominant[:3]]
+    dom_text = "、".join(dom_labels) if dom_labels else "综合"
+
+    asc_sign = asc.get("sign_label", "未知")
+    sect = chart.get("sect_label", "")
+
+    return f"""你是「星语者」——一位融合古典占星与现代心理占星的 AI 占星师。
+
+## 你的角色
+- 你不是单一星体的人格化角色（那是星灵的工作），你是能看到用户全盘的专业占星师
+- 你既做古典占星的客观判断（事能不能成、时机如何），也做现代占星的心理洞察（为什么这样感受、如何成长）
+- 你的语气是：专业但不冰冷，温和但不敷衍，像一位有经验的咨询师
+
+## 用户的星盘底色
+- 上升：{asc_sign}
+- 命主星：{chart_ruler_label}
+- 昼夜：{sect}
+- 主导力量：{dom_text}
+- 签名：{sig}
+
+## 规则
+- 用中文回复，自然流畅，像在对话而不是写论文
+- 根据当前咨询步骤调整语气：
+  · Step 1（锚定）：先确认你听懂了用户的问题，把这问题放到星盘框架里
+  · Step 2（情境追问）：自然地问1-2个跟进问题，帮用户把模糊的感受说清楚
+  · Step 3（星盘验证）：这是核心——用全盘证据完整回答，结构清晰但不说教
+  · Step 4（边界守护）：给出安全提示，让用户知道星盘的限度
+- 不做宿命断言（"你一定会XX"）
+- 不给具体投资/医疗建议
+- 保持 200-400 字的回复长度，让人能读完"""
 
 
 # ═══════════════════════════════════════════════════════════════

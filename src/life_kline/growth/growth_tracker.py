@@ -2,7 +2,8 @@
 growth_tracker.py — 用户成长追踪系统
 
 追踪用户与12星座角色的互动，形成长期成长画像。
-存储为 JSON 文件，与现有报告存储模式一致。
+**主存储为 SQLite (growth_conversations / growth_milestones / growth_daily_visits 表)**，
+JSON 文件作为兜底。
 
 追踪维度：
 - 对话历史：用户和每个角色聊了什么
@@ -21,6 +22,11 @@ from pathlib import Path
 from typing import Any
 
 from ..constants import Sign
+
+try:
+    from backend import dao as _dao
+except Exception:
+    _dao = None  # 数据库不可用时回退到 JSON
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -159,18 +165,34 @@ class GrowthTracker:
         character_response: str,
         emotional_context: str = "general",
     ) -> None:
-        """记录一次对话"""
+        """记录一次对话 — DB 优先，JSON 兜底"""
+        ts = datetime.now(timezone.utc).isoformat()
         turn = ConversationTurn(
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=ts,
             sign=sign.value,
             topic=topic,
             user_message=user_message,
             character_response=character_response,
             emotional_context=emotional_context,
         )
+
+        # 1) 写 DB
+        if _dao is not None:
+            try:
+                _dao.insert_growth_conversation(
+                    report_id=self.report_id,
+                    sign=sign.value,
+                    topic=topic,
+                    user_message=user_message,
+                    character_response=character_response,
+                    emotional_context=emotional_context,
+                )
+            except Exception:
+                pass
+
         self.conversations.append(turn)
 
-        # 检查里程碑
+        # 检查里程碑 — 同步去 DB
         sign_conversations = [c for c in self.conversations if c.sign == sign.value]
         count = len(sign_conversations)
 
@@ -181,7 +203,6 @@ class GrowthTracker:
         elif count == 50:
             self._add_milestone("deep_bond", sign.value, f"和{sign.value}角色建立了深厚的连接")
 
-        # 话题深度
         topic_conversations = [
             c for c in self.conversations
             if c.sign == sign.value and c.topic == topic
@@ -192,19 +213,32 @@ class GrowthTracker:
                 f"和{sign.value}角色深入探讨了{topic}话题（5次）",
             )
 
+        # 写 JSON 兜底（local state）
         self._save_state()
 
     def record_daily_visit(self, activation_scores: dict[str, float], featured: list[str]) -> None:
-        """记录一次每日访问"""
+        """记录一次每日访问 — DB 优先"""
         today = datetime.now(timezone.utc).date().isoformat()
         visit = DailyVisit(
             date=today,
             featured_signs=featured,
             activation_scores=activation_scores,
         )
+
+        # 1) 写 DB
+        if _dao is not None:
+            try:
+                _dao.upsert_daily_visit(
+                    report_id=self.report_id,
+                    visit_date=today,
+                    featured_signs=featured,
+                    activation_scores=activation_scores,
+                )
+            except Exception:
+                pass
+
         self.daily_visits.append(visit)
 
-        # 检查连续访问
         streak = self._calculate_streak()
         if streak == 1:
             self._add_milestone("first_daily", "", "第一次打开每日简报")
@@ -214,11 +248,23 @@ class GrowthTracker:
         self._save_state()
 
     def _add_milestone(self, mtype: str, sign: str, description: str) -> None:
-        """添加里程碑（去重）"""
-        # 检查是否已存在
+        """添加里程碑（去重）。DB 优先。"""
         for m in self.milestones:
             if m.milestone_type == mtype and m.sign == sign:
                 return
+
+        # 1) 写 DB（去重由 DAO 处理）
+        if _dao is not None:
+            try:
+                _dao.insert_growth_milestone(
+                    report_id=self.report_id,
+                    milestone_type=mtype,
+                    sign=sign,
+                    description=description,
+                )
+            except Exception:
+                pass
+
         self.milestones.append(Milestone(
             milestone_type=mtype,
             sign=sign,

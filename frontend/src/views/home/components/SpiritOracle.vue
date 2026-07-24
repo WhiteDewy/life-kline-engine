@@ -115,7 +115,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
-import SpiritAvatar from "@/views/Wanxiang/components/SpiritAvatar.vue";
+import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
 import VoicePlayer from "./VoicePlayer.vue";
 
 const props = defineProps<{

@@ -918,20 +918,69 @@ def dms_to_degree(degrees: int, minutes: int, seconds: float) -> float:
 def format_degree(degrees: float, precision: int = 2) -> str:
     """
     格式化度数显示
-    
+
     参数:
         degrees: 度数
         precision: 小数精度
-    
+
     返回:
         格式化后的字符串
-    
+
     示例:
         >>> format_degree(10.5125, 1)
         '10°30'45.0"'
     """
     deg, minutes, seconds = degree_to_dms(degrees)
     return f"{deg}°{minutes}'{seconds:.{precision}f}\""
+
+
+def format_degree_short(degrees: float) -> str:
+    """
+    将星座内度数格式化为 xx°xx′（度·分）形式。
+
+    用于 API 返回值，避免引入秒级精度。
+
+    参数:
+        degrees: 度数（0-30 之间的浮点）
+
+    返回:
+        格式化字符串，例如 '15°23′'
+
+    示例:
+        >>> format_degree_short(3.421)
+        '3°25′'
+        >>> format_degree_short(22.166)
+        '22°10′'
+    """
+    if degrees is None:
+        return ""
+    d = int(degrees)
+    # 加 0.5/60 修正避免 59.99 截断误差
+    minutes_total = round((float(degrees) - d) * 60.0 + 1e-9)
+    if minutes_total >= 60:
+        d += 1
+        minutes_total = 0
+    return f"{d}°{int(minutes_total):02d}′"
+
+
+def format_orb(degrees: float) -> str:
+    """
+    格式化容许度为 0°xx′ 形式。
+
+    参数:
+        degrees: 容许度（绝对值，0-180 之间的浮点）
+
+    返回:
+        格式化字符串，例如 '0°08′'
+    """
+    if degrees is None:
+        return ""
+    d = int(degrees)
+    minutes_total = round((float(degrees) - d) * 60.0 + 1e-9)
+    if minutes_total >= 60:
+        d += 1
+        minutes_total = 0
+    return f"{d}°{int(minutes_total):02d}′"
 
 
 def get_zodiac_sign(degree: float) -> Tuple[str, float]:
@@ -1053,6 +1102,8 @@ __all__ = [
     "degree_to_dms",
     "dms_to_degree",
     "format_degree",
+    "format_degree_short",
+    "format_orb",
     "get_zodiac_sign",
     "get_aspect_angle",
     "is_retrograde_calculator",

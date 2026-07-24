@@ -171,36 +171,100 @@ class DailyQuestionEngine:
     ) -> str:
         """使用 LLM 生成问题"""
         try:
-            # 构建星盘上下文摘要
+            # ── 构建星盘上下文 ──
             spirit_planet = today_spirit.planet_label
             current_sign = today_spirit.sign_label
 
-            context_parts = [
-                f"今日引路星灵：{spirit_planet}（在{current_sign}）",
-                f"自信度：{today_spirit.confidence}/100",
-            ]
+            # 从 chart 提取关键信息（防御性访问）
+            chart_summary = ""
+            if chart is not None:
+                try:
+                    moon_info = chart.get_planet_info(Planet.MOON) if hasattr(chart, 'get_planet_info') else None
+                    asc_info = getattr(chart, 'ascendant', None)
+                    dominant = getattr(chart, 'dominant_planets', []) or []
+                    dom_labels = [d.get('label', '') if isinstance(d, dict) else str(d) for d in dominant[:3]]
+                    dom_text = '、'.join(dom_labels) if dom_labels else '综合'
 
+                    moon_desc = ""
+                    if moon_info:
+                        moon_sign = moon_info.get('sign_label', '')
+                        moon_dignity = moon_info.get('dignity_label', '')
+                        moon_desc = f"月亮在{moon_sign}{moon_dignity}，"
+
+                    asc_desc = ""
+                    if asc_info:
+                        asc_sign = asc_info.get('sign_label', '') if isinstance(asc_info, dict) else str(asc_info)
+                        asc_desc = f"上升{asc_sign}，"
+
+                    chart_summary = (
+                        f"用户星盘底色：{asc_desc}{moon_desc}主导力量{dom_text}。"
+                    )
+                except Exception:
+                    chart_summary = ""
+
+            # 从 transits 提取最相关的 2 个行运
+            transit_summary = ""
+            if transits:
+                try:
+                    relevant = [t for t in transits if t.get('aspect_type') in ('trine', 'sextile', 'conjunction', 'square', 'opposition')][:2]
+                    if relevant:
+                        transit_lines = []
+                        for t in relevant:
+                            transit_lines.append(
+                                f"{t.get('transiting_planet', '')}{t.get('aspect_label', '')}{t.get('natal_planet', '')}"
+                            )
+                        transit_summary = f"今日行运：{'；'.join(transit_lines)}。"
+                    else:
+                        transit_summary = "今日无强烈行运相位。"
+                except Exception:
+                    transit_summary = ""
+
+            # 今日星灵触发事件
+            transit_event = ""
             if today_spirit.transit_aspect:
-                context_parts.append(
-                    f"触发事件：{today_spirit.transit_aspect.get('transiting_planet', '')} "
-                    f"{today_spirit.transit_aspect.get('aspect_label', '')} "
-                    f"{today_spirit.transit_aspect.get('natal_planet', '')}"
+                transit_event = (
+                    f"星灵触发：{today_spirit.transit_aspect.get('transiting_planet', '')}"
+                    f"{today_spirit.transit_aspect.get('aspect_label', '')}"
+                    f"{today_spirit.transit_aspect.get('natal_planet', '')}。"
                 )
 
-            context = "；".join(context_parts)
+            context_parts = [
+                f"今日引路星灵：{spirit_planet}（{current_sign}）",
+                f"触发事件：{transit_event}" if transit_event else "",
+                chart_summary,
+                transit_summary,
+            ]
+            context = "\n".join(p for p in context_parts if p)
 
             system_prompt = (
-                "你是一个温暖、有洞察力的占星陪伴者。"
-                "根据用户的今日星灵信息，生成一个不超过50字的每日提问。"
-                "问题要柔软、开放、不评判，引导用户向内观察自己。"
-                "直接返回问题本身，不要加标号和前缀。"
+                "你是一个温暖、有洞察力的占星陪伴者「每日星灵助手」。\n\n"
+                "你的任务是根据用户的今日星盘信息，生成一个不超过40字的每日提问。\n\n"
+                "## 提问风格要求\n"
+                "- 柔软、开放、不评判\n"
+                "- 引导用户向内观察自己，而不是寻求外部答案\n"
+                "- 结合今日星灵的能量特点，不是泛泛的问题\n"
+                "- 直接返回问题本身，不加标号、前缀或解释\n\n"
+                f"## 今日星盘上下文\n{context}\n\n"
+                "请直接生成问题："
             )
-            user_message = f"今日星灵：{context}\n\n请生成一个每日一问。"
+            user_message = "请根据以上星盘信息，生成今日的每日一问。"
 
-            return self.llm_client.chat(
+            result = self.llm_client.chat(
                 system_prompt=system_prompt,
                 user_message=user_message,
             )
+
+            # 防御：LLM 可能返回空或包含 markdown 格式
+            if not result:
+                return ""
+            result = result.strip().strip('"').strip("'")
+            if result.startswith("```"):
+                result = result.split("\n", 1)[-1]
+            if result.endswith("```"):
+                result = result[:-3]
+            result = result.strip()
+
+            return result
         except Exception:
             return ""
 

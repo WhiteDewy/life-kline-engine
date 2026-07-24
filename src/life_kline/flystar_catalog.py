@@ -969,3 +969,150 @@ def get_house_ruler_flight_with_planet_mod(
         "planet_name": planet_name,
         "planet_mod": planet_mod,
     }
+
+
+def get_house_ruler_flight_with_fortune(
+    source_house: int,
+    target_house: int,
+    planet_name: str,
+    chart: Any = None,
+    planet_profiles: dict[str, Any] | None = None,
+    receptions_data: dict[str, Any] | None = None,
+) -> Optional[Dict[str, Any]]:
+    """
+    获取飞星条目 + 吉凶评估。
+
+    这是 get_house_ruler_flight_entry() 的升级版，新增：
+    - fortune: FlightFortune 评估结果（得吉/中性/受克）
+    - selected_reading: 根据吉凶自动选择的正面或负面解读
+    - 综合判定文本
+
+    用于引擎中生成有论断力的飞星解读。
+    """
+    base = get_house_ruler_flight_entry(source_house, target_house)
+    if not base:
+        return None
+
+    from .flight_fortune import evaluate_flystar_from_chart, FlightFortune
+
+    fortune: FlightFortune = evaluate_flystar_from_chart(
+        chart=chart,
+        source_house=source_house,
+        target_house=target_house,
+        ruler_name=planet_name,
+        planet_profiles=planet_profiles,
+        receptions_data=receptions_data,
+    )
+
+    # 根据 fortune_level 选择主导解读
+    if fortune.fortune_level == "fortunate":
+        selected_reading = base["positive"]
+        tone = "得吉"
+    elif fortune.fortune_level == "afflicted":
+        selected_reading = base["negative"]
+        tone = "受克"
+    else:
+        # 中性：取正面为主，附加提醒
+        selected_reading = base["positive"] + " 但需注意：" + base["negative"]
+        tone = "中性"
+
+    return {
+        **base,
+        "planet_name": planet_name,
+        "tone": tone,
+        "fortune_level": fortune.fortune_level,
+        "fortune_score": round(fortune.fortune_score, 2),
+        "selected_reading": selected_reading,
+        "fortune_summary": fortune.summary,
+        "fortune_recommendation": fortune.recommendation,
+        "fortune_detail": fortune.to_dict(),
+    }
+
+
+def get_extended_house_rulers(sign_name: str) -> dict[str, Any]:
+    """
+    获取某星座的完整守护星层次：
+    - domicile_ruler: 庙主星（古典，CEO级）
+    - exaltation_ruler: 旺主星（股东级，带来资源）
+    - triplicity_rulers: 三分主星列表（部门总监级）
+    - modern_ruler: 现代守护（三王星，心理层面）
+
+    用于为每个宫位生成多层次的飞星分析。
+    梦老师体系：庙主星决定趋势和结果，旺主星带来周边资源和帮助，
+    三分主星提供持续稳定力量。
+    """
+    from .flight_fortune import get_house_rulers_extended
+    return get_house_rulers_extended(sign_name)
+
+
+def get_all_house_flight_layers(
+    source_house: int,
+    target_house: int,
+    sign_name: str,
+    chart: Any = None,
+    planet_profiles: dict[str, Any] | None = None,
+    receptions_data: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """
+    为一个宫位生成所有守护层次的飞星分析。
+
+    返回：
+    - domicile_flight: 庙主星飞星（最重要——趋势和结果）
+    - exaltation_flight: 旺主星飞星（资源层面）
+    - triplicity_flights: 三分主星飞星列表（持续力量）
+    - modern_flight: 现代守护飞星（心理层面，可选）
+    - interception_info: 劫夺信息（如有）
+    """
+    rulers = get_extended_house_rulers(sign_name)
+    result: dict[str, Any] = {
+        "sign": sign_name,
+        "source_house": source_house,
+        "target_house": target_house,
+    }
+
+    # 庙主星飞星（核心）
+    domicile = rulers.get("domicile")
+    if domicile:
+        flight = get_house_ruler_flight_with_fortune(
+            source_house, target_house, domicile,
+            chart=chart, planet_profiles=planet_profiles,
+            receptions_data=receptions_data,
+        )
+        result["domicile_flight"] = flight
+        result["domicile_ruler"] = domicile
+
+    # 旺主星飞星（辅助）
+    exaltation = rulers.get("exaltation")
+    if exaltation and exaltation != domicile:
+        flight = get_house_ruler_flight_with_fortune(
+            source_house, target_house, exaltation,
+            chart=chart, planet_profiles=planet_profiles,
+            receptions_data=receptions_data,
+        )
+        result["exaltation_flight"] = flight
+        result["exaltation_ruler"] = exaltation
+
+    # 三分主星飞星（补充）
+    triplicity = rulers.get("triplicity", [])
+    triplicity_flights = []
+    for tp in triplicity:
+        if tp != domicile and tp != exaltation:
+            flight = get_house_ruler_flight_entry(source_house, target_house)
+            if flight:
+                flight["planet_name"] = tp
+                triplicity_flights.append(flight)
+    if triplicity_flights:
+        result["triplicity_flights"] = triplicity_flights
+    result["triplicity_rulers"] = triplicity
+
+    # 现代守护飞星（心理层面）
+    modern = rulers.get("modern")
+    if modern and modern != domicile:
+        flight = get_house_ruler_flight_entry(source_house, target_house)
+        if flight:
+            flight["planet_name"] = modern
+            flight["note"] = "现代心理占星守护——反映内心体验而非外在事件"
+            result["modern_flight"] = flight
+    result["modern_ruler"] = modern
+
+    return result

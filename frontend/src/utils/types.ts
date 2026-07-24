@@ -353,6 +353,11 @@ export interface LifeReport {
       evidence: string[];
       points: string[];
     }>;
+    // ── v2.5 新增: 格局检测与飞星fortune ──
+    enclosure_patterns?: EnclosurePattern[];
+    aspect_patterns?: AspectPatternData[];
+    flystar_fortunes?: Record<string, FlystarFortune>;
+    interception_info?: InterceptionInfo;
     [key: string]: any;
   } | null;
   timeline_validation?: {
@@ -710,19 +715,157 @@ export interface FeaturedPlanet {
   archetype_zh: string;
   symbol: string;
   sign: string;
+  sign_label?: string;
+  house?: number;
+  dignity_label?: string;
   activation_score: number;
   reason: string;
   daily_message: string;
   suggested_topic: string;
   visual_color: string;
+  personalized_greeting?: string;
 }
 
 export interface PlanetDailyActivation {
   date: string;
   activation_scores: Record<string, number>;
   featured_planets: FeaturedPlanet[];
+  featured_characters?: FeaturedCharacter[];
   main_character: FeaturedPlanet;
   daily_theme: string;
   lunar_note: string;
   firdaria_note: string;
+}
+
+// ═══════════════════════════════════════════════════════════
+// 花园 (Garden) 类型
+// ═══════════════════════════════════════════════════════════
+
+export interface QuestionItem {
+  key: string;
+  label: string;
+  houses: number[];
+  planets: string[];
+  secondary_houses: number[];
+  secondary_planets: string[];
+  description: string;
+  house_labels: Record<number, string>;
+}
+
+export interface GardenCategory {
+  key: string;
+  label: string;
+  icon: string;
+  description: string;
+  tradition_weight: number;
+  question_count: number;
+  questions: QuestionItem[];
+}
+
+export interface FortuneItem {
+  key: string;
+  label: string;
+  icon: string;
+  description: string;
+  status: "active" | "planned";
+}
+
+export interface GardenCatalogData {
+  categories: GardenCategory[];
+  fortune: FortuneItem[];
+}
+
+export interface CheckinStatus {
+  checked_in: boolean;
+  streak_count: number;
+  checkin_date: string;
+  message?: string;
+}
+
+export interface ConsultationState {
+  session_id: string;
+  step: number;
+  category: string;
+  question_key: string;
+  anchor_text: string;
+  anchor_evidence: string[];
+  scenario_context: Record<string, any>;
+  scenario_rounds: number;
+  verified_evidence: string[];
+  verified_reading: string;
+  boundary_notes: string[];
+  pending_question: string;
+  is_complete: boolean;
+  tradition_lean: boolean | null;
+  user_responses?: string[];
+}
+
+export interface ConsultationReport {
+  report_id: string;
+  session_id: string;
+  category: string;
+  question_key: string;
+  question_label: string;
+  anchor_summary: string;
+  scenario_summary: string;
+  chart_reading: string;
+  boundary_notes: string[];
+  fused_narrative: string;
+  evidence: string[];
+  generated_at: string;
+}
+
+export interface ConsultationReportItem {
+  id: string;
+  category: string;
+  category_label: string;
+  question_key: string;
+  question_label: string;
+  summary: string;
+  created_at: string;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// v2.5 飞星吉凶与格局检测类型
+// ═══════════════════════════════════════════════════════════════
+
+export interface EnclosurePattern {
+  enclosed_planet: string;
+  left_planet: string;
+  right_planet: string;
+  pattern_type: "benefic_enclosure" | "malefic_siege" | "mixed_enclosure";
+  house: number;
+  description: string;
+  significance: string;
+}
+
+export interface AspectPatternData {
+  pattern_type: "t_square" | "grand_cross" | "grand_trine" | "kite";
+  planets: string[];
+  houses: number[];
+  description: string;
+  interpretation: string;
+  severity: "high" | "medium" | "low";
+}
+
+export interface FlystarFortune {
+  fortune_level: "fortunate" | "neutral" | "afflicted";
+  fortune_score: number;
+  dignity_score: number;
+  aspect_score: number;
+  reception_score: number;
+  house_score: number;
+  special_score: number;
+  dignity_detail: string;
+  aspect_detail: string;
+  reception_detail: string;
+  house_detail: string;
+  special_detail: string;
+  summary: string;
+  recommendation: string;
+}
+
+export interface InterceptionInfo {
+  intercepted_signs: Record<number, string>;
+  expanded_rulers: Record<string, number[]>;
 }

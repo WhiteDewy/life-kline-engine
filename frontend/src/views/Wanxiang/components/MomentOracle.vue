@@ -81,7 +81,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from "vue";
-import SpiritAvatar from "./SpiritAvatar.vue";
+import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
 import type {
   PlanetCharacterProfile,
   PlanetCharacterProfilesData,
@@ -180,7 +180,14 @@ async function invokeOracle(topicKey?: string) {
   }
 
   const picked = candidates[Math.floor(Math.random() * candidates.length)];
-  const planetKey = typeof picked === "string" ? picked : picked.planet;
+  let planetKey = "";
+  if (typeof picked === "string") {
+    planetKey = picked;
+  } else if (Array.isArray(picked)) {
+    planetKey = picked[0] || "";
+  } else {
+    planetKey = picked?.planet ?? "";
+  }
   const profile = profiles[planetKey] as PlanetCharacterProfile | undefined;
   if (!profile) {
     isAnimating.value = false;
@@ -224,8 +231,8 @@ async function invokeOracle(topicKey?: string) {
     archetype: persona?.archetype_zh || "",
     color: persona?.visual_color || "#999",
     activationScore: Math.round(activationScores[planetKey] || 50),
-    message: `${greetings[Math.floor(Math.random() * greetings.length)]} ${bodies[Math.floor(Math.random() * bodies.length)]}`.slice(0, 350),
-    advice: adviceTexts[Math.floor(Math.random() * adviceTexts.length)],
+    message: `${greetings[Math.floor(Math.random() * greetings.length)] ?? ""} ${bodies[Math.floor(Math.random() * bodies.length)] ?? ""}`.slice(0, 350),
+    advice: adviceTexts[Math.floor(Math.random() * adviceTexts.length)] ?? "",
   };
 
   isAnimating.value = false;
