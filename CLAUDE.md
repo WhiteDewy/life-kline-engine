@@ -20,8 +20,7 @@ Life K-Line Engine is an astrological life analysis system (占星人生模型) 
 ### Backend
 
 ```bash
-pip install -r backend/requirements.txt
-pip install -e .        # install the life-kline-engine package in dev mode
+pip install -e .        # 从 pyproject.toml 安装全部依赖 + 开发模式安装
 python -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 ```
 

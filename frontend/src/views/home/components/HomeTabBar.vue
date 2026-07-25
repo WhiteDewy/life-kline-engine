@@ -32,6 +32,7 @@ defineEmits<{
   bottom: 0;
   left: 0;
   right: 0;
+  position: fixed;
 }
 .tab-bar {
   position: fixed;

@@ -27,8 +27,21 @@ classifiers = [
 ]
 
 dependencies = [
+    # --- Web framework ---
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    # --- Async runtime ---
+    "anyio>=4.0.0",
+    # --- HTTP client（LLM 异步调用）---
+    "httpx>=0.27.0",
+    # --- Data validation ---
+    "pydantic>=2.5.0",
+    # --- Scientific computing ---
     "numpy>=1.24",
-    "pydantic>=2.0",  # 添加数据验证
+    # --- Swiss Ephemeris 星历计算 ---
+    "pyswisseph>=2.10.3",
+    # --- Typing backports (Python < 3.12) ---
+    "typing_extensions>=4.8.0",
 ]
 
 [project.optional-dependencies]
@@ -55,7 +68,7 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
- 
+
 [tool.black]
 line-length = 88
 target-version = ['py39']

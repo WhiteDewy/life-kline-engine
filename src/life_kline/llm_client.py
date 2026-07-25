@@ -24,7 +24,7 @@ class LLMConfig:
     api_key: str = ""
     model: str = ""
     base_url: str = ""
-    max_tokens: int = 600
+    max_tokens: int = 1500
     temperature: float = 0.85
     connect_timeout: float = 3.0    # 连接超时（§3 分级超时）
     read_timeout: float = 25.0      # 读取/整体超时
@@ -41,7 +41,7 @@ class LLMConfig:
             # 默认 DeepSeek
             provider = "deepseek"
             api_key = api_key or os.getenv("DEEPSEEK_API_KEY", "").strip()
-            model = model or "deepseek-chat"
+            model = model or "deepseek-v4-flash"
             base_url = base_url or "https://api.deepseek.com/v1"
 
         # 当 provider 设了但 api_key 为空时，尝试读 provider 特定的环境变量
@@ -54,7 +54,7 @@ class LLMConfig:
                 api_key = os.getenv("QWEN_API_KEY", "").strip()
 
         if not model:
-            model = "deepseek-chat"
+            model = "deepseek-v4-flash"
 
         if not base_url and provider == "deepseek":
             base_url = "https://api.deepseek.com/v1"
@@ -65,11 +65,18 @@ class LLMConfig:
             except ValueError:
                 return default
 
+        def _i(env: str, default: int) -> int:
+            try:
+                return int(os.getenv(env, "").strip() or default)
+            except ValueError:
+                return default
+
         return cls(
             provider=provider,
             api_key=api_key,
             model=model,
             base_url=base_url,
+            max_tokens=_i("LIFE_KLINE_LLM_MAX_TOKENS", 1500),
             connect_timeout=_f("LIFE_KLINE_LLM_CONNECT_TIMEOUT", 3.0),
             read_timeout=_f("LIFE_KLINE_LLM_READ_TIMEOUT", 25.0),
         )
@@ -148,7 +155,8 @@ class LLMClient:
         try:
             with urlopen(req, timeout=self.config.read_timeout) as resp:
                 data = json.loads(resp.read())
-            return data["choices"][0]["message"]["content"].strip()
+            msg = data["choices"][0]["message"]
+            return (msg.get("content") or msg.get("reasoning_content") or "").strip()
         except Exception as e:
             print(f"[LLMClient] 同步 API 调用失败: {e}")
             return ""
@@ -183,7 +191,8 @@ class LLMClient:
                     return ""
                 resp.raise_for_status()
                 data = resp.json()
-                return data["choices"][0]["message"]["content"].strip()
+                msg = data["choices"][0]["message"]
+                return (msg.get("content") or msg.get("reasoning_content") or "").strip()
             except (httpx.TimeoutException, httpx.TransportError, httpx.HTTPStatusError) as e:
                 last_err = e
                 if attempt < self.config.max_retries:
