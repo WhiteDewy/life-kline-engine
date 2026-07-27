@@ -264,7 +264,7 @@ class PlanetCharacterEngine:
     @staticmethod
     def get_house_context(house_num: int) -> dict[str, Any]:
         """获取宫位的领域语境。"""
-        from ..interpretation.house_rules import get_house_profile
+        from packages.reasoning.house_rules import get_house_profile
 
         hp = get_house_profile(house_num)
         return {

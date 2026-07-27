@@ -76,15 +76,15 @@ ANALYSIS_TYPES: List[Dict[str, Any]] = [
         "title": "年度节奏",
         "tagline": "把每一个年龄年的主轴和重点议题拆出来。",
         "description": (
-            "后续将通过小限、年度主星与主题宫位，判断某一年应把火力集中在哪里。"
+            "通过小限、年度主星与主题宫位，判断某一年应把火力集中在哪里。"
         ),
         "category": "timing",
-        "status": "paused",
+        "status": "active",
         "subjects_count": 1,
         "required_inputs": ["birth_time", "lat", "lon", "timezone"],
         "engines": ["natal_core", "profection"],
         "modules": ["年度焦点", "主星切换", "主题强化"],
-        "primary_cta": "路线图中",
+        "primary_cta": "进入体验",
         "output_route": "/reports/:id",
     },
     {

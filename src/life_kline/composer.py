@@ -48,7 +48,7 @@ class ReportComposer:
         return _build_hero_observations(chart, phase_info=phase_info, transits=transits)
 
     def compose_evidence(self, chart: Any) -> dict[str, Any]:
-        from .interpretation.planet_rules import compute_planet_baseline, compute_essential_dignity
+        from packages.reasoning.planet_rules import compute_planet_baseline, compute_essential_dignity
         pb, db = {}, {}
         for pn, info in getattr(chart, "planets", {}).items():
             if not hasattr(pn, "value"): continue
@@ -122,7 +122,7 @@ class ReportComposer:
 
 def _ht(h: int) -> str:
     try:
-        from .interpretation.house_rules import get_house_profile
+        from packages.reasoning.house_rules import get_house_profile
         return get_house_profile(h).title
     except: return f"第{h}宫"
 
@@ -274,7 +274,7 @@ def _build_hero_observations(chart: Any, phase_info: dict[str, Any] | None = Non
         asc_sign, plabel, slabel, planet_sign, planet_house,
         planet_dignity_code, chart_ruler_name,
     )
-    from .interpretation.narrative_engine import (
+    from packages.reasoning.narrative_engine import (
         build_sun_narrative, build_moon_narrative, build_venus_narrative,
         build_mars_narrative, build_mercury_narrative, build_asc_narrative,
         build_sun_house, build_moon_house, build_venus_house, build_mars_house,

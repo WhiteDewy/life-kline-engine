@@ -45,6 +45,10 @@ class ConsultationState:
     anchor_text: str = ""
     anchor_evidence: list[str] = field(default_factory=list)
 
+    # AKG Theme 识别结果
+    recognized_themes: list[dict] = field(default_factory=list)  # ThemeNode.to_dict() 列表
+    theme_narrative: str = ""  # Theme 动态叙事
+
     # Step 2: 情境澄清
     scenario_context: dict[str, Any] = field(default_factory=dict)
     scenario_rounds: int = 0             # 已进行的澄清轮次
@@ -69,6 +73,10 @@ class ConsultationState:
     is_crisis: bool = False
     crisis: dict[str, Any] | None = None
 
+    # Timing 时间推运
+    timing_summary: str = ""   # 时间推运摘要
+    timing_note: str = ""      # 时间推运详细提示（如婚姻时间窗口）
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "session_id": self.session_id,
@@ -87,6 +95,10 @@ class ConsultationState:
             "tradition_lean": self.tradition_lean,
             "is_crisis": self.is_crisis,
             "crisis": self.crisis,
+            "recognized_themes": self.recognized_themes,
+            "timing_summary": self.timing_summary,
+            "timing_note": self.timing_note,
+            "theme_narrative": self.theme_narrative,
         }
 
 
@@ -100,6 +112,7 @@ class ConsultationReport:
     question_label: str = ""
     anchor_summary: str = ""
     scenario_summary: str = ""
+    theme_narrative: str = ""          # Theme 动态叙事
     chart_reading: str = ""
     boundary_notes: list[str] = field(default_factory=list)
     fused_narrative: str = ""
@@ -115,6 +128,7 @@ class ConsultationReport:
             "question_label": self.question_label,
             "anchor_summary": self.anchor_summary,
             "scenario_summary": self.scenario_summary,
+            "theme_narrative": self.theme_narrative,
             "chart_reading": self.chart_reading,
             "boundary_notes": self.boundary_notes,
             "fused_narrative": self.fused_narrative,
@@ -324,6 +338,9 @@ class ConsultationEngine:
         state.anchor_evidence = self._gather_anchor_evidence(question)
         state.pending_question = self._pick_scenario_question(category, question_key, 0)
 
+        # AKG Theme 识别
+        state = self._recognize_themes(state, question)
+
         # 检测古占/现占倾向
         state.tradition_lean = self._detect_tradition_lean(question_key)
 
@@ -333,6 +350,9 @@ class ConsultationEngine:
         """根据当前步骤和用户回复推进状态"""
         if state.is_complete:
             return state
+
+        # Timing 检测（先于其他逻辑）：如果用户问"什么时候"类问题
+        state = self._detect_timing(state, user_response)
 
         # 危机检测闸门（先于任何咨询逻辑）：命中则脱离占星流程，给真实支持资源。
         from .safety import detect_crisis
@@ -370,6 +390,7 @@ class ConsultationEngine:
             question_label=q_label,
             anchor_summary=state.anchor_text[:300],
             scenario_summary=self._summarize_scenario(state),
+            theme_narrative=state.theme_narrative,
             chart_reading=state.verified_reading,
             boundary_notes=state.boundary_notes,
             evidence=state.verified_evidence,
@@ -742,6 +763,8 @@ class ConsultationEngine:
             parts.append(f"### 问题锚定\n{report.anchor_summary}\n")
         if report.scenario_summary:
             parts.append(f"### 情境\n{report.scenario_summary}\n")
+        if hasattr(report, 'theme_narrative') and report.theme_narrative:
+            parts.append(f"### Theme 叙事\n{report.theme_narrative}\n")
         if report.chart_reading:
             parts.append(f"### 星盘解读\n{report.chart_reading}\n")
         if report.boundary_notes:
@@ -753,7 +776,122 @@ class ConsultationEngine:
         raw = "\n".join(parts)
         return self._ai_enhance(raw, "综合报告", "这是最终报告，请将以上所有部分融合成一篇完整的咨询文。保持边界守护提示的严谨性。")
 
-    # ── 古占/现占倾向检测 ──
+    # ── AKG Theme 识别 ──
+
+    def _recognize_themes(
+        self, state: ConsultationState, question: Any,
+    ) -> ConsultationState:
+        """使用 AKG ThemeRecognizer 识别用户问题的 Theme"""
+        try:
+            from .akg import ThemeRecognizer, build_theme_narrative
+
+            # 构建用户问题文本
+            user_question = question.label if question else state.question_key
+            if state.scenario_context:
+                # 加入用户已描述的情境
+                for i in range(1, state.scenario_rounds + 1):
+                    ctx = state.scenario_context.get(f"round_{i}", "")
+                    if ctx:
+                        user_question += f"。{ctx}"
+
+            # 调用 ThemeRecognizer
+            recognizer = ThemeRecognizer()
+            themes = recognizer.recognize(user_question, self._data, top_k=2)
+
+            if themes:
+                state.recognized_themes = [t.to_dict() for t in themes]
+                # 生成第一个 Theme 的叙事（作为锚定叙事的一部分）
+                primary_theme = themes[0]
+                state.theme_narrative = build_theme_narrative(primary_theme, self._data)
+        except Exception as e:
+            # AKG 失败时降级，不影响原有流程
+            print(f"[ConsultationEngine] Theme recognition failed: {e}")
+            state.recognized_themes = []
+            state.theme_narrative = ""
+
+        return state
+
+    # ── Timing 检测 ──────────────────────────────────────────────
+
+    def _detect_timing(
+        self, state: ConsultationState, user_message: str,
+    ) -> ConsultationState:
+        """检测用户问题是否涉及时间维度，如是则计算时间推运"""
+        try:
+            from .timing import TimingDetector, FirdariaEngine
+
+            # 检测是否时间问题
+            detector = TimingDetector()
+            timing_q = detector.detect(user_message)
+
+            if not timing_q.is_timing_question:
+                return state
+
+            # 获取 birth_time 和 age
+            birth_info = self._data.get("birth_info", {})
+            birth_time_str = birth_info.get("birth_time", "")
+            timezone = birth_info.get("timezone", 8.0)
+
+            if not birth_time_str:
+                return state
+
+            from datetime import datetime
+            try:
+                birth_time = datetime.fromisoformat(birth_time_str)
+            except (ValueError, TypeError):
+                return state
+
+            # 计算年龄
+            now = datetime.now()
+            age = now.year - birth_time.year - 1
+            if (now.month, now.day) >= (birth_time.month, birth_time.day):
+                age += 1
+
+            # 判断昼夜盘（简化：白天出生 = 日间盘）
+            hour = birth_time.hour
+            is_day_chart = 6 <= hour < 18
+
+            # 计算法达
+            engine = FirdariaEngine(birth_time, is_day_chart)
+
+            # 根据 aspect 获取对应的时间信息
+            if timing_q.aspect == "marriage":
+                timing_result = engine.get_marriage_timing(age)
+                state.timing_note = timing_result.note
+                state.timing_summary = self._format_timing_summary(
+                    engine.get_timing_summary(age)
+                )
+            else:
+                # 通用时间摘要
+                summary = engine.get_timing_summary(age)
+                state.timing_summary = self._format_timing_summary(summary)
+                state.timing_note = ""
+
+        except Exception as e:
+            print(f"[ConsultationEngine] Timing detection failed: {e}")
+            state.timing_summary = ""
+            state.timing_note = ""
+
+        return state
+
+    def _format_timing_summary(self, summary: dict) -> str:
+        """格式化时间推运摘要为对话友好的文本"""
+        # 使用大运而不是子运，更稳定
+        current = summary.get("current_major", summary.get("current", {}))
+        if not current:
+            return ""
+
+        planet = current.get("planet_label", "未知")
+        theme = current.get("theme", "未知").replace("【大运】", "").replace("【主】", "")
+        remaining = summary.get("remaining_years", 0)
+
+        lines = [
+            f"你现在处于法达{planet}周期。",
+            f"这个阶段的课题是「{theme}」。",
+            f"大约还剩{int(remaining)}年进入下一个周期。",
+        ]
+
+        return " ".join(lines)
 
     def _detect_tradition_lean(self, question_key: str) -> bool | None:
         """根据问题类型检测用户更可能需要的分析倾向"""

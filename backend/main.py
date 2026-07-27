@@ -2184,6 +2184,276 @@ async def spirit_chat(report_id: str, body: SpiritChatInput, request: Request) -
     }
 
 
+# ═══════════════════════════════════════════════════════════════
+# 咨询式星灵对话 V2（ consultation.py + memory.py + llm_client.py V2）
+# ═══════════════════════════════════════════════════════════════
+
+
+class SpiritChatV2Input(BaseModel):
+    """咨询式星灵对话输入"""
+    planet: str = Field(..., description="行星 key，如 'VENUS'")
+    topic: str = Field(default="personal")
+    message: str = Field(..., description="用户消息")
+    history: list[dict] = Field(default_factory=list)
+    entry_context: dict | None = None
+    # V2 新增：对话状态 token（用于多轮对话）
+    dialogue_token: str | None = Field(default=None, description="对话状态 token")
+
+
+@app.post("/api/spirit-chat-v2/{report_id}")
+async def spirit_chat_v2(report_id: str, body: SpiritChatV2Input, request: Request) -> Dict[str, Any]:
+    """咨询式星灵对话 V2 — 新架构。
+
+    核心理念：
+    1. 先倾听，不急着分析
+    2. 问问题多于给答案
+    3. 把星盘翻译成感受/模式
+    4. 引导觉察，不是给建议
+
+    技术架构：
+    - ConsultationV2: 对话状态管理（倾听 → 探索 → 反思 → 理解 → 结束）
+    - MemoryManager: 用户记忆（Theme状态、成长里程碑、对话摘要）
+    - build_spirit_system_prompt_v2: 咨询式 System Prompt
+    """
+    record = load_report_record(report_id)
+    report_data = record.get("data", {})
+
+    # ── 导入新模块 ──
+    from life_kline.llm_client import (
+        LLMClient, build_spirit_system_prompt_v2,
+        SpiritChatTracker,
+    )
+    from life_kline.consultation import ConsultationV2, DialogueState
+    from life_kline.memory import MemoryManager
+    from life_kline.pricing import AccessChecker
+
+    # ── 用户认证 ──
+    auth_header = request.headers.get("Authorization", "")
+    user_id = ""
+    if auth_header.startswith("Bearer "):
+        user_id = _parse_token(auth_header[7:]) or ""
+    if not user_id:
+        raise HTTPException(status_code=401, detail="请先登录")
+    if (_report_owner(report_id) or "") != user_id:
+        raise HTTPException(status_code=403, detail="无权访问该报告")
+
+    state = load_user_state(user_id)
+    access_checker = AccessChecker(state)
+
+    # ── 对话状态恢复/初始化 ──
+    memory_mgr = MemoryManager(report_id)
+    dialogue_state: DialogueState | None = None
+
+    if body.dialogue_token:
+        # 从 token 恢复对话状态（简化处理，实际可用 JWT 或服务端存储）
+        try:
+            import base64, json as _json
+            state_json = base64.b64decode(body.dialogue_token).decode()
+            state_dict = _json.loads(state_json)
+            dialogue_state = DialogueState(**state_dict)
+        except Exception:
+            dialogue_state = None
+
+    if dialogue_state is None:
+        dialogue_state = DialogueState()
+
+    # ── 权限检查 ──
+    engine_access = access_checker.check_engine_chat(body.planet)
+    if not engine_access.allowed:
+        return {
+            "status": "error",
+            "error_code": "QUOTA_EXCEEDED",
+            "data": {
+                "message": engine_access.reason,
+                "access": engine_access.to_dict(),
+            },
+        }
+
+    # ── 构建 Memory 上下文 ──
+    memory_context = memory_mgr.get_memory_context_for_agent()
+
+    # ── 获取对话追踪状态 ──
+    chat_tracker = SpiritChatTracker()
+    today_chats = chat_tracker.get_today_chats(report_id)
+    previous_chats_today = today_chats.get(body.planet, {}).get("count", 0)
+    previous_spirit = chat_tracker.get_last_spirit(report_id)
+
+    # ── 构建 entry_context ──
+    entry_context = body.entry_context or {}
+    if previous_chats_today > 0:
+        entry_context["previous_chats_today"] = previous_chats_today
+    if previous_spirit and previous_spirit != body.planet:
+        entry_context["previous_spirit"] = previous_spirit
+
+    # ── 第 1 层：ConsultationV2 引擎 ──
+    consultation_engine = ConsultationV2(report_data, body.planet, dialogue_state)
+
+    # 如果是继续对话，先用 ConsultationV2 处理
+    consultation_result = consultation_engine.chat(body.message, history=body.history)
+
+    # 更新对话状态
+    dialogue_state = consultation_result["dialogue_state"]
+
+    # ── 第 2 层：AI 增强（使用 V2 System Prompt）──
+    client = LLMClient()
+    final_response = consultation_result["response"]
+    source = "consultation_v2"
+    ai_access_info = None
+
+    # 决定是否需要 AI 增强
+    # 如果用户明确需要深入分析，或者 ConsultationV2 说需要引入星盘，则调用 AI
+    need_ai_enhance = (
+        consultation_result["stage"] in ("reflect", "understand")
+        and client.is_configured
+    )
+
+    if need_ai_enhance:
+        ai_access = access_checker.check_ai_chat()
+        ai_access_info = ai_access.to_dict()
+        if ai_access.allowed:
+            try:
+                # 构建 V2 System Prompt
+                system_prompt = build_spirit_system_prompt_v2(
+                    report_data,
+                    body.planet,
+                    topic=body.topic,
+                    entry_context=entry_context,
+                    memory_context=memory_context,
+                )
+
+                # 注入 ConsultationV2 的分析作为上下文
+                consultation_hint = f"""[当前对话阶段: {consultation_result['stage']}]
+用户说: {body.message}
+对话状态: {consultation_result['dialogue_state'].user_expressed[:100] if consultation_result['dialogue_state'].user_expressed else '(首次对话)'}
+阶段目标: {consultation_result['stage']}
+
+请基于以上对话阶段，用温暖、专业的方式回复。
+保持咨询师的态度：先倾听，再回应，适时引入星盘视角。
+"""
+
+                full_prompt = consultation_hint + "\n\n" + system_prompt
+
+                ai_response = await client.chat_async(
+                    system_prompt=full_prompt,
+                    user_message=body.message,
+                    history=body.history,
+                )
+                if ai_response:
+                    final_response = ai_response
+                    source = "consultation_v2_ai"
+
+            except Exception as e:
+                print(f"[spirit_chat_v2] AI enhancement failed: {e}")
+                # 降级到 ConsultationV2 输出
+
+    # ── 更新 Memory（成长追踪）──
+    try:
+        from life_kline.growth.signal_analyzer import GrowthSignalAnalyzer, analyze_from_dialogue_state
+
+        # 1. 分析成长信号
+        analyzer = GrowthSignalAnalyzer()
+
+        # 从对话状态分析（基于阶段和情绪）
+        dialogue_state_dict = consultation_result["dialogue_state"].to_dict() if hasattr(consultation_result["dialogue_state"], 'to_dict') else consultation_result["dialogue_state"]
+        signals = analyze_from_dialogue_state(dialogue_state_dict)
+
+        # 同时分析用户消息内容
+        content_signals = analyzer.analyze(body.message)
+
+        # 合并信号（取较强者）
+        if abs(content_signals.fear_delta) > abs(signals.fear_delta):
+            signals.fear_delta = content_signals.fear_delta
+        if abs(content_signals.awareness_delta) > abs(signals.awareness_delta):
+            signals.awareness_delta = content_signals.awareness_delta
+        if abs(content_signals.action_delta) > abs(signals.action_delta):
+            signals.action_delta = content_signals.action_delta
+        if content_signals.detected_themes:
+            signals.detected_themes = content_signals.detected_themes
+        if content_signals.signal_evidence:
+            signals.signal_evidence = content_signals.signal_evidence
+
+        # 2. 应用成长信号到 Theme 状态
+        theme_key = consultation_result["dialogue_state"].theme_key or ""
+        theme_label = consultation_result["dialogue_state"].theme_key or ""
+
+        if theme_key and (signals.fear_delta != 0 or signals.awareness_delta != 0 or signals.action_delta != 0):
+            updated_state, new_milestones = memory_mgr.apply_growth_signals(
+                signals, theme_key, theme_label
+            )
+            if new_milestones:
+                print(f"[Memory] New milestone for {theme_key}: {[m.description for m in new_milestones]}")
+
+        # 3. 记录对话摘要
+        from life_kline.memory import SessionSummary
+        summary = SessionSummary(
+            session_id=str(uuid.uuid4())[:12],
+            planet=body.planet,
+            topic=body.topic,
+            theme_key=theme_key,
+            user_concern=body.message[:100],
+            emotional_state=consultation_result["dialogue_state"].emotional_tone,
+            dialogue_rounds=consultation_result["dialogue_state"].turn_count,
+        )
+        memory_mgr.add_session_summary(summary)
+
+    except Exception as e:
+        print(f"[spirit_chat_v2] Memory update failed: {e}")
+
+    # ── 记录对话 ──
+    try:
+        if user_id:
+            _dao.insert_chat_message(
+                user_id=user_id, role="user", content=body.message,
+                report_id=report_id, spirit_planet=body.planet,
+            )
+            _dao.insert_chat_message(
+                user_id=user_id, role="assistant", content=final_response,
+                report_id=report_id, spirit_planet=body.planet,
+            )
+    except Exception:
+        pass
+    chat_tracker.record_chat(report_id, body.planet)
+
+    # ── AI 使用量追踪 ──
+    if source == "consultation_v2_ai" and user_id:
+        try:
+            _dao.increment_ai_usage(user_id)
+        except Exception:
+            pass
+
+    # ── 生成对话状态 token ──
+    import base64, json as _json
+    try:
+        state_json = _json.dumps(dialogue_state.to_dict())
+        dialogue_token = base64.b64encode(state_json.encode()).decode()
+    except Exception:
+        dialogue_token = None
+
+    return {
+        "status": "success",
+        "data": {
+            "planet": body.planet,
+            "response": final_response,
+            "user_message": body.message,
+            "spirit_response": final_response,
+            "source": source,
+            "stage": consultation_result["stage"],
+            "dialogue_state": {
+                "stage": dialogue_state.stage,
+                "turn_count": dialogue_state.turn_count,
+                "theme_key": dialogue_state.theme_key,
+                "user_expressed": dialogue_state.user_expressed[:100] if dialogue_state.user_expressed else "",
+            },
+            "dialogue_token": dialogue_token,
+            "ai_access": ai_access_info,
+            "memory_context": {
+                "recent_topics": memory_context.get("recent_topics", [])[-3:],
+                "recent_milestones": memory_context.get("recent_milestones", [])[-2:],
+            },
+        },
+    }
+
+
 @app.post("/api/geocode", response_model=GeocodeResult)
 async def geocode_location(input_data: GeocodeInput) -> Dict[str, Any]:
     import socket

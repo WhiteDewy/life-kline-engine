@@ -1,7 +1,7 @@
 # 占星人生模型 PRD
 
-版本：v2.1
-更新日期：2026-07-20
+版本：v2.3
+更新日期：2026-07-27
 
 ---
 
@@ -19,6 +19,8 @@
 10. [星灵花园——陪伴疗愈产品设计](#10-星灵花园陪伴疗愈产品设计)
 11. [引擎占星师——规则驱动的占星咨询核心](#11-引擎占星师规则驱动的占星咨询核心) ← v2.1 新增
 12. [三层咨询架构与定价体系](#12-三层咨询架构与定价体系) ← v2.1 新增
+13. [成长追踪与主题识别系统](#13-成长追踪与主题识别系统) ← v2.2 新增
+14. [时间推运系统](#14-时间推运系统) ← v2.2 新增
 
 ---
 
@@ -964,3 +966,197 @@ VIP 有效期内 → 引擎无限 / AI 月赠额度
 | 币种 | 金币（美元计价） | 星币（1币=1元，更直观） |
 | 免费 AI 对话 | 基础功能免费 | 引擎 10轮/天免费 / AI 需星币或 VIP |
 | 差异化 | 八字十神驱动 | 本命星盘驱动 + 行运 + 法达 + 飞星链路 |
+
+---
+
+## 13. 成长追踪与主题识别系统 ← v2.2 新增
+
+### 13.1 问题背景
+
+用户的咨询问题往往是隐性的、情感化的表达，不会直接说出占星术语。例如：
+- "我总是觉得自己不够好" → 自我价值问题
+- "我想辞职但不敢跟领导说" → 权威与掌控问题
+- "最近对钱很焦虑" → 金钱与资源问题
+
+需要从用户语言中**识别隐含 Theme**，并追踪其心理状态变化。
+
+### 13.2 成长追踪系统（Memory）
+
+**目标**：记录「你成长了什么」，不是「说了什么」。
+
+**核心概念**：
+- **Theme State**：追踪用户在每个 Theme 上的 fear/awareness/action 水平（0.0~1.0）
+- **Growth Milestone**：当状态发生显著变化时，记录为里程碑
+- **Growth Insight**：AI 可以主动提及的成长发现
+
+**Theme State 维度**：
+
+| 维度 | 说明 | 变化检测阈值 |
+|-----|------|------------|
+| fear_level | 恐惧/焦虑程度 | 0.15 下降触发里程碑 |
+| awareness_level | 觉察程度 | 0.15 上升触发里程碑 |
+| action_level | 行动程度 | 0.20 上升触发里程碑 |
+
+**成长信号分析**（`signal_analyzer.py`）：
+
+从用户对话内容中提取成长信号：
+- **Fear 降低**："我想试试"、"我决定"、"我做了"、"好像没那么怕了"
+- **Fear 增加**："我很怕"、"担心"、"焦虑"、"不敢"
+- **Awareness 上升**："我发现"、"我意识到"、"原来"、"可能是因为"
+- **Action 上升**："我做了"、"我开始"、"我主动"、"我跟"
+
+**Memory 上下文结构**：
+```python
+{
+    "recent_topics": [...],           # 最近话题
+    "growth_states": {                # Theme 状态
+        "authority": {"fear_level": 0.3, "awareness_level": 0.6, ...},
+        "self_worth": {"fear_level": 0.5, "awareness_level": 0.7, ...},
+    },
+    "growth_insights": [              # 成长洞察（AI 可主动提及）
+        {"theme_key": "authority", "insight": "对「权威」的恐惧感已经降低"},
+    ],
+    "recent_milestones": [...],       # 最近里程碑
+}
+```
+
+**典型场景**：
+- 用户 3 月说"我害怕领导"，6 月说"我最近跟领导沟通好多了"
+- AI 可以说："我记得你之前对领导这件事很焦虑，现在你好像找到一些方式了"
+
+### 13.3 Theme 识别系统（AKG）
+
+**三层匹配机制**：
+
+| 层级 | 匹配方式 | 置信度权重 | 说明 |
+|-----|---------|-----------|------|
+| **语义映射** | `semantic_mappings` 精确短语 | 0.7 | "害怕领导"→authority |
+| **关键词匹配** | `user_keywords` 词语匹配 | 1.0 | "辞职"→career |
+| **Fallback** | 隐含意图推断 | 0.4 | "不够好"→self_worth |
+
+**Fallback 隐含意图映射**：
+```python
+FALLBACK_PATTERNS = [
+    (["不够好", "不够优秀", "差", "失败", "自卑", "没价值"], "self_worth"),
+    (["焦虑", "担心", "害怕", "恐惧", "不安", "压力", "失眠"], "safety"),
+    (["沟通不了", "说不清", "无法表达", "沉默", "冷战"], "communication"),
+    (["不爱了", "没感觉了", "不在乎", "孤独", "疏远"], "intimacy"),
+    (["失去", "悲伤", "伤心", "痛苦", "抑郁", "后悔"], "loss"),
+]
+```
+
+**Theme 注册表**（12 个核心 Theme）：
+
+| Theme | Label | 核心关键词 | 语义映射示例 |
+|-------|-------|----------|------------|
+| authority | 权威与掌控 | 领导、老板、辞职、服从 | 害怕领导→SATURN_10H |
+| intimacy | 亲密与连接 | 恋爱、分手、伴侣 | 渴望亲密→VENUS_SCORPIO |
+| money | 金钱与资源 | 钱、投资、理财、负债 | 财务压力→SATURN_2H |
+| self_worth | 自我价值 | 自信、自卑、认可、价值 | 自我认同→SUN_1H |
+| safety | 安全感 | 焦虑、担心、恐惧、失眠 | 情绪安全→MOON_CANCER |
+| growth | 成长与改变 | 成长、突破、改变、进步 | 成长需求→JUPITER_9H |
+| communication | 沟通与表达 | 沟通、表达、吵架、冷战 | 沟通方式→MERCURY_GEMINI |
+| career | 事业与成就 | 事业、工作、职场、升职 | 事业野心→SATURN_CAPRICORN |
+| family_origin | 原生家庭 | 父母、童年、家庭、亲子 | 父亲形象→SUN_4H |
+| creativity | 创造力与娱乐 | 创意、艺术、娱乐、孩子 | 创造力→NEPTUNE_PISCES |
+| loss | 失去与悲伤 | 失去、分手、死亡、疗愈 | 丧失感→SATURN_8H |
+| health | 健康 | 健康、身体、疾病、疲劳 | 体质→MARS_1H |
+
+### 13.4 代码文件
+
+```
+src/life_kline/growth/signal_analyzer.py   # 成长信号分析器
+src/life_kline/growth/detector.py          # 成长检测与里程碑
+src/life_kline/memory.py                   # MemoryManager（成长追踪）
+src/life_kline/akg/recognizer.py           # ThemeRecognizer（三层匹配）
+src/life_kline/akg/theme_catalog.py        # Theme 定义注册表
+src/life_kline/akg/nodes.py                # ThemeNode、ChartEvidence 等数据类
+```
+
+### 13.5 未来扩展
+
+- **Counseling Skills**：ACT/IFS/CBT/MI 等咨询技术模块化
+- **Council 机制**：多行星视角协作讨论（规则路由 + 单次多角色调用，避免多次 LLM 调用延迟）
+- **长期叙事追踪**：Narrative Engine 跟踪用户人生叙事随时间的变化
+
+---
+
+## 14. 时间推运系统 ← v2.2 新增
+
+### 14.1 核心价值
+
+**与 ChatGPT 等通用 AI 的核心差异**：
+
+| 通用 AI | 星灵花园 |
+|---------|---------|
+| "缘分会来的" | "你在法达金星周期，2028年感情机会增加" |
+| "继续努力" | "10月冥王星过你的MC/AC，这是事业转折点" |
+| "随缘" | "你的金星庙旺在金牛8宫，感情来得晚但很深 |
+
+时间推运是用户愿意付费的核心壁垒之一。
+
+### 14.2 已实现系统
+
+#### 法达推运（Firdaria）
+
+| 功能 | 状态 | 说明 |
+|-----|------|------|
+| 扩展到100年 | ✅ | 原75年扩展，覆盖完整生命周期 |
+| 昼夜盘区分 | ✅ | DAY_ORDER / NIGHT_ORDER |
+| 大运+子运 | ✅ | 主运7颗子星 |
+| 婚姻时间窗口 | ✅ | 金星周期判断 |
+| 对话友好输出 | ✅ | 中文解释+事业/感情提示 |
+
+**代码文件**：`src/life_kline/timing/firdaria_engine.py`
+
+#### 行运系统（Transit）
+
+| 功能 | 状态 | 说明 |
+|-----|------|------|
+| 每日行运 | ✅ | transit_engine.py |
+| 月返 | ✅ | lunar_return |
+| 冥王星过境警告 | ✅ | 结婚/事业转折点 |
+
+### 14.3 规划中系统
+
+| 系统 | 功能 | 状态 |
+|-----|------|------|
+| 太阳返照 | 每年生日运势 | 待实现 |
+| 小限 | 一年内精细时间点 | 待实现 |
+| Zodiacal Releasing | 感情事件窗口 | 待研究 |
+
+### 14.4 代码文件
+
+```
+src/life_kline/timing/
+├── __init__.py              # 模块入口
+├── firdaria_engine.py       # 法达引擎（扩展版）
+├── transit_analyzer.py      # 行运分析器
+└── timing_analyzer.py       # 综合时间分析器
+```
+
+### 14.5 对话集成
+
+时间推运将在以下场景自动触发：
+1. 用户问"什么时候"能找到对象/结婚/转运
+2. 用户问"什么时候"适合做某事
+3. 用户进入"阶段导航"分析
+
+**技术实现**：在 `ConsultationEngine.continue_consultation()` 中调用 `TimingDetector` 检测时间问题，然后调用 `FirdariaEngine` 计算结果，存储到 `state.timing_summary` 和 `state.timing_note`。
+
+### 14.6 使用示例
+
+```python
+# 对话引擎自动检测"什么时候"类问题
+from life_kline.consultation_engine import ConsultationEngine, ConsultationState
+
+engine = ConsultationEngine(report_data)
+state = ConsultationState(session_id='test')
+
+# 当用户问"我什么时候能找到对象"
+state = engine._detect_timing(state, '我什么时候能找到对象')
+
+# 输出：
+# timing_summary: "你现在处于法达月亮周期。这个阶段的课题是「情绪与直觉」。大约还剩1年进入下一个周期。"
+# timing_note: "月亮大运：情感需求增加，需要更多陪伴和安全感。适合谈婚论嫁。"
+```
