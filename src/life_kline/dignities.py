@@ -192,19 +192,20 @@ def get_face_lord(sign: Sign, degree: float) -> Optional[Planet]:
     return decan_planets[planet_index]
 
 
-def is_any_triplicity_lord(planet: Planet, sign: Sign) -> bool:
+def is_any_triplicity_lord(planet: Planet, sign: Sign, is_day: bool = True) -> bool:
     """
     判断行星是否为该星座的三分宫主星之一（Dorotheus体系）
 
     三分（Triplicity）有三种主星：日主星、夜主星、共同主星。
-    只要是其中任意一个，即返回True。
+    根据 is_day 参数选择日主星或夜主星，共同主星始终有效。
 
     参数:
         planet: 行星
         sign: 星座
+        is_day: 是否为日间盘（True=日主星优先，False=夜主星优先）
 
     返回:
-        bool: 是否为三分宫主星之一
+        bool: 是否为有效的三分宫主星
     """
     # 三分宫主星表（根据Dorotheus系统）
     # 格式：{星座: (日主星, 夜主星, 共同主星)}
@@ -232,8 +233,9 @@ def is_any_triplicity_lord(planet: Planet, sign: Sign) -> bool:
 
     day_lord, night_lord, particip_lord = triplicity_lords[sign]
 
-    # 只要是任意一个主星，即返回True（不可叠加）
-    return planet in (day_lord, night_lord, particip_lord)
+    # 根据日夜盘选择对应主星，再加上共同主星
+    primary_lord = day_lord if is_day else night_lord
+    return planet in (primary_lord, particip_lord)
 
 
 def is_peregrine(planet: Planet, sign: Sign, degree: float, is_day: bool) -> bool:
@@ -247,7 +249,8 @@ def is_peregrine(planet: Planet, sign: Sign, degree: float, is_day: bool) -> boo
         planet: 行星
         sign: 星座
         degree: 度数
-        is_day: 是否为日间盘
+        is_day: 是否为日间盘（当前用于三分判断的日/夜区分，
+                但由于三分有日/夜/共同三位主星，任一匹配即非游走）
 
     返回:
         bool: 是否游走
@@ -260,8 +263,8 @@ def is_peregrine(planet: Planet, sign: Sign, degree: float, is_day: bool) -> boo
     if sign in EXALTATION_SIGNS.get(planet, []):
         return False
 
-    # 检查三分宫主星
-    if is_any_triplicity_lord(planet, sign):
+    # 检查三分宫主星（根据日夜盘选择对应主星）
+    if is_any_triplicity_lord(planet, sign, is_day):
         return False
 
     # 检查界
@@ -1076,7 +1079,7 @@ __all__ = [
     # 辅助函数
     "get_term_lord",
     "get_face_lord",
-    "is_triplicity_lord_current",
+    "is_any_triplicity_lord",
     "is_peregrine",
     "is_cazimi",
     "is_combust",

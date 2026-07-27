@@ -1,35 +1,42 @@
 """
 life_kline - 基于莉莉体系的星盘评分核心引擎 (v3.3)
+
+占星人生模型核心引擎，提供星盘计算、领域分析、叙事生成等功能。
 """
 
-# 首先定义 __all__ 列表
-__all__ = []
+# 核心数据模型
+from .models import ChartData, PlanetFeature, PlanetInfo, Aspect
 
-# 导入核心模块
-from .models import ChartData, PlanetFeature
-__all__.extend(["ChartData", "PlanetFeature"])
+# 核心计算函数（暂时注释掉，等验证各模块后逐步开启）
+# from .dignities import compute_all_dignities, DignityResult
+# from .houses import compute_all_house_powers, HousePowerResult
+# from .scoring import compute_node_score, NodeScoreResult
+# from .firdaria import calculate_firdaria_periods, get_firdaria_lord_at_age, FirdariaPeriod
 
-# 导入核心函数
-from .scoring import compute_node_score
-__all__.append("compute_node_score")
+__all__ = [
+    # 模型
+    "ChartData",
+    "PlanetFeature",
+    "PlanetInfo",
+    "Aspect",
+    # 计算
+    "compute_all_dignities",
+    "compute_essential_dignity",
+    "DignityResult",
+    "compute_all_house_powers",
+    "HousePowerResult",
+    "compute_node_score",
+    "NodeScoreResult",
+    "calculate_firdaria_periods",
+    "get_firdaria_lord_at_age",
+    "FirdariaPeriod",
+]
 
-from .dignities import compute_all_dignities
-__all__.append("compute_all_dignities")
-
-from .houses import compute_all_house_powers
-__all__.append("compute_all_house_powers")
-
-from .firdaria import calculate_firdaria_periods, get_firdaria_lord_at_age, FirdariaPeriod
-__all__.extend(["calculate_firdaria_periods", "get_firdaria_lord_at_age", "FirdariaPeriod"])
-
-# 版本信息
 __version__ = "0.3.3"
 __author__ = "xiatian"
 
 def get_version():
-    """获取版本号"""
     return __version__
 
 def get_available_functions():
-    """获取可用函数列表"""
     return __all__.copy()

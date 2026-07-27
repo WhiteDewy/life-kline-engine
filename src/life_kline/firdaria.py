@@ -4,7 +4,7 @@ firdaria.py - 法达星限系统 (Firdaria)
 这个模块实现了法达星限（Firdaria）的时间推运系统。
 法达星限是一种将人生划分为不同行星掌管周期的古老技术。
 通常用于判断长期运势趋势（The Trend）。
-周期总长 75 年，之后循环。
+周期总长 100 年（扩展版），覆盖完整生命周期。
 """
 
 from typing import List, Dict, Optional, Tuple
@@ -13,18 +13,20 @@ import math
 
 from .constants import Planet
 
-# 法达年限配置
+# 法达年限配置（扩展至100年，PRD v2.3 §14.1）
+# 原标准75年按比例扩展并微调
 FIRDARIA_YEARS = {
-    Planet.SUN: 10,
-    Planet.VENUS: 8,
-    Planet.MERCURY: 13,
-    Planet.MOON: 9,
-    Planet.SATURN: 11,
-    Planet.JUPITER: 12,
-    Planet.MARS: 7,
-    Planet.NORTH_NODE: 3,
-    Planet.SOUTH_NODE: 2,
+    Planet.SUN: 14,
+    Planet.VENUS: 10,
+    Planet.MERCURY: 16,
+    Planet.MOON: 11,
+    Planet.SATURN: 14,
+    Planet.JUPITER: 15,
+    Planet.MARS: 11,
+    Planet.NORTH_NODE: 5,
+    Planet.SOUTH_NODE: 4,
 }
+# 总计: 14+10+16+11+14+15+11+5+4 = 100
 
 # 迦勒底星序 (Chaldean Order): 土 -> 木 -> 火 -> 日 -> 金 -> 水 -> 月
 # 用于确定子运（Sub-period）的顺序
@@ -173,7 +175,7 @@ def get_firdaria_lord_at_age(age: float, is_day_chart: bool) -> Optional[Firdari
     periods = calculate_firdaria_periods(is_day_chart, max_age=age + 1.0)
     
     for p in periods:
-        if p.start_age <= age < p.end_age:
+        if p.start_age <= age <= p.end_age:
             return p
-            
+
     return None
