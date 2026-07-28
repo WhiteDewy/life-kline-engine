@@ -38,6 +38,11 @@ const router = createRouter({
       component: () => import("@/views/MonthlyReturn/index.vue"),
     },
     {
+      path: "/transit-now",
+      name: "transit-now",
+      component: () => import("@/views/TransitNow/index.vue"),
+    },
+    {
       path: "/my-chart",
       name: "my-chart",
       component: () => import("@/views/MyChart/index.vue"),
@@ -101,7 +106,9 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
   const token = localStorage.getItem("lk_token");
 
-  if (to.path === "/login") {
+  // 不需要登录即可访问的公开页面
+  const PUBLIC_PATHS = ["/login", "/transit-now"];
+  if (PUBLIC_PATHS.includes(to.path)) {
     // 已登录用户不需要再看登录页
     if (token) {
       next("/");

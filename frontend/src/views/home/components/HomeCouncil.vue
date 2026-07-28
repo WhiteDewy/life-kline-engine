@@ -58,85 +58,88 @@
           </div>
         </div>
 
-        <!-- 星灵卡片网格 -->
-        <div class="spirit-grid" v-if="councilMode === 'planets'">
-          <div
-            v-for="p in planetList" :key="p.planet"
-            class="spirit-buddy"
-            :class="{
-              'spirit-buddy--featured': p.isFeatured,
-              'spirit-buddy--asleep': !p.isFeatured && p.planet !== 'SUN',
-              'spirit-buddy--main': p.planet === 'SUN',
-              'spirit-buddy--active': p.planet === activePlanet,
-            }"
-            :style="{
-              '--spirit-color': p.color,
-              '--spirit-color-light': p.color + '22',
-              '--spirit-color-soft': p.color + '18',
-            }"
-            @click="onSelectPlanet(p)"
-          >
-            <div class="buddy-avatar">
-              <div class="avatar-ring" :style="{ borderColor: p.color }">
-                <SpiritAvatar :planet="p.planet" :symbol="p.symbol" :color="p.color" :name="p.shortName" :sign="p.sign" :gender="gender" size="lg" />
+        <!-- 星灵模式：行星网格 + 详情面板（同一 v-if 管辖，v-else 在下方） -->
+        <div v-if="councilMode === 'planets'">
+          <!-- 星灵卡片网格 -->
+          <div class="spirit-grid">
+            <div
+              v-for="p in planetList" :key="p.planet"
+              class="spirit-buddy"
+              :class="{
+                'spirit-buddy--featured': p.isFeatured,
+                'spirit-buddy--asleep': !p.isFeatured && p.planet !== 'SUN',
+                'spirit-buddy--main': p.planet === 'SUN',
+                'spirit-buddy--active': p.planet === activePlanet,
+              }"
+              :style="{
+                '--spirit-color': p.color,
+                '--spirit-color-light': p.color + '22',
+                '--spirit-color-soft': p.color + '18',
+              }"
+              @click="onSelectPlanet(p)"
+            >
+              <div class="buddy-avatar">
+                <div class="avatar-ring" :style="{ borderColor: p.color }">
+                  <SpiritAvatar :planet="p.planet" :symbol="p.symbol" :color="p.color" :name="p.shortName" :sign="p.sign" :gender="gender" size="lg" />
+                </div>
+                <span v-if="p.isFeatured" class="buddy-badge buddy-badge--today">✨ 今日</span>
+                <span v-else-if="p.planet !== 'SUN'" class="buddy-badge buddy-badge--rest">💤</span>
               </div>
-              <span v-if="p.isFeatured" class="buddy-badge buddy-badge--today">✨ 今日</span>
-              <span v-else-if="p.planet !== 'SUN'" class="buddy-badge buddy-badge--rest">💤</span>
-            </div>
 
-            <div class="buddy-info">
-              <div class="buddy-name">{{ p.shortName }}</div>
-              <div class="buddy-archetype">{{ p.archetypeShort }}</div>
-              <div class="buddy-sign">{{ p.signLabel }} · {{ p.dignityLabel || '' }}</div>
-            </div>
-
-            <span v-if="p.healingLabel" class="healing-tag">{{ p.healingLabel }}</span>
-
-            <div v-if="p.activationScore !== null && p.activationScore !== undefined" class="buddy-meter">
-              <div class="meter-track">
-                <div class="meter-fill" :style="{ width: p.activationScore + '%', background: p.color }" />
+              <div class="buddy-info">
+                <div class="buddy-name">{{ p.shortName }}</div>
+                <div class="buddy-archetype">{{ p.archetypeShort }}</div>
+                <div class="buddy-sign">{{ p.signLabel }} · {{ p.dignityLabel || '' }}</div>
               </div>
-              <span class="meter-label">{{ Math.round(p.activationScore) }}%</span>
-            </div>
 
-            <div class="buddy-actions">
-              <span class="buddy-tap-hint">轻触对话</span>
-              <button class="buddy-detail-btn" @click.stop="openDetail(p)">详情</button>
+              <span v-if="p.healingLabel" class="healing-tag">{{ p.healingLabel }}</span>
+
+              <div v-if="p.activationScore !== null && p.activationScore !== undefined" class="buddy-meter">
+                <div class="meter-track">
+                  <div class="meter-fill" :style="{ width: p.activationScore + '%', background: p.color }" />
+                </div>
+                <span class="meter-label">{{ Math.round(p.activationScore) }}%</span>
+              </div>
+
+              <div class="buddy-actions">
+                <span class="buddy-tap-hint">轻触对话</span>
+                <button class="buddy-detail-btn" @click.stop="openDetail(p)">详情</button>
+              </div>
             </div>
           </div>
+
+          <!-- 星灵详情面板（teleport 不参与 v-if/v-else 链，故包在内部不受影响） -->
+          <teleport to="body">
+            <div v-if="detailPlanet" class="detail-overlay" @click.self="detailPlanet = null">
+              <div class="detail-sheet">
+                <button class="detail-close" @click="detailPlanet = null">✕</button>
+                <div class="detail-head" :style="{ color: detailPlanet.color }">
+                  <span class="detail-name">{{ detailPlanet.shortName }}</span>
+                  <span class="detail-archetype">{{ detailPlanet.archetypeShort }}</span>
+                </div>
+                <div class="detail-meta">{{ detailPlanet.signLabel }} · {{ detailPlanet.dignityLabel || '' }}</div>
+                <p v-if="detailPlanet.essence" class="detail-essence">「{{ detailPlanet.essence }}」</p>
+                <p v-if="detailPlanet.personality" class="detail-section">{{ detailPlanet.personality }}</p>
+                <div v-if="detailPlanet.gift_to_user" class="detail-row">
+                  <span class="detail-label">给你的礼物</span>
+                  <span>{{ detailPlanet.gift_to_user }}</span>
+                </div>
+                <div v-if="detailPlanet.challenge_to_user" class="detail-row">
+                  <span class="detail-label">你的课题</span>
+                  <span>{{ detailPlanet.challenge_to_user }}</span>
+                </div>
+                <div v-if="detailPlanet.greeting" class="detail-row">
+                  <span class="detail-label">TA对你说</span>
+                  <span>{{ detailPlanet.greeting }}</span>
+                </div>
+                <button class="detail-chat-btn" :style="{ background: detailPlanet.color }" @click="onChatFromDetail">和 {{ detailPlanet.shortName }} 对话</button>
+              </div>
+            </div>
+          </teleport>
         </div>
 
-        <!-- 星灵详情面板 -->
-        <teleport to="body">
-          <div v-if="detailPlanet" class="detail-overlay" @click.self="detailPlanet = null">
-            <div class="detail-sheet">
-              <button class="detail-close" @click="detailPlanet = null">✕</button>
-              <div class="detail-head" :style="{ color: detailPlanet.color }">
-                <span class="detail-name">{{ detailPlanet.shortName }}</span>
-                <span class="detail-archetype">{{ detailPlanet.archetypeShort }}</span>
-              </div>
-              <div class="detail-meta">{{ detailPlanet.signLabel }} · {{ detailPlanet.dignityLabel || '' }}</div>
-              <p v-if="detailPlanet.essence" class="detail-essence">「{{ detailPlanet.essence }}」</p>
-              <p v-if="detailPlanet.personality" class="detail-section">{{ detailPlanet.personality }}</p>
-              <div v-if="detailPlanet.gift_to_user" class="detail-row">
-                <span class="detail-label">给你的礼物</span>
-                <span>{{ detailPlanet.gift_to_user }}</span>
-              </div>
-              <div v-if="detailPlanet.challenge_to_user" class="detail-row">
-                <span class="detail-label">你的课题</span>
-                <span>{{ detailPlanet.challenge_to_user }}</span>
-              </div>
-              <div v-if="detailPlanet.greeting" class="detail-row">
-                <span class="detail-label">TA对你说</span>
-                <span>{{ detailPlanet.greeting }}</span>
-              </div>
-              <button class="detail-chat-btn" :style="{ background: detailPlanet.color }" @click="onChatFromDetail">和 {{ detailPlanet.shortName }} 对话</button>
-            </div>
-          </div>
-        </teleport>
-
-        <!-- 星座卡片网格 -->
-        <div class="spirit-grid spirit-grid--signs" v-else>
+        <!-- 星座卡片网格（v-else 紧跟 v-if="councilMode === 'planets'"） -->
+        <div v-else class="spirit-grid spirit-grid--signs">
           <button
             v-for="s in signList" :key="s.key"
             class="sign-card"

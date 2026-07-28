@@ -113,6 +113,113 @@
       </div>
     </div>
 
+    <!-- 新建日记弹窗 -->
+    <transition name="create-fade">
+      <div v-if="showCreate" class="create-mask" @click.self="cancelCreate">
+        <div class="create-panel">
+          <div class="create-panel__header">
+            <h3 class="create-panel__title">写日记</h3>
+            <button class="create-panel__close" @click="cancelCreate">✕</button>
+          </div>
+
+          <!-- 风格选择（来自后端 GET /spirit-diary/{id}/styles） -->
+          <div class="create-section" v-if="styleSuggestions.length">
+            <p class="create-label">选择风格</p>
+            <div class="style-grid">
+              <button
+                v-for="s in styleSuggestions"
+                :key="s.style"
+                class="style-card"
+                :class="{ active: selectedStyle === s.style }"
+                @click="selectedStyle = s.style"
+              >
+                <span class="style-emoji">{{ s.emoji }}</span>
+                <span class="style-name">{{ s.label }}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 心情选择 -->
+          <div class="create-section">
+            <p class="create-label">今天的心情</p>
+            <div class="mood-row">
+              <button
+                v-for="m in MOOD_OPTIONS"
+                :key="m.emoji"
+                class="mood-btn"
+                :class="{ active: selectedMood === m.emoji }"
+                @click="selectedMood = m.emoji"
+              >{{ m.emoji }}</button>
+            </div>
+          </div>
+
+          <!-- 能量等级 -->
+          <div class="create-section">
+            <p class="create-label">今日能量 <span class="create-label-hint">{{ energyLabel }}</span></p>
+            <div class="energy-row">
+              <button
+                v-for="n in 5"
+                :key="n"
+                class="energy-dot"
+                :class="{ active: selectedEnergy >= n }"
+                @click="selectedEnergy = n"
+              />
+            </div>
+          </div>
+
+          <!-- 正文 -->
+          <div class="create-section">
+            <textarea
+              v-model="createText"
+              class="create-textarea"
+              rows="5"
+              maxlength="500"
+              placeholder="记录今天和星灵的对话、感受、或任何你想沉淀的想法..."
+              @input="autoResizeCreate($event)"
+            />
+            <p class="create-char-count">{{ createText.length }}/500</p>
+          </div>
+
+          <!-- 关键词 -->
+          <div class="create-section">
+            <p class="create-label">关键词（选填）</p>
+            <div class="kw-edit-row">
+              <span v-for="(kw, ki) in createKeywords" :key="ki" class="kw-chip">
+                {{ kw }}
+                <button class="kw-chip-remove" @click="createKeywords.splice(ki, 1)">×</button>
+              </span>
+              <input
+                v-model="newKw"
+                class="kw-input"
+                placeholder="回车添加"
+                maxlength="12"
+                @keydown.enter.prevent="addCreateKeyword"
+              />
+            </div>
+          </div>
+
+          <!-- 关联星灵 -->
+          <div class="create-section" v-if="availablePlanets.length">
+            <p class="create-label">关联星灵（选填）</p>
+            <div class="planet-row">
+              <button
+                v-for="p in availablePlanets"
+                :key="p.key"
+                class="planet-btn"
+                :class="{ active: selectedPlanet === p.key }"
+                @click="selectedPlanet = selectedPlanet === p.key ? '' : p.key"
+              >{{ p.symbol }} {{ p.name }}</button>
+            </div>
+          </div>
+
+          <p v-if="createError" class="create-error">{{ createError }}</p>
+          <AppButton variant="primary" :loading="creating" :disabled="!createText.trim()" @click="submitCreate">
+            存入花园
+          </AppButton>
+        </div>
+      </div>
+    </transition>
+
     <!-- 删除确认弹窗 -->
     <transition name="confirm-fade">
       <div v-if="deletingEntry" class="confirm-mask" @click.self="cancelDelete">
@@ -144,6 +251,7 @@ import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
 const router = useRouter();
 const homeData = useHomeData();
 
+// ── 基础状态 ──
 const loading = ref(false);
 const entries = ref<any[]>([]);
 
@@ -174,7 +282,108 @@ function formatDate(entry: any): string {
 
 const displayEntries = computed(() => entries.value || []);
 
-// 编辑态
+// ── 新建日记 ──
+const showCreate = ref(false);
+const creating = ref(false);
+const createError = ref("");
+const styleSuggestions = ref<any[]>([]);
+const selectedStyle = ref("summary");
+const selectedMood = ref("");
+const selectedEnergy = ref(3);
+const selectedPlanet = ref("");
+const createText = ref("");
+const createKeywords = ref<string[]>([]);
+const newKw = ref("");
+
+const MOOD_OPTIONS = [
+  { emoji: "😊" }, { emoji: "😐" }, { emoji: "😔" },
+  { emoji: "😢" }, { emoji: "😤" }, { emoji: "😰" },
+  { emoji: "✨" }, { emoji: "🌿" },
+];
+
+const ENERGY_LABELS = ["很低", "偏低", "一般", "较好", "充沛"];
+const energyLabel = computed(() => ENERGY_LABELS[selectedEnergy.value - 1] || "");
+
+const availablePlanets = computed(() => {
+  const profiles = homeData.planetProfiles.value?.planet_characters || {};
+  return Object.entries(profiles).map(([key, p]: [string, any]) => ({
+    key,
+    name: p.persona?.name_zh || key,
+    symbol: p.persona?.symbol || "●",
+  }));
+});
+
+async function startNewEntry() {
+  showCreate.value = true;
+  createText.value = "";
+  createKeywords.value = [];
+  selectedMood.value = "";
+  selectedEnergy.value = 3;
+  selectedPlanet.value = "";
+  selectedStyle.value = "summary";
+  createError.value = "";
+  styleSuggestions.value = [];
+
+  const reportId = homeData.reportId.value;
+  if (reportId) {
+    try {
+      const res = await apiClient.get(`/spirit-diary/${reportId}/styles`);
+      if (res.data?.status === "success") {
+        styleSuggestions.value = res.data.data?.suggestions || [];
+      }
+    } catch {
+      styleSuggestions.value = [];
+    }
+  }
+}
+
+function cancelCreate() {
+  showCreate.value = false;
+}
+
+function addCreateKeyword() {
+  const v = newKw.value.trim();
+  if (!v || createKeywords.value.includes(v) || createKeywords.value.length >= 6) return;
+  createKeywords.value.push(v);
+  newKw.value = "";
+}
+
+function autoResizeCreate(e: any) {
+  const ta = e.target as HTMLTextAreaElement;
+  if (!ta) return;
+  ta.style.height = "auto";
+  ta.style.height = `${ta.scrollHeight}px`;
+}
+
+async function submitCreate() {
+  const reportId = homeData.reportId.value;
+  if (!reportId || !createText.value.trim()) return;
+  creating.value = true;
+  createError.value = "";
+  try {
+    const res = await apiClient.post(`/spirit-diary/${reportId}/entry`, {
+      spirit_planet: selectedPlanet.value || undefined,
+      mood_emoji: selectedMood.value || undefined,
+      user_messages: [createText.value.trim()],
+      diary_style: selectedStyle.value,
+      keywords: createKeywords.value.length ? createKeywords.value : undefined,
+      energy_level: selectedEnergy.value,
+    });
+    if (res.data?.status === "success") {
+      const newEntry = res.data.data?.entry || res.data.data;
+      if (newEntry) entries.value.unshift(newEntry);
+      cancelCreate();
+    } else {
+      createError.value = res.data?.detail || "创建失败，请稍后重试";
+    }
+  } catch (e: any) {
+    createError.value = e?.response?.data?.detail || e?.message || "创建失败";
+  } finally {
+    creating.value = false;
+  }
+}
+
+// ── 编辑态 ──
 const editingId = ref<string | null>(null);
 const editingText = ref("");
 const editingKeywords = ref<string[]>([]);
@@ -184,20 +393,13 @@ const editError = ref("");
 const editTextarea = ref<HTMLTextAreaElement[] | null>(null);
 
 function startEdit(entry: any) {
-  if (!entry.id) {
-    editError.value = "该条目暂不支持编辑（缺少 ID）";
-    return;
-  }
-  editError.value = "";
+  if (!entry.id) { editError.value = "该条目暂不支持编辑（缺少 ID）"; return; }
   editingId.value = entry.id;
   editingText.value = entry.entry_text || entry.text || entry.chat_context || "";
   editingKeywords.value = Array.isArray(entry.keywords) ? [...entry.keywords] : [];
   nextTick(() => {
     const ta = Array.isArray(editTextarea.value) ? editTextarea.value[0] : null;
-    if (ta) {
-      ta.focus();
-      autoResize({ target: ta } as any);
-    }
+    if (ta) { ta.focus(); autoResize({ target: ta } as any); }
   });
 }
 
@@ -212,22 +414,13 @@ function cancelEdit() {
 function addKeyword() {
   const v = newKeyword.value.trim();
   if (!v) return;
-  if (editingKeywords.value.includes(v)) {
-    newKeyword.value = "";
-    return;
-  }
-  if (editingKeywords.value.length >= 6) {
-    editError.value = "最多 6 个关键词";
-    return;
-  }
+  if (editingKeywords.value.includes(v)) { newKeyword.value = ""; return; }
+  if (editingKeywords.value.length >= 6) { editError.value = "最多 6 个关键词"; return; }
   editingKeywords.value.push(v);
   newKeyword.value = "";
-  editError.value = "";
 }
 
-function removeKeyword(idx: number) {
-  editingKeywords.value.splice(idx, 1);
-}
+function removeKeyword(idx: number) { editingKeywords.value.splice(idx, 1); }
 
 function autoResize(e: any) {
   const ta = e.target as HTMLTextAreaElement;
@@ -247,17 +440,15 @@ async function saveEdit(entry: any) {
     });
     if (res.data?.status === "success") {
       const idx = entries.value.findIndex((e: any) => e.id === entry.id);
-      if (idx >= 0) {
-        entries.value[idx] = {
-          ...entries.value[idx],
-          entry_text: editingText.value.trim(),
-          keywords: [...editingKeywords.value],
-          text: editingText.value.trim(),
-        };
-      }
+      if (idx >= 0) entries.value[idx] = {
+        ...entries.value[idx],
+        entry_text: editingText.value.trim(),
+        keywords: [...editingKeywords.value],
+        text: editingText.value.trim(),
+      };
       cancelEdit();
     } else {
-      editError.value = res.data?.detail || "保存失败，请稍后再试";
+      editError.value = res.data?.detail || "保存失败，请稍后重试";
     }
   } catch (e: any) {
     editError.value = e?.response?.data?.detail || e?.message || "保存失败";
@@ -266,21 +457,16 @@ async function saveEdit(entry: any) {
   }
 }
 
-// 删除态
+// ── 删除态 ──
 const deletingEntry = ref<any | null>(null);
 const deleting = ref(false);
 
 function confirmDelete(entry: any) {
-  if (!entry.id) {
-    editError.value = "该条目暂不支持删除（缺少 ID）";
-    return;
-  }
+  if (!entry.id) { editError.value = "该条目暂不支持删除（缺少 ID）"; return; }
   deletingEntry.value = entry;
 }
 
-function cancelDelete() {
-  deletingEntry.value = null;
-}
+function cancelDelete() { deletingEntry.value = null; }
 
 async function executeDelete() {
   if (!deletingEntry.value?.id) return;
@@ -300,7 +486,7 @@ async function executeDelete() {
   }
 }
 
-// 加载
+// ── 加载 ──
 async function loadEntries() {
   const reportId = homeData.reportId.value;
   if (!reportId) return;
@@ -317,21 +503,10 @@ async function loadEntries() {
   }
 }
 
-function goBack() {
-  router.back();
-}
+function goBack() { router.back(); }
+function goChat() { router.push({ name: "entry" }); }
 
-function goChat() {
-  router.push({ name: "entry" });
-}
-
-function startNewEntry() {
-  router.push({ name: "entry" });
-}
-
-onMounted(() => {
-  homeData.refreshData().then(loadEntries);
-});
+onMounted(() => { homeData.refreshData().then(loadEntries); });
 </script>
 
 <style scoped lang="less">
@@ -369,13 +544,12 @@ onMounted(() => {
   color: var(--text-secondary);
   transition: all var(--duration-fast) var(--ease-smooth);
   flex-shrink: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
 }
-
 .diary-back:hover,
-.diary-add:hover {
-  background: var(--fill-color);
-  color: var(--text-primary);
-}
+.diary-add:hover { background: var(--fill-color); color: var(--text-primary); }
 
 .diary-header__title {
   font-size: var(--text-lg);
@@ -385,375 +559,217 @@ onMounted(() => {
   text-align: center;
 }
 
-.diary-loading {
-  text-align: center;
-  padding: 80px 0;
-}
-
-.loading-spinner {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
+.diary-loading { text-align: center; padding: 80px 0; }
+.loading-spinner { display: flex; justify-content: center; gap: 8px; margin-bottom: 16px; }
 .loading-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  width: 8px; height: 8px; border-radius: 50%;
   background: var(--color-primary);
   animation: dot-bounce 1.2s ease-in-out infinite;
 }
-
 @keyframes dot-bounce {
   0%, 100% { transform: translateY(0); opacity: 0.4; }
   50% { transform: translateY(-12px); opacity: 1; }
 }
-
-.loading-text {
-  font-size: var(--text-base);
-  color: var(--text-secondary);
-  margin: 0;
-}
+.loading-text { font-size: var(--text-base); color: var(--text-secondary); margin: 0; }
 
 .diary-empty {
-  text-align: center;
-  padding: 100px var(--space-5);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-3);
+  text-align: center; padding: 100px var(--space-5);
+  display: flex; flex-direction: column; align-items: center; gap: var(--space-3);
 }
-
-.empty-icon {
-  font-size: 48px;
-  margin-bottom: var(--space-2);
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-.empty-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0;
-}
-
-.empty-desc {
-  font-size: var(--text-base);
-  color: var(--text-secondary);
-  margin: 0 0 var(--space-4);
-  max-width: 280px;
-}
+.empty-icon { font-size: 48px; margin-bottom: var(--space-2); animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.empty-title { font-size: var(--text-xl); font-weight: var(--font-bold); color: var(--text-primary); margin: 0; }
+.empty-desc { font-size: var(--text-base); color: var(--text-secondary); margin: 0 0 var(--space-4); max-width: 280px; }
 
 .diary-timeline {
-  max-width: var(--content-max);
-  margin: 0 auto;
-  padding: var(--space-5);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+  max-width: var(--content-max); margin: 0 auto;
+  padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-4);
 }
-
-.timeline-item {
-  display: flex;
-  gap: var(--space-4);
-}
-
+.timeline-item { display: flex; gap: var(--space-4); }
 .timeline-marker {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-  padding-top: var(--space-4);
-  flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center;
+  gap: var(--space-2); padding-top: var(--space-4); flex-shrink: 0;
 }
-
 .timeline-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  box-shadow: 0 0 0 4px var(--color-primary-soft);
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--color-primary); box-shadow: 0 0 0 4px var(--color-primary-soft);
 }
-
 .timeline-date {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-  writing-mode: vertical-rl;
-  letter-spacing: 1px;
-  font-weight: var(--font-medium);
+  font-size: var(--text-xs); color: var(--text-tertiary);
+  writing-mode: vertical-rl; letter-spacing: 1px; font-weight: var(--font-medium);
 }
 
-.diary-card {
-  flex: 1;
-}
-
-.diary-card__header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-3);
-}
-
-.diary-card__spirit {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  flex: 1;
-}
-
-.diary-card__spirit-name {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-}
-
-.diary-card__mood {
-  font-size: var(--text-lg);
-}
-
-.entry-actions {
-  display: flex;
-  gap: var(--space-1);
-}
-
+.diary-card { flex: 1; }
+.diary-card__header { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
+.diary-card__spirit { display: flex; align-items: center; gap: var(--space-2); flex: 1; }
+.diary-card__spirit-name { font-size: var(--text-sm); font-weight: var(--font-semibold); color: var(--text-primary); }
+.diary-card__mood { font-size: var(--text-lg); }
+.entry-actions { display: flex; gap: var(--space-1); }
 .entry-action-btn {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-tertiary);
-  transition: all var(--duration-fast) var(--ease-smooth);
+  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-tertiary); transition: all var(--duration-fast) var(--ease-smooth);
+  border: none; background: transparent; cursor: pointer;
 }
-
-.entry-action-btn:hover {
-  background: var(--fill-color);
-  color: var(--text-primary);
-}
-
-.entry-action-btn--danger:hover {
-  background: rgba(184, 92, 92, 0.08);
-  color: var(--color-danger);
-}
+.entry-action-btn:hover { background: var(--fill-color); color: var(--text-primary); }
+.entry-action-btn--danger:hover { background: rgba(184, 92, 92, 0.08); color: var(--color-danger); }
 
 .diary-card__text {
-  font-size: var(--text-base);
-  color: var(--text-primary);
-  line-height: var(--leading-relaxed);
-  margin: 0 0 var(--space-3);
-  white-space: pre-wrap;
-  word-break: break-word;
+  font-size: var(--text-base); color: var(--text-primary); line-height: var(--leading-relaxed);
+  margin: 0 0 var(--space-3); white-space: pre-wrap; word-break: break-word;
 }
-
-.entry-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
+.entry-tags { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 .entry-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-  color: var(--text-secondary);
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  letter-spacing: 0.3px;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: var(--text-xs); font-weight: var(--font-medium); color: var(--text-secondary);
+  padding: 4px 10px; border-radius: var(--radius-full); letter-spacing: 0.3px;
 }
-
-.entry-tag-emoji {
-  font-size: var(--text-sm);
-}
-
-.entry-tag-text {
-  line-height: 1;
-}
+.entry-tag-emoji { font-size: var(--text-sm); }
+.entry-tag-text { line-height: 1; }
 
 /* Edit mode */
-.diary-card__edit {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
+.diary-card__edit { display: flex; flex-direction: column; gap: var(--space-3); }
 .entry-textarea {
-  width: 100%;
-  box-sizing: border-box;
-  font-size: var(--text-base);
-  line-height: var(--leading-relaxed);
-  color: var(--text-primary);
-  padding: var(--space-3);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-light);
-  background: var(--bg-elevated);
-  resize: none;
-  outline: none;
-  font-family: inherit;
+  width: 100%; box-sizing: border-box; font-size: var(--text-base); line-height: var(--leading-relaxed);
+  color: var(--text-primary); padding: var(--space-3); border-radius: var(--radius-md);
+  border: 1px solid var(--border-light); background: var(--bg-elevated);
+  resize: none; outline: none; font-family: inherit;
 }
-
-.entry-textarea:focus {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-glow);
-}
-
-.entry-tags-edit {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.entry-tags-edit-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  min-height: 28px;
-}
-
-.entry-tag--editable {
-  padding-right: 4px;
-}
-
+.entry-textarea:focus { border-color: var(--color-primary); box-shadow: var(--shadow-glow); }
+.entry-tags-edit { display: flex; flex-direction: column; gap: var(--space-2); }
+.entry-tags-edit-row { display: flex; flex-wrap: wrap; gap: var(--space-2); min-height: 28px; }
+.entry-tag--editable { padding-right: 4px; }
 .entry-tag-remove {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  color: var(--text-tertiary);
-  font-size: 14px;
-  line-height: 1;
-  padding: 0 2px;
-  border-radius: 4px;
-  margin-left: 2px;
+  border: none; background: transparent; cursor: pointer; color: var(--text-tertiary);
+  font-size: 14px; line-height: 1; padding: 0 2px; border-radius: 4px; margin-left: 2px;
 }
-
-.entry-tag-remove:hover {
-  color: var(--color-danger);
-}
-
-.entry-tags-empty {
-  font-size: var(--text-sm);
-  color: var(--text-tertiary);
-  align-self: center;
-}
-
-.entry-tags-add {
-  display: flex;
-  gap: var(--space-2);
-}
-
+.entry-tag-remove:hover { color: var(--color-danger); }
+.entry-tags-empty { font-size: var(--text-sm); color: var(--text-tertiary); align-self: center; }
+.entry-tags-add { display: flex; gap: var(--space-2); }
 .entry-tags-input {
-  flex: 1;
-  font-size: var(--text-sm);
-  padding: 6px 10px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-light);
-  background: var(--bg-elevated);
-  outline: none;
-  color: var(--text-primary);
+  flex: 1; font-size: var(--text-sm); padding: 6px 10px; border-radius: var(--radius-md);
+  border: 1px solid var(--border-light); background: var(--bg-elevated); outline: none; color: var(--text-primary);
 }
-
-.entry-tags-input:focus {
-  border-color: var(--color-primary);
-}
-
+.entry-tags-input:focus { border-color: var(--color-primary); }
 .entry-tags-add-btn {
-  border: none;
-  background: var(--color-primary-soft);
-  color: var(--color-primary-dark);
-  font-size: 16px;
-  width: 32px;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  line-height: 1;
-  transition: all var(--duration-fast) var(--ease-smooth);
+  border: none; background: var(--color-primary-soft); color: var(--color-primary-dark);
+  font-size: 16px; width: 32px; border-radius: var(--radius-md); cursor: pointer;
+  line-height: 1; transition: all var(--duration-fast) var(--ease-smooth);
 }
+.entry-tags-add-btn:hover { background: var(--color-primary-light); color: #fff; }
+.entry-edit-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-2); }
+.entry-edit-error { font-size: var(--text-sm); color: var(--color-danger); margin: var(--space-1) 0 0; }
 
-.entry-tags-add-btn:hover {
-  background: var(--color-primary-light);
-  color: #fff;
+/* 新建日记弹窗 */
+.create-mask {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(44, 38, 34, 0.4); backdrop-filter: blur(6px);
+  display: flex; align-items: flex-end; justify-content: center;
 }
-
-.entry-edit-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
+.create-panel {
+  width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto;
+  padding: 28px 24px calc(24px + env(safe-area-inset-bottom, 0px));
+  border-radius: 24px 24px 0 0;
+  background: var(--bg-card, #fff);
+  display: flex; flex-direction: column; gap: 20px;
 }
-
-.entry-edit-error {
-  font-size: var(--text-sm);
-  color: var(--color-danger);
-  margin: var(--space-1) 0 0;
+.create-panel__header { display: flex; align-items: center; justify-content: space-between; }
+.create-panel__title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0; }
+.create-panel__close {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid var(--border-light); background: transparent;
+  color: var(--text-tertiary); cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
 }
+.create-panel__close:hover { background: var(--fill-color); color: var(--text-primary); }
 
-/* Confirm modal */
+.create-section { display: flex; flex-direction: column; gap: 10px; }
+.create-label { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin: 0; }
+.create-label-hint { font-weight: 400; color: var(--text-tertiary); margin-left: 8px; }
+
+.style-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.style-card {
+  display: flex; align-items: center; gap: 6px; padding: 8px 14px;
+  border-radius: 12px; border: 1.5px solid var(--border-light);
+  background: var(--bg-elevated); cursor: pointer; font-size: 13px;
+  color: var(--text-secondary); transition: all 0.2s;
+}
+.style-card.active { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-dark); }
+.style-emoji { font-size: 16px; }
+.style-name { font-weight: 600; }
+
+.mood-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.mood-btn {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1.5px solid var(--border-light); background: var(--bg-elevated);
+  font-size: 18px; cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.mood-btn.active { border-color: var(--color-primary); background: var(--color-primary-soft); transform: scale(1.1); }
+
+.energy-row { display: flex; gap: 8px; align-items: center; }
+.energy-dot {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--border-light); background: transparent;
+  cursor: pointer; transition: all 0.2s;
+}
+.energy-dot.active { background: var(--color-primary); border-color: var(--color-primary); }
+
+.create-textarea {
+  width: 100%; box-sizing: border-box; font-size: 14px; line-height: 1.7;
+  color: var(--text-primary); padding: 12px 14px; border-radius: 14px;
+  border: 1px solid var(--border-light); background: var(--bg-elevated);
+  resize: none; outline: none; font-family: inherit;
+}
+.create-textarea:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-soft); }
+.create-char-count { font-size: 12px; color: var(--text-tertiary); text-align: right; margin: 4px 0 0; }
+
+.kw-edit-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.kw-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  padding: 4px 10px; border-radius: 8px;
+  background: var(--color-primary-soft); border: 1px solid var(--color-primary-light);
+}
+.kw-chip-remove { border: none; background: transparent; cursor: pointer; color: var(--text-tertiary); font-size: 13px; padding: 0 2px; }
+.kw-chip-remove:hover { color: var(--color-danger); }
+.kw-input {
+  font-size: 12px; padding: 5px 10px; border-radius: 8px;
+  border: 1px solid var(--border-light); background: var(--bg-elevated); outline: none; color: var(--text-primary);
+  min-width: 80px;
+}
+.kw-input:focus { border-color: var(--color-primary); }
+
+.planet-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.planet-btn {
+  padding: 6px 12px; border-radius: 20px;
+  border: 1.5px solid var(--border-light); background: var(--bg-elevated);
+  font-size: 12px; font-weight: 600; color: var(--text-secondary); cursor: pointer; transition: all 0.2s;
+}
+.planet-btn.active { border-color: var(--color-primary); background: var(--color-primary-soft); color: var(--color-primary-dark); }
+
+.create-error { font-size: 13px; color: var(--color-danger); margin: 0; }
+
+.create-fade-enter-active, .create-fade-leave-active { transition: opacity 0.2s; }
+.create-fade-enter-from, .create-fade-leave-to { opacity: 0; }
+.create-fade-enter-from .create-panel { transform: translateY(40px); }
+
+/* 删除确认 */
 .confirm-mask {
-  position: fixed;
-  inset: 0;
-  z-index: 300;
-  background: rgba(44, 38, 34, 0.25);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-5);
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(44, 38, 34, 0.25); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; padding: var(--space-5);
 }
-
-.confirm-fade-enter-active,
-.confirm-fade-leave-active {
-  transition: opacity var(--duration-fast) var(--ease-smooth);
-}
-
-.confirm-fade-enter-from,
-.confirm-fade-leave-to {
-  opacity: 0;
-}
-
-.confirm-card {
-  max-width: 320px;
-  width: 100%;
-  text-align: center;
-}
-
-.confirm-icon {
-  font-size: 36px;
-  margin-bottom: var(--space-2);
-}
-
-.confirm-title {
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-1);
-}
-
-.confirm-desc {
-  font-size: var(--text-base);
-  color: var(--text-secondary);
-  margin: 0 0 var(--space-5);
-  line-height: var(--leading-normal);
-}
-
-.confirm-actions {
-  display: flex;
-  gap: var(--space-3);
-  justify-content: center;
-}
+.confirm-fade-enter-active, .confirm-fade-leave-active { transition: opacity var(--duration-fast) var(--ease-smooth); }
+.confirm-fade-enter-from, .confirm-fade-leave-to { opacity: 0; }
+.confirm-card { max-width: 320px; width: 100%; text-align: center; }
+.confirm-icon { font-size: 36px; margin-bottom: var(--space-2); }
+.confirm-title { font-size: var(--text-lg); font-weight: var(--font-bold); color: var(--text-primary); margin: 0 0 var(--space-1); }
+.confirm-desc { font-size: var(--text-base); color: var(--text-secondary); margin: 0 0 var(--space-5); line-height: var(--leading-normal); }
+.confirm-actions { display: flex; gap: var(--space-3); justify-content: center; }
 
 @media (max-width: 380px) {
-  .diary-timeline {
-    padding: var(--space-4);
-  }
-  .timeline-marker {
-    display: none;
-  }
+  .diary-timeline { padding: var(--space-4); }
+  .timeline-marker { display: none; }
 }
 </style>
