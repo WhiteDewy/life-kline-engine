@@ -19,6 +19,7 @@ Council 输出：统一建议
 """
 from __future__ import annotations
 
+import asyncio
 from typing import Any
 
 from .council_types import (
@@ -27,6 +28,12 @@ from .council_types import (
     CouncilRelation,
     COUNCIL_PLANETS,
     COUNCIL_SPEAKING_STYLES,
+)
+from .prompts import (
+    build_council_system_prompt,
+    build_council_member_system_prompt,
+    build_council_member_user_prompt,
+    build_council_synthesis_user_prompt,
 )
 
 
@@ -45,15 +52,22 @@ class CouncilEngine:
         result = engine.generate_council_response(session, user_question)
     """
 
-    def __init__(self, report_data: dict[str, Any]):
+    def __init__(self, report_data: dict[str, Any], llm_client: Any | None = None):
         """
         Args:
             report_data: 完整报告数据（包含 planet_characters 子树）
+            llm_client: 可选 LLMClient 实例；None 时惰性创建。
+                未配置（is_configured=False）时降级到规则桩。
         """
         self._report_data = report_data
         self._planet_chars = report_data.get("planet_characters", {}).get(
             "planet_characters", {}
         )
+        if llm_client is not None:
+            self._llm = llm_client
+        else:
+            from ..llm_client import LLMClient
+            self._llm = LLMClient()
 
     def create_session(
         self,
@@ -121,6 +135,96 @@ class CouncilEngine:
             "statements": statements,
             "relation": relation,
             "synthesis": synthesis,
+        }
+
+    # ── LLM 异步生成 ─────────────────────────────────────
+
+    async def generate_council_response_async(
+        self,
+        session: CouncilSession,
+        user_question: str,
+    ) -> dict[str, Any]:
+        """LLM 驱动的议会响应（多行星并行发言 + 主持人合成）。
+
+        架构：每颗行星一次独立 LLM 调用（声音分离），并行执行；
+        再用一次调用做主持人合成。任何调用失败或 LLM 未配置时，
+        降级回规则桩（generate_council_response），保证离线/测试可用。
+
+        Returns:
+            {
+                "statements": {planet: statement, ...},
+                "relation": CouncilRelation,
+                "synthesis": str,
+                "source": "council_llm" | "council_rule",
+            }
+        """
+        # LLM 未配置 → 直接走规则桩
+        if not getattr(self._llm, "is_configured", False):
+            result = self.generate_council_response(session, user_question)
+            result["source"] = "council_rule"
+            return result
+
+        members = session.members
+        entry_context = {"council_planets": [m.planet for m in members]}
+
+        # Step 1: 并行为每个成员生成发言（单颗失败 → 回退规则桩）
+        async def _one(member: CouncilMember) -> str:
+            try:
+                sys_prompt = build_council_member_system_prompt(
+                    self._report_data, member.planet
+                )
+                usr_prompt = build_council_member_user_prompt(
+                    member.name_zh, user_question
+                )
+                text = await self._llm.chat_async(
+                    system_prompt=sys_prompt,
+                    user_message=usr_prompt,
+                    history=[],
+                )
+                if text and text.strip():
+                    return text.strip()
+            except Exception as e:
+                print(f"[Council] {member.planet} LLM 调用失败，降级规则桩: {e}")
+            # 回退：用现有规则桩为该成员生成
+            return self._build_statement(member, user_question)
+
+        statements_list = await asyncio.gather(*[_one(m) for m in members])
+        statements = {m.planet: s for m, s in zip(members, statements_list)}
+        for m in members:
+            m.statement = statements[m.planet]
+        session.member_statements = statements
+
+        # Step 2: 分析关系（廉价规则，够用）
+        relation = self._analyze_relation(statements)
+        session.relation_type = relation
+
+        # Step 3: 主持人合成（失败 → 回退规则桩合成）
+        synthesis = ""
+        try:
+            sys_prompt = build_council_system_prompt(
+                self._report_data, session.topic, entry_context
+            )
+            usr_prompt = build_council_synthesis_user_prompt(
+                session.topic, statements, user_question
+            )
+            text = await self._llm.chat_async(
+                system_prompt=sys_prompt,
+                user_message=usr_prompt,
+                history=[],
+            )
+            if text and text.strip():
+                synthesis = text.strip()
+        except Exception as e:
+            print(f"[Council] 合成 LLM 调用失败，降级规则桩: {e}")
+        if not synthesis:
+            synthesis = self._generate_synthesis(session, statements, relation)
+        session.synthesis = synthesis
+
+        return {
+            "statements": statements,
+            "relation": relation,
+            "synthesis": synthesis,
+            "source": "council_llm",
         }
 
     # ── 内部方法 ──────────────────────────────────────────

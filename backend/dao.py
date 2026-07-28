@@ -125,6 +125,25 @@ def increment_ai_usage(user_id: str) -> int:
     return new_count
 
 
+def increment_council_usage(user_id: str) -> int:
+    """记录本周星灵议会调用次数（按 ISO 周轮转），返回本周最新计数。
+
+    存储于 user_state.extra：council_usage_this_week / council_usage_week_label。
+    """
+    from datetime import date
+    iso = date.today().isocalendar()
+    week_label = f"{iso[0]}-W{iso[1]:02d}"
+
+    state = get_user_state(user_id)
+    extra = state.get("extra", {}) or {}
+    if extra.get("council_usage_week_label") != week_label:
+        extra["council_usage_this_week"] = 0
+    extra["council_usage_this_week"] = int(extra.get("council_usage_this_week", 0)) + 1
+    extra["council_usage_week_label"] = week_label
+    upsert_user_state(user_id, extra=extra)
+    return extra["council_usage_this_week"]
+
+
 # ──────────── 星灵日记 ───────────────────────────────────────────
 
 def insert_star_diary(

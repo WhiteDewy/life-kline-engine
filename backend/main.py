@@ -1446,6 +1446,83 @@ async def chat_with_character(report_id: str, body: CharacterChatInput, authoriz
     }
 
 
+class CouncilChatInput(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    topic: str = Field(..., description="议会主题/问题概述")
+    message: str = Field(..., description="用户的具体问题")
+    council_planets: Optional[list[str]] = Field(
+        default=None, description="参与行星；默认 SUN/MOON/MARS/VENUS/SATURN"
+    )
+
+
+@app.post("/api/council/{report_id}")
+async def council_chat(
+    report_id: str, body: CouncilChatInput, authorization: str = Header(default="")
+) -> Dict[str, Any]:
+    """星灵议会 — 多行星视角协作 + 主持人合成（LLM 驱动）。
+
+    每颗行星以已算好的星盘事实 + 人格为 grounding，用 LLM 独立发言（并行）；
+    主持人合成统一觉察。LLM 不可用时降级到规则桩。全程受 ACP 宪法约束。
+
+    权限：测试用户/VIP 直通；非 VIP 每周 3 次免费额度。
+    """
+    user_id = require_report_owner(report_id, authorization)
+    record = load_report_record(report_id)
+    report_data = record.get("data", {}) or {}
+
+    # ── 危机守门：在任何占星话术之前运行，不调用 LLM ──
+    from life_kline.safety import detect_crisis
+    crisis = detect_crisis(body.message)
+    if crisis.is_crisis:
+        return {"status": "crisis", "data": crisis.to_dict()}
+
+    # ── 配额检查 ──
+    from life_kline.pricing import AccessChecker
+    state = load_user_state(user_id)
+    # extra 中存有 council 计数，合并到顶层供 AccessChecker 读取
+    state.update(state.get("extra", {}) or {})
+    access_checker = AccessChecker(state)
+    council_access = access_checker.check_council()
+    if not council_access.allowed:
+        return {
+            "status": "error",
+            "error_code": "QUOTA_EXCEEDED",
+            "data": {
+                "message": council_access.reason,
+                "access": council_access.to_dict(),
+            },
+        }
+
+    # ── 议会生成 ──
+    from life_kline.llm_client import LLMClient
+    from life_kline.council import CouncilEngine
+    client = LLMClient()
+    engine = CouncilEngine(report_data, llm_client=client)
+    session = engine.create_session(body.topic or body.message, body.council_planets)
+    result = await engine.generate_council_response_async(session, body.message)
+
+    # ── 记录配额消耗（仅实际调用 LLM 时）──
+    if result.get("source") == "council_llm" and user_id:
+        try:
+            _dao.increment_council_usage(user_id)
+        except Exception:
+            pass
+
+    relation = result["relation"]
+    return {
+        "status": "ok",
+        "data": {
+            "topic": session.topic,
+            "perspectives": result["statements"],
+            "relation": getattr(relation, "value", relation),
+            "synthesis": result["synthesis"],
+            "source": result["source"],
+            "members": [m.to_dict() for m in session.members],
+            "access": council_access.to_dict(),
+        },
+    }
+
+
 @app.post("/api/characters/{report_id}/council")
 async def character_council(report_id: str, body: CouncilInput, authorization: str = Header(default="")) -> Dict[str, Any]:
     """获取多个角色对同一话题的不同视角"""
