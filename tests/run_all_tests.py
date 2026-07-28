@@ -40,6 +40,8 @@ def run_tests():
         ('集成测试', 'test_integration', 'run_integration_tests'),
         ('星灵触发重构测试', 'test_spirit_trigger_refactor', None),
         ('危机检测测试', 'test_safety', None),
+        ('星灵议会测试', 'test_council', None),
+        ('AKG 主题层测试', 'test_akg', None),
     ]
 
     all_passed = True

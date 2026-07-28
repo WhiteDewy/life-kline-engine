@@ -143,6 +143,7 @@ class CouncilEngine:
         self,
         session: CouncilSession,
         user_question: str,
+        theme: Any | None = None,
     ) -> dict[str, Any]:
         """LLM 驱动的议会响应（多行星并行发言 + 主持人合成）。
 
@@ -150,28 +151,42 @@ class CouncilEngine:
         再用一次调用做主持人合成。任何调用失败或 LLM 未配置时，
         降级回规则桩（generate_council_response），保证离线/测试可用。
 
+        Args:
+            theme: 可选 ThemeNode（AKG 识别）。提供时把其证据文本作为
+                额外 grounding 注入各行星发言，并在响应里附 theme 字段。
+
         Returns:
             {
                 "statements": {planet: statement, ...},
                 "relation": CouncilRelation,
                 "synthesis": str,
                 "source": "council_llm" | "council_rule",
+                "theme": dict | None,
             }
         """
         # LLM 未配置 → 直接走规则桩
         if not getattr(self._llm, "is_configured", False):
             result = self.generate_council_response(session, user_question)
             result["source"] = "council_rule"
+            result["theme"] = theme.to_dict() if theme is not None and hasattr(theme, "to_dict") else None
             return result
 
         members = session.members
         entry_context = {"council_planets": [m.planet for m in members]}
 
+        # 可选：从 ThemeNode 抽取证据文本，作为额外 grounding
+        theme_evidence: list[str] | None = None
+        if theme is not None:
+            ev = getattr(theme, "evidence", None) or []
+            theme_evidence = [e.get("text", "") for e in ev if isinstance(e, dict) and e.get("text")] or None
+
+        theme_dict = theme.to_dict() if theme is not None and hasattr(theme, "to_dict") else None
+
         # Step 1: 并行为每个成员生成发言（单颗失败 → 回退规则桩）
         async def _one(member: CouncilMember) -> str:
             try:
                 sys_prompt = build_council_member_system_prompt(
-                    self._report_data, member.planet
+                    self._report_data, member.planet, theme_evidence=theme_evidence
                 )
                 usr_prompt = build_council_member_user_prompt(
                     member.name_zh, user_question
@@ -225,6 +240,7 @@ class CouncilEngine:
             "relation": relation,
             "synthesis": synthesis,
             "source": "council_llm",
+            "theme": theme_dict,
         }
 
     # ── 内部方法 ──────────────────────────────────────────

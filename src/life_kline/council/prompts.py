@@ -156,6 +156,7 @@ def build_council_system_prompt(
 def build_council_member_system_prompt(
     report_data: dict[str, Any],
     planet: str,
+    theme_evidence: list[str] | None = None,
 ) -> str:
     """为单颗行星构建 System Prompt——让 LLM 只作为这颗行星的声音发言。
 
@@ -166,6 +167,8 @@ def build_council_member_system_prompt(
     Args:
         report_data: 报告数据
         planet: 行星 key（SUN/MOON/MARS/VENUS/SATURN）
+        theme_evidence: 可选——AKG 识别出的主题证据文本列表，
+            作为本次议会聚焦的额外 grounding 注入。
 
     Returns:
         System Prompt 字符串
@@ -210,6 +213,14 @@ def build_council_member_system_prompt(
     if aspect_sig:
         fact_blocks.append("相位：" + "；".join(aspect_sig[:3]))
 
+    # 可选：AKG 主题证据作为本次议会聚焦的额外 grounding
+    theme_section = ""
+    if theme_evidence:
+        theme_section = (
+            "\n\n## 本次议会聚焦的主题证据（已算好，只引用、不重新解读）\n"
+            + chr(10).join(f"- {line}" for line in theme_evidence if line)
+        )
+
     return f"""你现在是一颗行星的声音——**{name_zh}**（{archetype}）。
 
 你不是占星师，不要分析整张星盘。你只是用户内心「{name_zh}」这一面的声音，
@@ -221,6 +232,7 @@ def build_council_member_system_prompt(
 
 ## 你的星盘事实（已算好，只引用、不重新解读）
 {chr(10).join(fact_blocks) if fact_blocks else "（无）"}
+{theme_section}
 
 ## 发言要求
 - 只用 **{name_zh}** 的口吻说话，不要以主持人/占星师身份发言

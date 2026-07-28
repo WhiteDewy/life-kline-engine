@@ -1496,10 +1496,22 @@ async def council_chat(
     # ── 议会生成 ──
     from life_kline.llm_client import LLMClient
     from life_kline.council import CouncilEngine
+    from life_kline.akg import ThemeRecognizer, build_theme_narrative
     client = LLMClient()
+
+    # AKG 主题识别（可选；失败则无主题注入，Council 行为不变）
+    theme = None
+    try:
+        themes = ThemeRecognizer().recognize(body.message, report_data, top_k=1)
+        if themes:
+            theme = themes[0]
+            theme.narrative = build_theme_narrative(theme, report_data)
+    except Exception as e:
+        print(f"[council] AKG theme recognition failed: {e}")
+
     engine = CouncilEngine(report_data, llm_client=client)
     session = engine.create_session(body.topic or body.message, body.council_planets)
-    result = await engine.generate_council_response_async(session, body.message)
+    result = await engine.generate_council_response_async(session, body.message, theme=theme)
 
     # ── 记录配额消耗（仅实际调用 LLM 时）──
     if result.get("source") == "council_llm" and user_id:
@@ -1517,6 +1529,7 @@ async def council_chat(
             "relation": getattr(relation, "value", relation),
             "synthesis": result["synthesis"],
             "source": result["source"],
+            "theme": result.get("theme"),
             "members": [m.to_dict() for m in session.members],
             "access": council_access.to_dict(),
         },
