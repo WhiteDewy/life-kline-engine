@@ -42,6 +42,7 @@ def run_tests():
         ('危机检测测试', 'test_safety', None),
         ('星灵议会测试', 'test_council', None),
         ('AKG 主题层测试', 'test_akg', None),
+        ('ACP 共享模块测试', 'test_acp', None),
     ]
 
     all_passed = True

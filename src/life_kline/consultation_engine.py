@@ -686,10 +686,11 @@ class ConsultationEngine:
 
     def _handle_boundary_guard(self, state: ConsultationState) -> ConsultationState:
         """边界守护检查"""
+        from .acp import BOUNDARY_GUARD_NOTE
         notes: list[str] = []
 
         # 1. 心理安全
-        notes.append("⚠️ 星盘分析揭示的是倾向和模式，不是命运。你的自由意志始终在起作用。")
+        notes.append(BOUNDARY_GUARD_NOTE)
 
         # 2. 古占/现占提醒
         if state.tradition_lean is True:

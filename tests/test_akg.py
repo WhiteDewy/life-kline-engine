@@ -27,6 +27,8 @@ from life_kline.akg import (
 )
 from life_kline.akg.evidence import collect_theme_evidence, score_theme, theme_confidence
 from life_kline.akg.theme_catalog import get_theme
+from life_kline.akg.narrative import Narrative, build_narrative
+from life_kline.acp import NARRATIVE_SCHEMA_FIELDS
 
 
 # ──────────── fixture：最小 report_data ────────────
@@ -160,6 +162,36 @@ def test_theme_node_to_dict():
     print("✓ ThemeNode.to_dict 字段完整")
 
 
+def test_narrative_schema():
+    """ACP-0003 七字段 Narrative Schema 固化。"""
+    report = _sample_report_data()
+    themes = ThemeRecognizer().recognize("我害怕领导，不敢跟上级说话", report, top_k=1)
+    theme = themes[0]
+
+    # build_narrative 产出 7 字段
+    n = build_narrative(theme, report)
+    d = n.to_dict()
+    assert set(d.keys()) == set(NARRATIVE_SCHEMA_FIELDS), f"字段不符: {d.keys()}"
+    for f in ("theme", "origin", "evidence", "psychology", "pattern", "healing_goal"):
+        assert d[f], f"字段 {f} 应非空"
+    # growth 初始允许空（留给纵向 MemoryManager）
+    assert d["growth"] == "", "growth 初始应为空"
+
+    # build_theme_narrative 把 schema 挂到 ThemeNode（seam 持久化路径）
+    prose = build_theme_narrative(theme, report)
+    assert prose, "渲染 prose 应非空"
+    assert theme.narrative_schema, "ThemeNode.narrative_schema 应被填充"
+    assert set(theme.narrative_schema.keys()) == set(NARRATIVE_SCHEMA_FIELDS)
+    # ACP 合规：prose 不含禁用词
+    for word in ("注定", "一定", "必须"):
+        assert word not in prose, f"prose 含禁用词 {word}"
+
+    # to_dict 携带 narrative_schema（经 recognized_themes 自动持久化）
+    td = theme.to_dict()
+    assert "narrative_schema" in td and td["narrative_schema"]
+    print("✓ Narrative 7 字段 Schema 固化 + ACP 合规")
+
+
 if __name__ == "__main__":
     test_seam_imports()
     test_recognize_by_keyword()
@@ -168,4 +200,5 @@ if __name__ == "__main__":
     test_narrative_acp()
     test_recognize_fallback_no_keyword()
     test_theme_node_to_dict()
+    test_narrative_schema()
     print("\n全部 AKG 测试通过 ✓")

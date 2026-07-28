@@ -32,6 +32,7 @@ class ThemeNode:
     strength: float = 0.0        # 0-1
     confidence: float = 0.0      # 0-1
     narrative: str = ""
+    narrative_schema: dict = field(default_factory=dict)  # ACP-0003 七字段 Narrative
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -42,6 +43,7 @@ class ThemeNode:
             "strength": round(self.strength, 3),
             "confidence": round(self.confidence, 3),
             "narrative": self.narrative,
+            "narrative_schema": self.narrative_schema,
         }
 
 

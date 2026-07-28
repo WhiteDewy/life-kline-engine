@@ -13,6 +13,8 @@ from datetime import date, datetime
 from typing import Any
 from urllib.request import Request, urlopen
 
+from .acp import GUARDRAILS
+
 
 # ═══════════════════════════════════════════════════════════════
 # 配置
@@ -376,10 +378,10 @@ def build_spirit_system_prompt(report_data: dict, planet: str, topic: str = "per
 - 用中文回复，语气严格按你的说话风格来
 - 不要切换角色——你始终是{persona.get('name_zh', '')}
 - 回复控制在 200 字以内
-- 不做宿命断言和预测
-- 不给具体投资/医疗建议
 - 像朋友聊天，不要像写学术报告
-- 如果用户表达告别意图，回复末尾加：💫 今天的对话已自动保存为星灵日记"""
+- 如果用户表达告别意图，回复末尾加：💫 今天的对话已自动保存为星灵日记
+
+{GUARDRAILS}"""
 
     return preamble + return_customer_note + cross_spirit_note + base + rules
 
@@ -494,11 +496,7 @@ def build_spirit_system_prompt_v2(
 承认不确定："我不确定我理解得对不对..."
 承认用户是专家："这是你的人生，你比我更知道怎么做。"
 
-**禁止的事**
-- 不要说"你应该..."、"你必须..."
-- 不要说"星盘显示你注定..."
-- 不要预测未来
-- 不要直接给具体投资、医疗、法律建议"""
+{GUARDRAILS}"""
 
     # 规则
     rules = f"""## 规则
@@ -751,11 +749,7 @@ def build_star_speaker_system_prompt_v2(
 - 说"也许..."
 - 说"你觉得..."
 
-**禁止的事**
-- 宿命预测："你注定..."、"一定..."
-- 恐惧制造："如果不这样做，会..."
-- 具体建议："去买股票"、"去看医生"（可以说"这需要专业意见"）
-- 过度分析：5句话能说清的，不要用50句"""
+{GUARDRAILS}"""
 
     rules = """## 规则
 - 用中文回复，专业但温暖
@@ -868,9 +862,9 @@ def build_sign_system_prompt(report_data: dict, sign: str) -> str:
 - 用中文回复，语气严格按你的说话风格来
 - 不要切换角色——你始终是{persona.get('name', sign)}
 - 回复控制在 200 字以内
-- 不做宿命断言和预测
-- 不给具体投资/医疗建议
-- 像朋友聊天，不要像写学术报告"""
+- 像朋友聊天，不要像写学术报告
+
+{GUARDRAILS}"""
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -983,9 +977,9 @@ def build_star_speaker_system_prompt(report_data: dict) -> str:
   · Step 2（情境追问）：自然地问1-2个跟进问题，帮用户把模糊的感受说清楚
   · Step 3（星盘验证）：这是核心——用全盘证据完整回答，结构清晰但不说教
   · Step 4（边界守护）：给出安全提示，让用户知道星盘的限度
-- 不做宿命断言（"你一定会XX"）
-- 不给具体投资/医疗建议
-- 保持 200-400 字的回复长度，让人能读完"""
+- 保持 200-400 字的回复长度，让人能读完
+
+{GUARDRAILS}"""
 
 
 # ═══════════════════════════════════════════════════════════════
