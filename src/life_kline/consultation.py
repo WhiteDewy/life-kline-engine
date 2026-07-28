@@ -165,6 +165,14 @@ class ConsultationV2:
         else:
             response = self._close_response(user_message, history)
 
+        # 每轮自动推进 stage。原版只增 turn_count 不推进，导致用户永远停在
+        # LISTEN 阶段，永远只能听到"我听到了…能多说一点吗？"这种空话。
+        # 推进节奏：每 2 轮进一阶，从 LISTEN → CLOSE 大约 10 轮，刚好是一个
+        # 完整的咨询小循环。如果 LLM 已经接了 V2 增强（_spirit_chat_v2 里），
+        # 推进不会干扰它——它只读 stage 做策略，回复仍由 LLM 主导。
+        if state.turn_count > 0 and state.turn_count % 2 == 0:
+            state.advance_stage()
+
         return {
             "response": response,
             "dialogue_state": state,

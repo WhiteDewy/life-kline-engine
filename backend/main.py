@@ -855,18 +855,24 @@ def _natal_format_orb(orb: float) -> str:
     return f"{d}°{int(minutes_total):02d}′"
 
 
-def _natal_dignity_state(planet: Planet, sign: Sign) -> str:
-    """根据行星 + 落座返回 5 类状态之一。"""
+def _natal_dignity_state(planet, sign) -> str:
+    """根据行星 + 落座返回 5 类状态之一。
+
+    形参只用 duck-typing（支持 Planet 枚举和 str），避免在模块顶层
+    依赖 from life_kline.constants import Planet, Sign 的副作用。
+    """
     from life_kline.constants import (
         DOMICILE_SIGNS, EXALTATION_SIGNS, DETRIMENT_SIGNS, FALL_SIGNS,
     )
-    if sign in DOMICILE_SIGNS.get(planet, []):
+    # 接受 Planet 枚举或 str
+    planet_key = planet.value if hasattr(planet, "value") else planet
+    if sign in DOMICILE_SIGNS.get(planet_key, []):
         return "domicile"
-    if sign in EXALTATION_SIGNS.get(planet, []):
+    if sign in EXALTATION_SIGNS.get(planet_key, []):
         return "exaltation"
-    if sign in DETRIMENT_SIGNS.get(planet, []):
+    if sign in DETRIMENT_SIGNS.get(planet_key, []):
         return "detriment"
-    if sign in FALL_SIGNS.get(planet, []):
+    if sign in FALL_SIGNS.get(planet_key, []):
         return "fall"
     return "peregrine"
 
@@ -2188,19 +2194,32 @@ async def spirit_chat(report_id: str, body: SpiritChatInput, request: Request) -
         if ai_access.allowed:
             # 用引擎的结构化输出作为 AI 的上下文
             try:
-                astro_instruction = (
-                    "本轮已触发星盘切入：必须先原样输出情感承接句，再用一小段自然语言引用下方最多一条证据；不要倾倒完整占星结构。"
-                    if engine_response.mirroring else
-                    "本轮只做情感承接：必须先原样输出情感承接句，禁止提及星盘、宫位、星座、相位或命盘配置。"
-                )
+                # evidence-driven 指令：mirroring 拿到真实星盘内容时，让 LLM
+                # 在「情感承接 + 最多一条证据翻译」的前提下自由发挥；mirroring
+                # 为空（极少见，例如纯寒暄）才退回只做情感承接。
+                if engine_response.mirroring:
+                    astro_instruction = (
+                        "本轮已触发星盘切入："
+                        "1) 必须先原样输出情感承接句；"
+                        "2) 然后用自然语言把下方『引擎星盘镜像』中最多一条要点"
+                        "  （落宫落座 / 尊贵 / 飞星 / 相位 / 核心议题）转述给用户；"
+                        "3) 不要把整段镜像、整条结构化输出都念出来；"
+                        "4) 占星术语请翻译成感受/比喻，别堆『第X宫』『XX座』这种词。"
+                    )
+                else:
+                    astro_instruction = (
+                        "本轮引擎未切入星盘：先原样输出情感承接句，"
+                        "再问一个探索性问题。不要主动引入星盘配置。"
+                    )
                 engine_hint = (
                     f"[引擎占星师已分析]\n"
                     f"触发规则：{astro_instruction}\n"
                     f"情感承接句：{engine_response.acknowledgment}\n"
                     f"领域：{engine_response.domain_label}\n"
                     f"情绪：{engine_response.emotional_state}\n"
-                    f"星盘证据：{'; '.join(engine_response.evidence[:4])}\n"
-                    f"引擎回答（参考）：{engine_response.full_text[:300]}\n"
+                    f"引擎星盘镜像（要点）：{engine_response.mirroring or '（无）'}\n"
+                    f"星盘证据（详细）：{'; '.join(engine_response.evidence[:6])}\n"
+                    f"引擎回答（参考）：{engine_response.full_text[:400]}\n"
                     f"\n请基于以上引擎分析，用你的方式自然地回复用户。"
                     f"保持引擎的占星学准确性，但可以让语言更温暖流畅。"
                 )

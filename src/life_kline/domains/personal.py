@@ -53,6 +53,7 @@ class PersonalAnalyzer(DomainAnalyzer):
     def _analyze_modern(self, chart: Any) -> dict[str, Any]:
         moon_s = slabel(planet_sign(chart, "MOON"))
         sun_s = slabel(planet_sign(chart, "SUN"))
+        asc_l = slabel(asc_sign(chart))
         psychology = (
             f"从心理层面说——你的人格不是一块石头，是三层叠在一起的。"
             f"最外面是上升{asc_l}（给世界看的），中间是太阳在{sun_s}（自己想成为的样子），"

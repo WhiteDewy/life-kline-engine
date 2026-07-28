@@ -610,6 +610,13 @@ _ACKNOWLEDGE_BY_EMOTION: dict[str, list[str]] = {
 }
 
 # 镜映模板 — 按行星个性参数化
+_PLANET_FALLBACK_LABELS: dict[str, str] = {
+    "SUN": "太阳", "MOON": "月亮", "MERCURY": "水星", "VENUS": "金星",
+    "MARS": "火星", "JUPITER": "木星", "SATURN": "土星",
+    "URANUS": "天王星", "NEPTUNE": "海王星", "PLUTO": "冥王星",
+    "NORTH_NODE": "北交点", "SOUTH_NODE": "南交点",
+}
+
 _MIRROR_TEMPLATES: dict[str, str] = {
     "SUN": (
         "在你的星盘里，我落在{sign_label}，第{house}宫「{house_label}」——"
@@ -726,7 +733,7 @@ class VoiceRenderer:
         suggestion = domain_data.get("suggestion", "先尊重此刻真实的感受，再决定下一步").rstrip("。")
 
         if should_enter:
-            mirroring = self._render_astrology_part(structured_reading, domain_label)
+            mirroring = self._render_astrology_part(structured_reading, domain_label, planet_key)
             guidance = trigger.guidance_template.format(suggestion=suggestion, name=trigger.name_zh)
             evidence = structured_reading.get("evidence", [])
         else:
@@ -772,7 +779,10 @@ class VoiceRenderer:
     ) -> tuple[bool, str]:
         if trigger.astro_delay_turns < 0:
             return False, "disabled"
-        reached_depth = ctx.turn_count >= trigger.astro_delay_turns
+        # 首轮（turn_count=0）就允许进 astrology——用户来就是想问星盘相关的事，
+        # 不应该被强制先听两句客套话。原版的"emotional_first"分支把 LLM 锁死为
+        # 只能输出情感承接，导致首轮体验非常薄。
+        reached_depth = ctx.turn_count >= max(0, trigger.astro_delay_turns)
         has_planet_topic = any(k in message for k in trigger.astro_entry_keywords)
         has_domain_topic = bool(topic_domains) or route_result.get("confidence", 0) >= 0.6
         if reached_depth and (has_planet_topic or has_domain_topic):
@@ -781,19 +791,99 @@ class VoiceRenderer:
             return True, "depth"
         return False, "emotional_first"
 
-    def _render_astrology_part(self, reading: dict, domain_label: str) -> str:
-        """第二层只选一条核心星盘信息，避免倾倒完整技术结构。"""
+    def _render_astrology_part(self, reading: dict, domain_label: str, planet_key: str = "SUN") -> str:
+        """第二层：用行星专属模板，把落座+宫位+dignity+核心议题完整翻译成自然语言。
+
+        模板是按行星「性格」写的（太阳直白、土星稳重、海王星梦幻……），所以同一份
+        证据给不同星灵说出来的语气不一样。evidence 列表里如果有 2 条以上，我们再补
+        一条最贴合领域语境的延伸（飞星 或 相位 或 互溶），但保持单条。
+        """
         planet = reading.get("planet_in_house", {})
         domain = reading.get("domain", {})
-        core = domain.get("core_theme") or domain.get("psychology") or "你在这件事上有自己的节奏"
+        core = (
+            domain.get("core_theme")
+            or domain.get("psychology")
+            or "你在这件事上有自己的节奏"
+        )
+
         sign = planet.get("sign_label", "")
         house = planet.get("house", 0)
-        placement = ""
-        if sign and house:
-            placement = f"从你的星盘看，{planet.get('planet_label', '这颗星')}落在{sign}第{house}宫，"
-        elif sign:
-            placement = f"从你的星盘看，{planet.get('planet_label', '这颗星')}落在{sign}，"
-        return f"{placement}它在{domain_label}上提醒的是：{core}。"
+        house_label = planet.get("house_label", "")
+        dignity_code = planet.get("dignity_code", "peregrine")
+        dignity_label = planet.get("dignity_label", "平常")
+        planet_label = planet.get("planet_label") or _PLANET_FALLBACK_LABELS.get(
+            planet_key.upper(), planet_key
+        )
+
+        dignity_note = _dignity_note(dignity_code)
+
+        template = _MIRROR_TEMPLATES.get(planet_key.upper())
+        if template is None:
+            # 未知行星 → 通用模板
+            template = (
+                "我在{sign_label}，第{house}宫「{house_label}」。"
+                "关于{domain_label}：{core_theme}。{dignity_note}"
+            )
+
+        base = template.format(
+            sign_label=sign or "未知",
+            house=house or 0,
+            house_label=house_label or "未知",
+            core_theme=core.strip().rstrip("。"),
+            dignity_note=dignity_note,
+            domain_label=domain_label,
+        )
+
+        # 模板拼出来的尾段如果没句号，补一个；dignity_note 末尾如果是逗号或冒号
+        # 之类的，换成句号避免读起来像"半句话"被截断。
+        if base and not base.endswith(("。", "！", "？")):
+            base = base.rstrip("，：；") + "。"
+
+        # 追加一条最贴合领域的延伸（飞星 / 相位 / 互溶），让回复有信息密度
+        extension = self._pick_one_extra(reading, planet_key)
+        if extension:
+            base = f"{base} {extension}"
+
+        return base
+
+    def _pick_one_extra(self, reading: dict, planet_key: str) -> str:
+        """从 evidence 列表中挑一条最贴合的额外信息（飞星/相位/接纳），做自然语言翻译。"""
+        flystars = reading.get("flystars") or []
+        aspects = reading.get("aspects") or {}
+        planet_aspects = aspects.get("planet_aspects") or []
+        receptions = reading.get("receptions") or {}
+
+        # 优先：飞星（有 fortune 评估）
+        if flystars:
+            fs = flystars[0]
+            tone = ""
+            if fs.get("fortune_level") == "fortunate":
+                tone = "这条飞星是得吉的——你在这块的投入是有回报的。"
+            elif fs.get("fortune_level") == "afflicted":
+                tone = "这条飞星是受克的——你在意的方向上阻力会比较明显，得有耐心。"
+            return (
+                f"顺便一提，你掌管第{fs['from_house']}宫「{fs['from_house_title']}」"
+                f"的能量，飞到了第{fs['to_house']}宫「{fs['to_house_title']}」"
+                f"——这意味着你的{_PLANET_FALLBACK_LABELS.get(planet_key.upper(), planet_key)}能量，"
+                f"在这块的具体落点是{fs['to_house_title']}。{tone}"
+            ).strip()
+
+        # 次选：相位
+        if planet_aspects:
+            pa = planet_aspects[0]
+            nature_zh = "吉" if pa.get("nature") == "supportive" else "凶" if pa.get("nature") == "challenging" else "中性"
+            title = pa.get("title", "")
+            if title:
+                return f"你星盘里还有一条相位——{title}（{nature_zh}），它会调节你在这块表达时的张力。"
+
+        # 兜底：接纳/互溶
+        mutuals = (receptions or {}).get("mutuals") or []
+        if mutuals:
+            line = mutuals[0].get("line", "")
+            if line:
+                return f"还有一点——{line}，这层关系在背后给你托着。"
+
+        return ""
 
     def _render_pure_emotion_guide(self, trigger: Any, emotional: str) -> str:
         guides = trigger.emotion_guides or ["你可以先把最真实的感受说出来。"]
@@ -923,7 +1013,14 @@ class EngineAstrologer:
         except Exception:
             pass
 
-        # 5. 渲染对话
+        # 5. 先把本轮计数加进 ctx——renderer 内的 _should_enter_astro 依赖它
+        #    决定是否进 astrology。原版顺序写反，导致首轮 turn_count 永远为 0。
+        ctx.turn_count += 1
+        ctx.active_domains = route_result["domains"]
+        ctx.emotional_state = route_result["emotional_state"]
+        ctx.depth_level = min(ctx.depth_level + 1, 2)
+
+        # 6. 渲染对话
         response = self.renderer.render(
             route_result=route_result,
             structured_reading=structured_reading,
@@ -934,11 +1031,7 @@ class EngineAstrologer:
         )
         response.evidence = structured_reading.get("evidence", [])
 
-        # 6. 更新上下文
-        ctx.active_domains = route_result["domains"]
-        ctx.emotional_state = route_result["emotional_state"]
-        ctx.depth_level = min(ctx.depth_level + 1, 2)
-        ctx.turn_count += 1
+        # 7. 收尾记录
         ctx.readings_given.append(primary_domain)
 
         return response
