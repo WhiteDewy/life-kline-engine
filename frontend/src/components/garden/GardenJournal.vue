@@ -226,7 +226,6 @@ const props = defineProps<{
 
 const selectedSpirit = ref("");
 const growthData = ref<GrowthData | null>(null);
-const apiLoaded = ref(false);
 const diaryEntries = ref<any[]>([]);
 
 async function fetchDiaryEntries() {
@@ -241,27 +240,33 @@ async function fetchDiaryEntries() {
   }
 }
 
-// ── Mock 成长数据（localStorage 存储） ──
-interface MockChat {
-  planet: string;
-  timestamp: number;
-  snippet: string;
+// ── 真实成长数据：全部来自后端 /growth 接口 ──
+interface RecentConversation {
+  timestamp: string;
+  sign: string;
+  topic?: string;
+  user_message?: string;
+  character_response?: string;
+  emotional_context?: string;
+  // 兼容：若后端返回 planet 字段则取之
+  planet?: string;
+  snippet?: string;
 }
 
-const mockChats = ref<MockChat[]>([]);
+const recentConversations = computed<RecentConversation[]>(() => {
+  return (growthData.value?.recent_conversations as RecentConversation[] | undefined) || [];
+});
 
-function loadMockData() {
-  const key = `spirit_garden_${props.activeReportId}`;
-  try {
-    const raw = localStorage.getItem(key);
-    if (raw) {
-      const data = JSON.parse(raw);
-      mockChats.value = data.chats || [];
-    }
-  } catch {
-    mockChats.value = [];
-  }
-}
+// 从 recent_conversations 派生每个角色（sign/planet）的对话计数
+const conversationCounts = computed<Record<string, number>>(() => {
+  const counts: Record<string, number> = {};
+  recentConversations.value.forEach((c) => {
+    const key = (c as any).planet || c.sign || "";
+    if (!key) return;
+    counts[key] = (counts[key] || 0) + 1;
+  });
+  return counts;
+});
 
 async function fetchGrowthData() {
   if (!props.activeReportId) return;
@@ -269,15 +274,13 @@ async function fetchGrowthData() {
     const res = await apiClient.get(`/characters/${props.activeReportId}/growth`);
     if (res.data?.status === "success") {
       growthData.value = res.data.data;
-      apiLoaded.value = true;
     }
   } catch {
-    apiLoaded.value = false;
+    growthData.value = null;
   }
 }
 
 onMounted(() => {
-  loadMockData();
   fetchGrowthData();
   fetchDiaryEntries();
 });
@@ -289,104 +292,51 @@ const hasActivity = computed(() => {
 
 // ── 统计 ──
 const stats = computed(() => {
-  // 优先使用 API 数据
-  if (growthData.value?.summary) {
-    const s = growthData.value.summary;
-    return {
-      totalConversations: s.total_conversations || mockChats.value.length,
-      streakDays: s.streak_days || 0,
-      milestonesCount: s.milestones_achieved || 0,
-    };
-  }
-
-  // Fallback: localStorage
-  const total = mockChats.value.length;
-
-  // 连续天数
-  let streak = 0;
-  const dates = new Set(
-    mockChats.value.map((c) => {
-      const d = new Date(c.timestamp);
-      return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-    })
-  );
-  let check = new Date();
-  for (let i = 0; i < 365; i++) {
-    const key = `${check.getFullYear()}-${check.getMonth() + 1}-${check.getDate()}`;
-    if (dates.has(key)) {
-      streak++;
-      check.setDate(check.getDate() - 1);
-    } else if (i === 0) {
-      check.setDate(check.getDate() - 1); // 今天没对话，从昨天开始算
-    } else {
-      break;
-    }
-  }
-
-  // 里程碑数
-  let milestonesCount = 0;
-  if (total >= 1) milestonesCount++;
-  if (total >= 10) milestonesCount++;
-  if (total >= 50) milestonesCount++;
-  if (streak >= 7) milestonesCount++;
-
+  const s = growthData.value?.summary;
   return {
-    totalConversations: total,
-    streakDays: streak,
-    milestonesCount,
+    totalConversations: s?.total_conversations || 0,
+    streakDays: s?.streak_days || 0,
+    milestonesCount: s?.milestones_achieved || 0,
   };
 });
 
-// ── 最亲密星灵 ──
+// ── 最亲密星灵（来自后端真实对话计数） ──
 const closestSpirit = computed(() => {
   if (!props.planetProfiles?.planet_characters) return null;
   const profiles = props.planetProfiles.planet_characters;
+  const counts = conversationCounts.value;
 
-  const counts: Record<string, number> = {};
-  mockChats.value.forEach((c) => {
-    counts[c.planet] = (counts[c.planet] || 0) + 1;
-  });
-
-  let maxPlanet = Object.keys(profiles)[0] || "SUN";
+  let maxKey = "";
   let maxCount = 0;
-  for (const [p, c] of Object.entries(counts)) {
+  for (const [k, c] of Object.entries(counts)) {
     if (c > maxCount) {
       maxCount = c;
-      maxPlanet = p;
+      maxKey = k;
     }
   }
+  if (!maxKey || maxCount === 0) return null;
 
-  const p = profiles[maxPlanet];
-  if (!p && maxCount === 0) {
-    const sun = profiles["SUN"];
-    return sun
-      ? {
-          planet: "SUN",
-          symbol: sun.persona?.symbol || "☉",
-          name: sun.persona?.name_zh || "太阳",
-          color: sun.persona?.visual_color || "#F2A900",
-        }
-      : null;
-  }
-
+  const p = profiles[maxKey];
   return p
     ? {
-        planet: maxPlanet,
+        planet: maxKey,
         symbol: p.persona?.symbol || "●",
-        name: p.persona?.name_zh || "",
+        name: p.persona?.name_zh || maxKey,
         color: p.persona?.visual_color || "#999",
       }
-    : null;
+    : {
+        planet: maxKey,
+        symbol: "●",
+        name: maxKey,
+        color: "#999",
+      };
 });
 
-// ── 亲密度条 ──
+// ── 亲密度条（来自后端真实对话计数） ──
 const affinityBars = computed(() => {
   if (!props.planetProfiles?.planet_characters) return [];
   const profiles = props.planetProfiles.planet_characters;
-  const counts: Record<string, number> = {};
-  mockChats.value.forEach((c) => {
-    counts[c.planet] = (counts[c.planet] || 0) + 1;
-  });
+  const counts = conversationCounts.value;
 
   const order = ["SUN", "MOON", "MERCURY", "VENUS", "MARS", "JUPITER", "SATURN"];
   return order.map((key) => {
@@ -398,14 +348,14 @@ const affinityBars = computed(() => {
       symbol: p.persona?.symbol || "●",
       name: p.persona?.name_zh || key,
       color: p.persona?.visual_color || "#999",
-      affinity: Math.min(10, count * 0.5 + 0.5), // 0.5-10 scale
+      affinity: Math.min(10, count),
     };
   }).filter(Boolean) as Array<{
     planet: string; symbol: string; name: string; color: string; affinity: number;
   }>;
 });
 
-// ── 里程碑 ──
+// ── 里程碑：优先读后端 milestones，缺失时从 stats 派生 ──
 const milestones = computed(() => {
   const result: Array<{
     date: string;
@@ -413,6 +363,17 @@ const milestones = computed(() => {
     description: string;
   }> = [];
 
+  // 优先使用后端返回的里程碑列表
+  const apiMilestones = growthData.value?.milestones;
+  if (apiMilestones && apiMilestones.length > 0) {
+    return apiMilestones.map((m: any) => ({
+      date: m.achieved_at ? String(m.achieved_at).slice(0, 10) : "最近",
+      title: m.milestone_type || "里程碑",
+      description: m.description || "",
+    }));
+  }
+
+  // 后端字段缺失：从 stats 派生四档
   const total = stats.value.totalConversations;
   const streak = stats.value.streakDays;
   const closest = closestSpirit.value;
@@ -451,25 +412,30 @@ const milestones = computed(() => {
   return result;
 });
 
-// ── 最近对话 ──
+// ── 最近对话（来自后端 recent_conversations） ──
 const recentChats = computed(() => {
   if (!props.planetProfiles?.planet_characters) return [];
   const profiles = props.planetProfiles.planet_characters;
 
-  return mockChats.value
+  return recentConversations.value
     .slice(-5)
     .reverse()
     .map((c) => {
-      const p = profiles[c.planet];
-      const diff = Date.now() - c.timestamp;
+      const key = (c as any).planet || c.sign || "";
+      const p = profiles[key];
+      const ts = c.timestamp ? new Date(c.timestamp).getTime() : Date.now();
+      const diff = Date.now() - ts;
       const mins = Math.floor(diff / 60000);
       const hours = Math.floor(diff / 3600000);
       const days = Math.floor(diff / 86400000);
 
+      const snippet =
+        (c.snippet || c.user_message || c.character_response || "").slice(0, 40) || "...";
+
       return {
         symbol: p?.persona?.symbol || "●",
-        spiritName: p?.persona?.name_zh || c.planet,
-        snippet: c.snippet?.slice(0, 40) || "...",
+        spiritName: p?.persona?.name_zh || key || "星灵",
+        snippet,
         timeAgo: mins < 1
           ? "刚刚"
           : mins < 60

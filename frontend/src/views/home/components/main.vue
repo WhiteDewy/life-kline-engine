@@ -74,6 +74,7 @@
           :symbol="homeData.todayStarSpirit.value.symbol"
           :color="homeData.todaysPlanetProfile?.value?.persona?.visual_color || '#D4A35A'"
           :gender="homeData.userGender.value"
+          :reason="homeData.todayStarSpirit.value.reason"
           @chat="openStarSpiritChat"
         />
 
@@ -147,6 +148,7 @@
         :gender="homeData.userGender.value"
         :active-planet="homeData.activePlanet.value"
         :active-sign="homeData.activeSign.value"
+        :report-id="homeData.reportId.value"
         @close="showCouncil = false"
         @chat-with-planet="onCouncilPlanetChat"
         @chat-with-sign="onCouncilSignChat"
@@ -163,15 +165,6 @@
         :gender="homeData.userGender.value"
         @chat="openStarSpiritChat"
         @close="showDailyQuestion = false"
-      />
-
-      <!-- 星灵日记（兼容旧入口，主流程已跳转到 /diary） -->
-      <StarSpiritDiary
-        v-if="false"
-        :visible="showDiary"
-        :entries="homeData.diaryEntries.value"
-        :loading="false"
-        @close="showDiary = false"
       />
 
       <!-- 今日走向 -->
@@ -217,7 +210,6 @@ import ProfileOverlay from "./ProfileOverlay.vue";
 import HomeCouncil from "./HomeCouncil.vue";
 import StarSpiritDisplay from "./StarSpiritDisplay.vue";
 import SpiritOracle from "./SpiritOracle.vue";
-import StarSpiritDiary from "./StarSpiritDiary.vue";
 import TodayDirection from "./TodayDirection.vue";
 import OnboardingFlow from "./OnboardingFlow.vue";
 import DivinationPlaceholder from "@/views/Garden/components/DivinationPlaceholder.vue";
@@ -282,7 +274,6 @@ const greetingText = computed(() => {
 const showProfile = ref(false);
 const showCouncil = ref(false);
 const showDailyQuestion = ref(false);
-const showDiary = ref(false);
 const showDirection = ref(false);
 const showOnboarding = ref(false);
 const showDivination = ref(false);
@@ -311,15 +302,17 @@ function closeAllPanels() {
 
 // ── 路由跳转：进入全屏聊天页 ──
 
-function openChatPage(planet?: string) {
+function openChatPage(planet?: string, opts?: { source?: string; question?: string; detail?: string }) {
   const target = planet || homeData.todayStarSpirit.value?.planet || "SUN";
+  const query: Record<string, string> = {
+    source: opts?.source || (planet ? "council" : "today"),
+    question: opts?.question ?? homeData.dailyQuestion.value?.question ?? "",
+  };
+  if (opts?.detail) query.detail = opts.detail;
   router.push({
     name: "spirit-chat",
     params: { planet: target },
-    query: {
-      source: planet ? "council" : "today",
-      question: homeData.dailyQuestion.value?.question || "",
-    },
+    query,
   });
 }
 
@@ -336,14 +329,17 @@ function onCouncilPlanetChat(p: any) {
 function onCouncilSignChat(s: any) {
   showCouncil.value = false;
   homeData.setActiveSign(s.key);
-  router.push({ path: "/constellation-stories", query: { sign: s.key } });
+  // 星座故事页为开发占位，仅开发构建注册路由
+  if (import.meta.env.DEV) {
+    router.push({ path: "/constellation-stories", query: { sign: s.key } });
+  }
 }
 
 function onTransitChat(payload: { planet: string; detail: string; transit?: any }) {
-  const { planet: transitPlanet } = payload;
+  const { planet: transitPlanet, detail } = payload;
   homeData.setActivePlanet(transitPlanet);
   showDirection.value = false;
-  openChatPage(transitPlanet);
+  openChatPage(transitPlanet, { source: "transit", detail });
 }
 
 // ═══════════════════════════════════════

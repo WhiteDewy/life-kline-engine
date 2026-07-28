@@ -25,9 +25,8 @@
     </div>
 
     <div class="chat-input-row">
-      <div class="free-hint" v-if="!hasUnlimited">
-        还剩 {{ remainingMessages }} 条免费消息 ·
-        <button class="upgrade-link" @click="$emit('upgrade')">升级无限畅聊</button>
+      <div class="free-hint">
+        想更深入地聊？<button class="upgrade-link" @click="$emit('upgrade')">和星灵深度对话 →</button>
       </div>
       <div class="input-wrap">
         <input
@@ -35,13 +34,9 @@
           v-model="inputText"
           placeholder="输入你的问题…"
           @keydown.enter="sendMessage"
-          :disabled="typing || (!hasUnlimited && remainingMessages <= 0)"
+          :disabled="typing"
         />
-        <button
-          class="send-btn"
-          @click="sendMessage"
-          :disabled="!inputText.trim() || typing || (!hasUnlimited && remainingMessages <= 0)"
-        >
+        <button class="send-btn" @click="sendMessage" :disabled="!inputText.trim() || typing">
           发送
         </button>
       </div>
@@ -56,8 +51,6 @@ import { SIGN_EMOJI_MAP } from "@/config/zodiac";
 
 const props = defineProps<{
   greeting?: string;
-  freeMessages?: number;
-  hasUnlimited?: boolean;
   characterSign?: string;
   characterName?: string;
   characterColor?: string;
@@ -72,12 +65,8 @@ const emit = defineEmits<{
 const inputText = ref("");
 const typing = ref(false);
 const msgContainer = ref<HTMLElement | null>(null);
-const userMessageCount = ref(0);
 
-const remainingMessages = ref(props.freeMessages ?? 2);
-
-// 角色头像
-const SIGN_EMOJIS = SIGN_EMOJI_MAP
+const SIGN_EMOJIS = SIGN_EMOJI_MAP;
 
 const avatarEmoji = computed(() => {
   if (props.characterSign) {
@@ -111,45 +100,36 @@ watch(
 async function sendMessage() {
   const text = inputText.value.trim();
   if (!text) return;
-  if (!props.hasUnlimited && remainingMessages.value <= 0) return;
 
   messages.value.push({ role: "user", text, time: timeStr() });
   inputText.value = "";
-  userMessageCount.value++;
-  if (!props.hasUnlimited) remainingMessages.value--;
 
   typing.value = true;
   await nextTick();
   scrollToBottom();
 
-  // 调用角色对话 API
-  let reply: string;
+  // 调用免费规则对话 API（/characters/{id}/chat，无 LLM、不计额度）。
+  // 失败或空回复时诚实告知，绝不返回编造的星盘解读。
+  let reply = "";
   try {
-    if (props.reportId && props.characterSign) {
-      // 使用真实角色对话 API
+    if (props.reportId) {
       const res = await apiClient.post(`/characters/${props.reportId}/chat`, {
-        sign: props.characterSign,
+        sign: props.characterSign || 'ARIES',
         topic: detectTopic(text),
         message: text,
       });
-      reply = res.data?.data?.response || fallbackReply(text);
-    } else if (props.reportId) {
-      // 使用角色议会 API（无指定角色时）
-      const res = await apiClient.post(`/characters/${props.reportId}/chat`, {
-        sign: 'ARIES',
-        topic: detectTopic(text),
-        message: text,
-      });
-      reply = res.data?.data?.response || fallbackReply(text);
-    } else {
-      reply = fallbackReply(text);
+      reply = res.data?.data?.response || "";
     }
   } catch {
-    reply = fallbackReply(text);
+    reply = "";
   }
 
   typing.value = false;
-  messages.value.push({ role: "astro", text: reply, time: timeStr() });
+  messages.value.push({
+    role: "astro",
+    text: reply || "暂时无法回应，稍后再试，或点下方与星灵深度对话。",
+    time: timeStr(),
+  });
 
   await nextTick();
   scrollToBottom();
@@ -165,19 +145,6 @@ function detectTopic(text: string): string {
   if (text.includes('健康') || text.includes('身体') || text.includes('累')) return 'health';
   if (text.includes('孩子') || text.includes('小孩')) return 'children';
   return 'personal';
-}
-
-function fallbackReply(userText: string): string {
-  if (userText.includes("感情") || userText.includes("爱情") || userText.includes("喜欢")) {
-    return "从你的星盘来看，金星的位置揭示了你对感情的深层需求。你需要的不是一个完美的人，而是一个能理解你本质的人。想具体聊聊你的金星配置吗？";
-  }
-  if (userText.includes("工作") || userText.includes("事业") || userText.includes("职业")) {
-    return "你的第十宫和第六宫给了很有趣的线索。你适合的不是随大流的工作，而是能让你投入专业热情的领域。MC 的配置暗示了你的社会角色走向——想深入看看吗？";
-  }
-  if (userText.includes("钱") || userText.includes("财运") || userText.includes("财务")) {
-    return "你的第二宫和第八宫揭示了你的财富模式。有趣的是，你的正财和偏财路径很不一样——一个是稳扎稳打，另一个是资源借力。想展开说说吗？";
-  }
-  return "我理解你的问题。从你星盘的结构来看，这和你的核心配置密切相关。能说说你最近的具体感受吗？这样我可以给出更贴合你当下状态的解读。";
 }
 
 function scrollToBottom() {

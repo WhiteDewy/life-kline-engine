@@ -149,6 +149,7 @@ def has_aspect_between(planet1: Planet, planet2: Planet, chart_data: ChartData) 
         (60, 6.0),     # 六合
         (90, 8.0),     # 刑相
         (120, 8.0),    # 拱相
+        (150, 2.0),    # 梅花相
         (180, 10.0),   # 冲相
     ]
     
@@ -197,6 +198,7 @@ def get_aspect_strength(planet1: Planet, planet2: Planet, chart_data: ChartData)
         (60, 6.0, 0.6),     # 六合
         (90, 8.0, 0.8),     # 刑相
         (120, 8.0, 0.9),    # 拱相
+        (150, 2.0, 0.3),    # 梅花相
         (180, 10.0, 0.8),   # 冲相
     ]
     

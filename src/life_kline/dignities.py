@@ -621,7 +621,7 @@ def compute_essential_dignity_for_planet(
 
 
 def compute_accidental_dignity_raw(
-    planet_info: PlanetInfo, chart_info: Dict[str, Any]
+    planet: Planet, planet_info: PlanetInfo, chart_info: Dict[str, Any]
 ) -> float:
     """
     计算意外尊贵原始分（角续果宫+状态等）
@@ -662,32 +662,18 @@ def compute_accidental_dignity_raw(
         print(f"调试: 行星在果宫第{house}宫 -1.0分")
 
     # 2. 特殊状态（Cazimi优先）
-    # 获取行星枚举
-    planet_enum = None
-    for planet in Planet:
-        if planet_info.sign.name.lower() in planet.value.lower():
-            planet_enum = planet
-            break
-
-    # 如果无法确定行星枚举，尝试使用行星名称
-    if planet_enum is None and hasattr(planet_info, "name") and planet_info.name:
-        for planet in Planet:
-            if planet_info.name.lower() in planet.value.lower():
-                planet_enum = planet
-                break
-
     # 对于非太阳的行星，检查太阳相关状态
-    if planet_enum and planet_enum != Planet.SUN:
+    if planet != Planet.SUN:
         # 检查Cazimi
-        if is_cazimi(planet_enum, sun_long, planet_long):
+        if is_cazimi(planet, sun_long, planet_long):
             score += 3.0  # Cazimi +3
             print(f"调试: 行星在太阳心脏 +3.0分")
         else:
             # 非Cazimi情况下检查燃烧/日光下
-            if is_combust(planet_enum, sun_long, planet_long):
+            if is_combust(planet, sun_long, planet_long):
                 score -= 3.0  # 燃烧 -3
                 print(f"调试: 行星被燃烧 -3.0分")
-            elif is_under_sun_beams(planet_enum, sun_long, planet_long):
+            elif is_under_sun_beams(planet, sun_long, planet_long):
                 score -= 1.0  # 日光下 -1
                 print(f"调试: 行星在日光下 -1.0分")
 
@@ -698,8 +684,8 @@ def compute_accidental_dignity_raw(
 
     # 速度判断（快慢）
     speed = planet_info.speed
-    if planet_enum:
-        avg_speed = get_average_speed(planet_enum)
+    if planet:
+        avg_speed = get_average_speed(planet)
 
         # 计算速度比例
         if avg_speed > 0:
@@ -717,9 +703,9 @@ def compute_accidental_dignity_raw(
     # 上位行星（火木土）东方更有力
     # 下位行星（水金）西方更有力（作为长庚星）
     # 但根据用户统一要求：东方 +0.5, 西方 -0.5
-    if planet_enum and planet_enum != Planet.SUN:
+    if planet and planet != Planet.SUN:
         # 使用 is_oriental 判断
-        is_ori = is_oriental(planet_enum, sun_long, planet_long)
+        is_ori = is_oriental(planet, sun_long, planet_long)
         
         # 修正逻辑：
         # 如果是上位行星(火木土)，东方为吉
@@ -744,8 +730,8 @@ def compute_accidental_dignity_raw(
         print(f"调试: 行星在南纬 -0.5分")
 
     # 6. 喜乐宫
-    if planet_enum:
-        joy_house = get_joy_house(planet_enum)
+    if planet:
+        joy_house = get_joy_house(planet)
         if joy_house is not None and house == joy_house:
             score += 0.5  # 在喜乐宫 +0.5
             print(f"调试: 行星在喜乐宫 +0.5分")
@@ -792,7 +778,7 @@ def compute_accidental_dignity_for_planet(
     }
 
     # 调用原始计算函数
-    return compute_accidental_dignity_raw(planet_info, chart_info)
+    return compute_accidental_dignity_raw(planet, planet_info, chart_info)
 
 
 # ============================================================================
@@ -851,7 +837,7 @@ def compute_all_dignities(chart_data: ChartData) -> Dict[Planet, float]:
             "sun_longitude": chart_data.sun_longitude,
             "is_day": chart_data.is_day_chart,
         }
-        accidental_raw = compute_accidental_dignity_raw(planet_info, chart_info)
+        accidental_raw = compute_accidental_dignity_raw(planet, planet_info, chart_info)
         print(f"意外尊贵原始分: {accidental_raw:.2f}")
 
         # 3. 合并原始分数

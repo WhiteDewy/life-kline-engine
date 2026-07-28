@@ -160,13 +160,12 @@
             </div>
             <AIChatPanel
               :greeting="currentCharacter?.personalized_greeting || '嘿，我是你的' + selectedCharacterPersona.name + '角色。想聊聊什么？'"
-              :free-messages="2"
-              :has-unlimited="hasAllDomains()"
+              :has-unlimited="true"
               :character-sign="activeCharacter"
               :character-name="selectedCharacterPersona.name"
               :character-color="selectedCharacterPersona.visual_color"
               :report-id="activeReportId"
-              @upgrade="onSelectPlan('subscription')"
+              @upgrade="goDeepChat(activeCharacter)"
               @select-character="() => {}"
             />
           </section>
@@ -193,27 +192,13 @@
             </button>
           </div>
 
-          <!-- 展开的领域详情 -->
+          <!-- 展开的领域详情（报告查看免费，无付费墙） -->
           <div class="domainExpanded" v-if="activeDomain && activeDomainData">
-            <template v-if="hasAllDomains() || isDomainUnlocked(activeDomain)">
-              <DomainPanel
-                :domain="{ ...activeDomainData, domain: activeDomain }"
-                @chat="onDomainChat"
-              />
-            </template>
-            <template v-else>
-              <DomainPreviewCard
-                :domain="{ ...activeDomainData, domain: activeDomain }"
-                @unlock-domain="onUnlockDomain"
-                @unlock-all="onUnlockAll"
-              />
-            </template>
+            <DomainPanel
+              :domain="{ ...activeDomainData, domain: activeDomain }"
+              @chat="onDomainChat"
+            />
           </div>
-        </section>
-
-        <!-- ═══ 因为值得 ═══ -->
-        <section class="exploreNav" v-if="!hasAllDomains() && activeDomain">
-          <PricingCards @select="onSelectPlan" />
         </section>
 
         <!-- ═══ 技术解读：飞星链路与格局分析 ═══ -->
@@ -235,31 +220,23 @@
           <div class="aiCtaInner" v-if="!chatOpen">
             <div class="aiCtaLeft">
               <h3 class="aiCtaTitle">💬 还有想聊的？</h3>
-              <p class="aiCtaText">上面这些只是星盘告诉我的。你想问什么、想确认什么、觉得不准的——直接跟我说。未付费用户可免费发送 2 条消息体验。</p>
+              <p class="aiCtaText">上面这些只是星盘告诉我的。你想问什么、想确认什么、觉得不准的——直接跟我说。</p>
             </div>
             <el-button type="primary" size="large" round @click="onAIChat" class="aiCtaBtn">
-              开始深度对话 <span class="aiPriceTag">· ¥29.9/次 或 ¥199/年无限</span>
+              开始深度对话
             </el-button>
           </div>
           <AIChatPanel
             v-if="chatOpen"
             :greeting="`你好！我已经看过了你的完整星盘。你想先聊聊哪个方面？比如你的事业方向、感情模式、或者现在的人生阶段——我都会从星盘的角度帮你分析。`"
-            :free-messages="2"
-            :has-unlimited="hasAllDomains()"
-            @upgrade="onSelectPlan('subscription')"
+            :has-unlimited="true"
+            @upgrade="goDeepChat('SUN')"
           />
         </section>
         </template>
         <!-- end 领域视图 -->
       </template>
     </div>
-
-    <PaymentModal
-      :visible="showPayment"
-      :plan-key="paymentPlanKey"
-      @close="showPayment = false"
-      @confirm="onPaymentConfirm"
-    />
   </div>
 </template>
 
@@ -271,20 +248,16 @@ import { FEATURED_EXAMPLES } from "@/config/examples";
 import { highlightEmotion } from "@/utils/textHighlight";
 import type { DomainPoint, LifeReport } from "@/utils/types";
 import DomainPanel from "./components/DomainPanel.vue";
-import DomainPreviewCard from "./components/DomainPreviewCard.vue";
-import PricingCards from "./components/PricingCards.vue";
 import NatalChartWheel from "./components/NatalChartWheel.vue";
 import LifeStructureChart from "./components/LifeStructureChart.vue";
 import FirdariaTimeline from "./components/FirdariaTimeline.vue";
 import LifeDomainsChart from "./components/LifeDomainsChart.vue";
 import TransitPanel from "./components/TransitPanel.vue";
 import FastTransitBar from "./components/FastTransitBar.vue";
-import PaymentModal from "@/components/PaymentModal.vue";
 import AIChatPanel from "./components/AIChatPanel.vue";
 import CharacterWheel from "./components/CharacterWheel.vue";
 import NatalBlueprintPanel from "./components/NatalBlueprintPanel.vue";
 import AdvancedPatternsPanel from "./components/AdvancedPatternsPanel.vue";
-import { usePayment } from "@/utils/payment";
 
 // ── 12 领域定义 ──
 const ALL_DOMAINS: Record<string, { icon: string; label: string }> = {
@@ -305,16 +278,13 @@ const ALL_DOMAINS: Record<string, { icon: string; label: string }> = {
 // ── 路由 ──
 const route = useRoute();
 const router = useRouter();
-const { isPurchased, hasFullAccess, recordPurchase } = usePayment();
 
 const loading = ref(true);
 const error = ref("");
 const report = ref<LifeReport | null>(null);
 const activeReportId = ref("");
 
-// ── 付费墙 ──
-const showPayment = ref(false);
-const paymentPlanKey = ref("full");
+// ── 对话 ──
 const chatOpen = ref(false);
 
 // ── 角色系统 ──
@@ -368,33 +338,7 @@ function switchView(mode: "domains" | "characters") {
   }
 }
 
-function isDomainUnlocked(domainKey: string) {
-  if (!activeReportId.value) return true;
-  return isPurchased(activeReportId.value, domainKey);
-}
-function hasAllDomains() {
-  if (!activeReportId.value) return true;
-  return hasFullAccess(activeReportId.value);
-}
-function onUnlockDomain(_key: string) {
-  paymentPlanKey.value = "domain";
-  showPayment.value = true;
-}
-function onUnlockAll() {
-  paymentPlanKey.value = "full";
-  showPayment.value = true;
-}
-function onSelectPlan(key: string) {
-  paymentPlanKey.value = key;
-  showPayment.value = true;
-}
-function onPaymentConfirm(key: string) {
-  showPayment.value = false;
-  if (!activeReportId.value) return;
-  if (key === "full" || key === "subscription") {
-    recordPurchase(activeReportId.value, key === "subscription" ? "subscription" : "full");
-  }
-}
+// 报告查看免费（变现仅在 AI/议会对话计量，无前端付费墙）。
 
 // ── Hero ──
 const hero = computed(() => (report.value as any)?.hero || {});
@@ -506,6 +450,12 @@ function onDomainChat(key: string) {
 
 function onAIChat() {
   chatOpen.value = !chatOpen.value;
+}
+
+/** 引导到计量制 AI 深度对话页（/chat/:planet，V2） */
+function goDeepChat(planet = "SUN") {
+  const id = activeReportId.value;
+  if (id) router.push({ path: `/chat/${planet}`, query: { source: "kline" } });
 }
 
 // ── 报告加载 ──

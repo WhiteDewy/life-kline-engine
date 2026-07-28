@@ -351,9 +351,6 @@ class ConsultationEngine:
         if state.is_complete:
             return state
 
-        # Timing 检测（先于其他逻辑）：如果用户问"什么时候"类问题
-        state = self._detect_timing(state, user_response)
-
         # 危机检测闸门（先于任何咨询逻辑）：命中则脱离占星流程，给真实支持资源。
         from .safety import detect_crisis
         crisis = detect_crisis(user_response)
@@ -817,62 +814,19 @@ class ConsultationEngine:
     def _detect_timing(
         self, state: ConsultationState, user_message: str,
     ) -> ConsultationState:
-        """检测用户问题是否涉及时间维度，如是则计算时间推运"""
-        try:
-            from .timing import TimingDetector, FirdariaEngine
+        """时间推运检测（法达周期 / 婚期等"何时"类问题）。
 
-            # 检测是否时间问题
-            detector = TimingDetector()
-            timing_q = detector.detect(user_message)
+        ⚠️ 技术债（P1.3 已处理）：原实现 `from .timing import TimingDetector,
+        FirdariaEngine` 引用了从未创建的 `.timing` 模块，整段一直走 except 静默
+        失败，timing_summary/timing_note 恒为空串——用户问"何时结婚"得不到
+        时间维度输出，且无任何报错可见。
 
-            if not timing_q.is_timing_question:
-                return state
-
-            # 获取 birth_time 和 age
-            birth_info = self._data.get("birth_info", {})
-            birth_time_str = birth_info.get("birth_time", "")
-            timezone = birth_info.get("timezone", 8.0)
-
-            if not birth_time_str:
-                return state
-
-            from datetime import datetime
-            try:
-                birth_time = datetime.fromisoformat(birth_time_str)
-            except (ValueError, TypeError):
-                return state
-
-            # 计算年龄
-            now = datetime.now()
-            age = now.year - birth_time.year - 1
-            if (now.month, now.day) >= (birth_time.month, birth_time.day):
-                age += 1
-
-            # 判断昼夜盘（简化：白天出生 = 日间盘）
-            hour = birth_time.hour
-            is_day_chart = 6 <= hour < 18
-
-            # 计算法达
-            engine = FirdariaEngine(birth_time, is_day_chart)
-
-            # 根据 aspect 获取对应的时间信息
-            if timing_q.aspect == "marriage":
-                timing_result = engine.get_marriage_timing(age)
-                state.timing_note = timing_result.note
-                state.timing_summary = self._format_timing_summary(
-                    engine.get_timing_summary(age)
-                )
-            else:
-                # 通用时间摘要
-                summary = engine.get_timing_summary(age)
-                state.timing_summary = self._format_timing_summary(summary)
-                state.timing_note = ""
-
-        except Exception as e:
-            print(f"[ConsultationEngine] Timing detection failed: {e}")
-            state.timing_summary = ""
-            state.timing_note = ""
-
+        现状：已移除调用点（continue_consultation 不再调用本方法），本方法保留
+        为 no-op 占位，待后续补建 timing 模块时再恢复。不新建空的 timing.py
+        以免误导。详见 docs/ENGINEERING_STANDARD.md §0 技术债表。
+        """
+        state.timing_summary = ""
+        state.timing_note = ""
         return state
 
     def _format_timing_summary(self, summary: dict) -> str:

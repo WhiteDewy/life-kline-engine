@@ -13,6 +13,21 @@ export const apiClient = axios.create({
   timeout: 15000,
 });
 
+// ── 额度超限错误 ──
+// 后端 spirit-chat/council 在额度耗尽时返回 HTTP 200 + body
+// {status:"error", error_code:"QUOTA_EXCEEDED", data:{message, access}}。
+// 不能只看 HTTP 状态码，必须按 body error_code 识别。
+export class QuotaError extends Error {
+  access: any;
+  action_required: string;
+  constructor(message: string, access: any) {
+    super(message || "额度不足");
+    this.name = "QuotaError";
+    this.access = access || {};
+    this.action_required = access?.action_required || "";
+  }
+}
+
 // ── Request interceptor: 自动附加 token ──
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem("lk_token");
@@ -22,9 +37,17 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// ── Response interceptor: 401 时清除 token 并跳转登录 ──
+// ── Response interceptor ──
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // HTTP 200 但 body 标记 QUOTA_EXCEEDED → 抛 QuotaError 供调用方引导升级
+    const body = response?.data;
+    if (body && body.error_code === "QUOTA_EXCEEDED") {
+      const data = body.data || {};
+      throw new QuotaError(data.message || "额度不足", data.access);
+    }
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("lk_token");

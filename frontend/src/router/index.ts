@@ -1,15 +1,26 @@
 import { createRouter, createWebHistory } from "vue-router";
+import type { RouteRecordRaw } from "vue-router";
 import Entry from "@/views/home/index.vue";
+
+const devOnlyRoutes: RouteRecordRaw[] = import.meta.env.DEV
+  ? [
+      {
+        path: "/users",
+        name: "users",
+        component: () => import("@/views/Users/index.vue"),
+      },
+      {
+        path: "/constellation-stories",
+        name: "constellation-stories",
+        component: () => import("@/views/ConstellationStories/index.vue"),
+      },
+    ]
+  : [];
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     { path: "/", name: "entry", component: Entry },
-    {
-      path: "/users",
-      name: "users",
-      component: () => import("@/views/Users/index.vue"),
-    },
     {
       path: "/analysis/:type",
       name: "analysis",
@@ -78,15 +89,11 @@ const router = createRouter({
       component: () => import("@/views/Garden/index.vue"),
     },
     {
-      path: "/constellation-stories",
-      name: "constellation-stories",
-      component: () => import("@/views/ConstellationStories/index.vue"),
-    },
-    {
       path: "/profile",
       name: "profile",
       component: () => import("@/views/Profile/index.vue"),
     },
+    ...devOnlyRoutes,
   ],
 });
 

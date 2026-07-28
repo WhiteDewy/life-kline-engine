@@ -33,10 +33,10 @@ class ReportComposer:
     def __init__(self) -> None:
         self._analyzers = {k: cls() for k, cls in DOMAIN_ANALYZER_CLASSES.items()}
 
-    def compose_domains(self, chart: Any, hero_context: str = "") -> dict[str, dict[str, Any]]:
+    def compose_domains(self, chart: Any, hero_context: str = "", question_key: str = "") -> dict[str, dict[str, Any]]:
         results = {}
         for k, a in self._analyzers.items():
-            report = a.analyze(chart)
+            report = a.analyze(chart, question_key=question_key)
             d = report.to_dict()
             if hero_context:
                 d["hero_bridge"] = _build_hero_bridge(k, hero_context)
@@ -48,7 +48,7 @@ class ReportComposer:
         return _build_hero_observations(chart, phase_info=phase_info, transits=transits)
 
     def compose_evidence(self, chart: Any) -> dict[str, Any]:
-        from packages.reasoning.planet_rules import compute_planet_baseline, compute_essential_dignity
+        from .interpretation.planet_rules import compute_planet_baseline, compute_essential_dignity
         pb, db = {}, {}
         for pn, info in getattr(chart, "planets", {}).items():
             if not hasattr(pn, "value"): continue
@@ -122,15 +122,15 @@ class ReportComposer:
 
 def _ht(h: int) -> str:
     try:
-        from packages.reasoning.house_rules import get_house_profile
+        from .interpretation.house_rules import get_house_profile
         return get_house_profile(h).title
     except: return f"第{h}宫"
 
 
-def enrich_report(chart: Any, phase_info: dict[str, Any] | None = None, transits: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+def enrich_report(chart: Any, phase_info: dict[str, Any] | None = None, transits: list[dict[str, Any]] | None = None, question_key: str = "") -> dict[str, Any]:
     c = ReportComposer()
     hero = c.compose_hero(chart, phase_info=phase_info, transits=transits)
-    domains = c.compose_domains(chart, hero_context=hero.get("narrative", ""))
+    domains = c.compose_domains(chart, hero_context=hero.get("narrative", ""), question_key=question_key)
     evidence = c.compose_evidence(chart)
     characters = c.compose_character_profiles(chart)
     planet_characters = c.compose_planet_profiles(chart)
@@ -243,6 +243,23 @@ def _build_transit_highlight(transits: list[dict]) -> str:
     if key in transit_voice:
         return transit_voice[key]
 
+    # 英文标签回退：尝试翻译成中文再查
+    _TL_MAP = {
+        "JUPITER": "木星", "SATURN": "土星", "MARS": "火星",
+        "VENUS": "金星", "MERCURY": "水星", "SUN": "太阳",
+        "MOON": "月亮", "URANUS": "天王星", "NEPTUNE": "海王星",
+        "PLUTO": "冥王星",
+    }
+    _AL_MAP = {
+        "CONJUNCTION": "合相", "OPPOSITION": "对冲", "SQUARE": "刑相",
+        "TRINE": "三合", "SEXTILE": "六合", "QUINCUNX": "梅花相",
+    }
+    tl_cn = _TL_MAP.get(tl, tl)
+    al_cn = _AL_MAP.get(al, al)
+    key_cn = (tl_cn, al_cn)
+    if key_cn in transit_voice:
+        return transit_voice[key_cn]
+
     # fallback: 组合生成
     aspect_voice: dict[str, str] = {
         "合相": f"正在激活你的{nl}",
@@ -274,7 +291,7 @@ def _build_hero_observations(chart: Any, phase_info: dict[str, Any] | None = Non
         asc_sign, plabel, slabel, planet_sign, planet_house,
         planet_dignity_code, chart_ruler_name,
     )
-    from packages.reasoning.narrative_engine import (
+    from .interpretation.narrative_engine import (
         build_sun_narrative, build_moon_narrative, build_venus_narrative,
         build_mars_narrative, build_mercury_narrative, build_asc_narrative,
         build_sun_house, build_moon_house, build_venus_house, build_mars_house,

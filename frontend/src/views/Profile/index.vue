@@ -215,6 +215,15 @@
           </div>
         </div>
       </div>
+
+      <!-- ═══ 账号与安全 ═══ -->
+      <div class="form-section form-section--account">
+        <div class="fs-label">账号与安全</div>
+        <p class="account-hint">注销后，你的星盘、对话、日记等全部数据将被彻底删除，且不可恢复。</p>
+        <button class="danger-btn" :disabled="deleting" @click="onDeleteAccount">
+          {{ deleting ? '正在注销…' : '注销账号' }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -324,6 +333,27 @@ const residenceCoordLabel = computed(() => {
 function markDirty() { saveDirty.value = true; }
 
 function goBack() { router.back(); }
+
+// ── 注销账号（被遗忘权）──
+const deleting = ref(false);
+async function onDeleteAccount() {
+  if (!confirm("确定要注销账号吗？你的全部数据将被彻底删除，且不可恢复。")) return;
+  if (!confirm("再次确认：此操作无法撤销，星盘/对话/日记将永久消失。")) return;
+  deleting.value = true;
+  try {
+    await apiClient.delete("/account");
+    const { logout } = useAuth();
+    logout();
+    const { toast } = await import("@/utils/toast");
+    toast.success("账号已注销");
+    router.replace("/login");
+  } catch (e: any) {
+    const { toast } = await import("@/utils/toast");
+    toast.error(e?.response?.data?.detail || "注销失败，请稍后再试");
+  } finally {
+    deleting.value = false;
+  }
+}
 
 // ── 地点 → cascader codes ──
 function onBirthRegionChange(codes: string[]) {
@@ -696,4 +726,21 @@ function initCanvas() {
 .heal-cascader-popper .el-cascader-node__label { color: #4a3728 !important; }
 .heal-cascader-popper .el-cascader-node:not(.is-disabled):hover { background: rgba(240,170,140,0.08) !important; }
 .heal-cascader-popper .el-cascader-node.is-active { background: rgba(240,170,140,0.12) !important; }
+
+/* 账号注销 */
+.form-section--account { align-items: flex-start; }
+.account-hint { font-size: 12px; color: #a89880; line-height: 1.6; margin: 0 0 12px; }
+.danger-btn {
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(220, 80, 80, 0.4);
+  background: transparent;
+  color: #c04848;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.danger-btn:hover:not(:disabled) { background: rgba(220, 80, 80, 0.06); }
+.danger-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 </style>

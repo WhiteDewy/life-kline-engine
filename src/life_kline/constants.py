@@ -212,7 +212,11 @@ PLANET_ORBS: Dict[Planet, float] = {
 RECEPTION_WEIGHTS: Dict[str, float] = {
     "DOMICILE": 1.0,           # 接纳（行星在对方的庙宫）
     "EXALTATION": 0.8,         # 擢升接纳
+    "TRIPLICITY": 0.5,         # 三分接纳
+    "TERM": 0.4,               # 界接纳
+    "FACE": 0.3,               # 面接纳
     "MUTUAL_DOMICILE": 1.5,    # 互容（互相在对方的庙宫）
+    "MUTUAL_EXALTATION": 1.3,  # 互相擢升接纳
     "MUTUAL_OTHER": 1.2,       # 其他互容
 }
 

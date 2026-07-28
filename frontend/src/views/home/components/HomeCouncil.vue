@@ -20,6 +20,44 @@
           }}
         </p>
 
+        <!-- 议会问询：随机发问，多星灵协作应答 -->
+        <div v-if="councilMode === 'planets'" class="council-ask">
+          <p class="ask-hint">不知道找谁聊？把你的问题交给议会，让合适的星灵自己出现。</p>
+          <div class="ask-row">
+            <input
+              v-model="askInput"
+              class="ask-input"
+              placeholder="例如：我最近为什么总是提不起劲？"
+              @keydown.enter="askCouncil"
+              :disabled="asking"
+            />
+            <button class="ask-btn" :disabled="!askInput.trim() || asking" @click="askCouncil">
+              {{ asking ? '议会议论中…' : '问议会' }}
+            </button>
+          </div>
+          <p v-if="askError" class="ask-error">{{ askError }}</p>
+
+          <div v-if="councilResult" class="council-result">
+            <div
+              v-for="pv in councilResult.perspectives"
+              :key="pv.planet"
+              class="perspective-card"
+              :style="{ '--pc': pv.visual_color || '#D4A35A' }"
+            >
+              <div class="perspective-head">
+                <span class="perspective-name">{{ pv.character_name || pv.planet }}</span>
+                <span class="perspective-archetype">{{ pv.archetype || '' }}</span>
+              </div>
+              <p class="perspective-text">{{ pv.perspective }}</p>
+              <button class="perspective-chat" @click="onChatFromCouncil(pv.planet)">和 {{ pv.character_name || pv.planet }} 聊聊 →</button>
+            </div>
+            <div v-if="councilResult.synthesis" class="council-synthesis">
+              <div class="synthesis-label">✦ 议会综合</div>
+              <p class="synthesis-text">{{ councilResult.synthesis }}</p>
+            </div>
+          </div>
+        </div>
+
         <!-- 星灵卡片网格 -->
         <div class="spirit-grid" v-if="councilMode === 'planets'">
           <div
@@ -61,9 +99,41 @@
               <span class="meter-label">{{ Math.round(p.activationScore) }}%</span>
             </div>
 
-            <div class="buddy-tap-hint">轻触对话</div>
+            <div class="buddy-actions">
+              <span class="buddy-tap-hint">轻触对话</span>
+              <button class="buddy-detail-btn" @click.stop="openDetail(p)">详情</button>
+            </div>
           </div>
         </div>
+
+        <!-- 星灵详情面板 -->
+        <teleport to="body">
+          <div v-if="detailPlanet" class="detail-overlay" @click.self="detailPlanet = null">
+            <div class="detail-sheet">
+              <button class="detail-close" @click="detailPlanet = null">✕</button>
+              <div class="detail-head" :style="{ color: detailPlanet.color }">
+                <span class="detail-name">{{ detailPlanet.shortName }}</span>
+                <span class="detail-archetype">{{ detailPlanet.archetypeShort }}</span>
+              </div>
+              <div class="detail-meta">{{ detailPlanet.signLabel }} · {{ detailPlanet.dignityLabel || '' }}</div>
+              <p v-if="detailPlanet.essence" class="detail-essence">「{{ detailPlanet.essence }}」</p>
+              <p v-if="detailPlanet.personality" class="detail-section">{{ detailPlanet.personality }}</p>
+              <div v-if="detailPlanet.gift_to_user" class="detail-row">
+                <span class="detail-label">给你的礼物</span>
+                <span>{{ detailPlanet.gift_to_user }}</span>
+              </div>
+              <div v-if="detailPlanet.challenge_to_user" class="detail-row">
+                <span class="detail-label">你的课题</span>
+                <span>{{ detailPlanet.challenge_to_user }}</span>
+              </div>
+              <div v-if="detailPlanet.greeting" class="detail-row">
+                <span class="detail-label">TA对你说</span>
+                <span>{{ detailPlanet.greeting }}</span>
+              </div>
+              <button class="detail-chat-btn" :style="{ background: detailPlanet.color }" @click="onChatFromDetail">和 {{ detailPlanet.shortName }} 对话</button>
+            </div>
+          </div>
+        </teleport>
 
         <!-- 星座卡片网格 -->
         <div class="spirit-grid spirit-grid--signs" v-else>
@@ -91,15 +161,17 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { apiClient, QuotaError } from "@/config/api";
 import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
 
-defineProps<{
+const props = defineProps<{
   visible: boolean;
   planetList: any[];
   signList: any[];
   gender: string;
   activePlanet: string;
   activeSign: string;
+  reportId?: string;
 }>();
 
 const emit = defineEmits<{
@@ -119,6 +191,60 @@ function onSelectPlanet(p: any) {
 function onSelectSign(s: any) {
   emit("select-sign", s.key);
   emit("chat-with-sign", s);
+}
+
+// ── 议会问询（真接入 /api/council）──
+const askInput = ref("");
+const asking = ref(false);
+const askError = ref("");
+const councilResult = ref<any>(null);
+
+async function askCouncil() {
+  const q = askInput.value.trim();
+  if (!q || asking.value || !props.reportId) return;
+  asking.value = true;
+  askError.value = "";
+  councilResult.value = null;
+  try {
+    const res = await apiClient.post(`/council/${props.reportId}`, {
+      topic: "personal",
+      message: q,
+    });
+    if (res.data?.status === "ok") {
+      councilResult.value = res.data.data;
+    } else if (res.data?.status === "crisis") {
+      askError.value = res.data.data?.message || "我注意到你提到了一些重要的感受，请保护好自己。";
+    } else {
+      askError.value = res.data?.data?.message || "议会暂时无法回应，请稍后再试。";
+    }
+  } catch (e: any) {
+    if (e instanceof QuotaError) {
+      askError.value = e.message || "本周议会次数已用完，升级 VIP 可无限问询。";
+    } else {
+      askError.value = "议会暂时无法回应，请稍后再试。";
+    }
+  } finally {
+    asking.value = false;
+  }
+}
+
+function onChatFromCouncil(planet: string) {
+  const p = props.planetList.find((x) => x.planet === planet) || { planet };
+  emit("select-planet", planet);
+  emit("chat-with-planet", p);
+}
+
+// ── 星灵详情面板 ──
+const detailPlanet = ref<any>(null);
+function openDetail(p: any) {
+  detailPlanet.value = p;
+}
+function onChatFromDetail() {
+  if (!detailPlanet.value) return;
+  const p = detailPlanet.value;
+  detailPlanet.value = null;
+  emit("select-planet", p.planet);
+  emit("chat-with-planet", p);
 }
 </script>
 
@@ -435,6 +561,213 @@ function onSelectSign(s: any) {
 .sign-planets { font-size: 11px; font-weight: 600; color: #ff9a8b; }
 .sign-planets--none { color: #c4b5a5; font-weight: 400; }
 .sign-element { font-size: 10px; color: #a89880; }
+
+/* ═══════════════ 议会问询 ═══════════════ */
+.council-ask {
+  margin-bottom: 24px;
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.ask-hint {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: #8b7355;
+  line-height: 1.5;
+}
+.ask-row {
+  display: flex;
+  gap: 8px;
+}
+.ask-input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  color: #4a3728;
+  outline: none;
+  font-family: inherit;
+}
+.ask-input:focus { border-color: rgba(255, 154, 139, 0.4); }
+.ask-btn {
+  flex-shrink: 0;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: none;
+  background: #ff9a8b;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.ask-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.ask-error {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: #ff6b6b;
+}
+.council-result {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.perspective-card {
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.7);
+  border-left: 3px solid var(--pc);
+}
+.perspective-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.perspective-name { font-size: 14px; font-weight: 700; color: #4a3728; }
+.perspective-archetype { font-size: 11px; color: #a89880; }
+.perspective-text {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: #4a3728;
+  line-height: 1.6;
+}
+.perspective-chat {
+  background: none;
+  border: none;
+  color: var(--pc);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-family: inherit;
+}
+.council-synthesis {
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(255, 200, 180, 0.18);
+  border: 1px solid rgba(255, 180, 160, 0.25);
+}
+.synthesis-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8b7355;
+  margin-bottom: 6px;
+}
+.synthesis-text {
+  margin: 0;
+  font-size: 13px;
+  color: #4a3728;
+  line-height: 1.7;
+}
+
+/* ═══════════════ 卡片操作区 ═══════════════ */
+.buddy-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 4px;
+  margin-top: 2px;
+}
+.buddy-detail-btn {
+  background: none;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 3px 10px;
+  font-size: 10px;
+  color: #8b7355;
+  cursor: pointer;
+  font-family: inherit;
+}
+.buddy-detail-btn:hover { border-color: var(--spirit-color); color: var(--spirit-color); }
+
+/* ═══════════════ 详情面板 ═══════════════ */
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(2, 6, 23, 0.5);
+  backdrop-filter: blur(6px);
+}
+.detail-sheet {
+  position: relative;
+  width: 100%;
+  max-width: 520px;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 28px 22px calc(28px + env(safe-area-inset-bottom, 0px));
+  border-radius: 24px 24px 0 0;
+  background: #fff;
+}
+.detail-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: transparent;
+  cursor: pointer;
+  color: #8b7355;
+}
+.detail-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.detail-name { font-size: 22px; font-weight: 700; }
+.detail-archetype { font-size: 13px; opacity: 0.7; }
+.detail-meta { font-size: 12px; color: #a89880; margin-bottom: 16px; }
+.detail-essence {
+  font-size: 14px;
+  font-style: italic;
+  color: #6b5840;
+  margin: 0 0 16px;
+  line-height: 1.6;
+}
+.detail-section {
+  font-size: 13px;
+  color: #4a3728;
+  line-height: 1.7;
+  margin: 0 0 16px;
+}
+.detail-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: #4a3728;
+  line-height: 1.6;
+}
+.detail-label {
+  flex-shrink: 0;
+  width: 72px;
+  font-size: 12px;
+  color: #a89880;
+  font-weight: 600;
+}
+.detail-chat-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 999px;
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
 
 /* ═══════════════ 响应式 ═══════════════ */
 @media (max-width: 640px) {

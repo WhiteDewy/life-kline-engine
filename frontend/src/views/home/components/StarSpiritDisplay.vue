@@ -11,8 +11,9 @@
       />
     </div>
     <div class="spirit-info">
-      <span class="spirit-label">今日星灵</span>
+      <span class="spirit-label">今日星灵 · 行运引路</span>
       <span class="spirit-name">{{ planetName }} · {{ planetSign }}</span>
+      <span v-if="reason" class="spirit-reason">{{ reason }}</span>
     </div>
   </div>
 </template>
@@ -28,6 +29,7 @@ const props = defineProps<{
   symbol: string;
   color: string;
   gender: string;
+  reason?: string;
 }>();
 
 defineEmits<{
@@ -102,5 +104,15 @@ const ringStyle = computed(() => ({
   color: var(--text-primary);
   white-space: nowrap;
   letter-spacing: 0.3px;
+}
+
+.spirit-reason {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
 }
 </style>

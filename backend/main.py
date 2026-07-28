@@ -46,6 +46,8 @@ from life_kline.service import LifeKlineService
 from backend.database import get_db, init_db, _uid, _now
 from backend import admin as _admin
 from backend import dao as _dao
+from backend.routers import billing as _billing_router
+from backend.routers import account as _account_router
 from fastapi import Depends
 from typing import Annotated
 
@@ -486,6 +488,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 计费路由（P1.2）：新端点一律挂 APIRouter，main.py 停止增长（§1）
+app.include_router(_billing_router.router)
+# 账号注销路由（P5 合规：被遗忘权）
+app.include_router(_account_router.router)
 
 service: Optional[LifeKlineService] = None
 
@@ -2004,6 +2011,9 @@ async def get_user_access(user_id: str) -> Dict[str, Any]:
     from life_kline.pricing import AccessChecker, is_test_user
     # 从存储加载用户状态（暂时用空状态 = 新用户）
     state = load_user_state(user_id)
+    # 合并 extra 到顶层，使 AccessChecker 能读到 council/engine/ai 月配额用量
+    # （与 council 端点 main.py:1483 同样做法；否则这些字段永远为 0/空）
+    state.update(state.get("extra", {}) or {})
     checker = AccessChecker(state)
     engine_check = checker.check_engine_chat("SUN")
     ai_check = checker.check_ai_chat()
@@ -2038,6 +2048,13 @@ def load_user_state(user_id: str) -> dict:
 
     if state is None:
         state = {"user_id": user_id, "coins": 0, "is_vip": False}
+
+    # 合并 extra 到顶层：council/engine/ai 月配额用量存在 extra 里，
+    # AccessChecker 需在顶层读取（extra key 与顶层列不冲突）。
+    extra = state.get("extra", {}) or {}
+    if isinstance(extra, dict):
+        for k, v in extra.items():
+            state.setdefault(k, v)
 
     # 从 users 表补全 phone（用于测试用户匹配）
     if "phone" not in state or not state.get("phone"):
@@ -2137,6 +2154,13 @@ async def spirit_chat(report_id: str, body: SpiritChatInput, request: Request) -
         entry_context=entry_context,
     )
     engine_dict = engine_response.to_dict()
+
+    # ── 回写引擎对话用量（非 VIP 日上限 10 轮/天、3 轮/星灵 计数） ──
+    if user_id:
+        try:
+            _dao.increment_engine_usage(user_id, body.planet)
+        except Exception:
+            pass
 
     # ── 危机短路：命中危机信号时脱离占星话术，禁止 AI 增强改写干预文案 ──
     if engine_response.is_crisis:
@@ -2375,6 +2399,33 @@ async def spirit_chat_v2(report_id: str, body: SpiritChatV2Input, request: Reque
     if previous_spirit and previous_spirit != body.planet:
         entry_context["previous_spirit"] = previous_spirit
 
+    # ── 危机检测闸门（§7 不可协商）：命中即脱离占星/咨询话术，跳过 AI，返回真实支持资源 ──
+    from life_kline.safety import detect_crisis
+    crisis = detect_crisis(body.message)
+    if crisis.is_crisis:
+        return {
+            "status": "success",
+            "source": "crisis_guard",
+            "data": {
+                "planet": body.planet,
+                "response": crisis.message,
+                "user_message": body.message,
+                "spirit_response": crisis.message,
+                "stage": "crisis",
+                "dialogue_state": {
+                    "stage": "crisis",
+                    "turn_count": 0,
+                    "theme_key": "",
+                    "user_expressed": "",
+                },
+                "dialogue_token": body.dialogue_token,
+                "ai_access": None,
+                "memory_context": {"recent_topics": [], "recent_milestones": []},
+                "is_crisis": True,
+                "crisis": crisis.to_dict(),
+            },
+        }
+
     # ── 第 1 层：ConsultationV2 引擎 ──
     consultation_engine = ConsultationV2(report_data, body.planet, dialogue_state)
 
@@ -2383,6 +2434,13 @@ async def spirit_chat_v2(report_id: str, body: SpiritChatV2Input, request: Reque
 
     # 更新对话状态
     dialogue_state = consultation_result["dialogue_state"]
+
+    # ── 回写引擎对话用量（非 VIP 日上限 10 轮/天、3 轮/星灵 计数） ──
+    if user_id:
+        try:
+            _dao.increment_engine_usage(user_id, body.planet)
+        except Exception:
+            pass
 
     # ── 第 2 层：AI 增强（使用 V2 System Prompt）──
     client = LLMClient()

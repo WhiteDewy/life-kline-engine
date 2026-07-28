@@ -961,7 +961,7 @@ def get_house_ruler_flight_with_planet_mod(
     if not base:
         return None
 
-    from packages.reasoning.flystar_rules import generate_planet_mod
+    from .interpretation.flystar_rules import generate_planet_mod
     planet_mod = generate_planet_mod(planet_name, target_house, dignified, debilitated)
 
     return {

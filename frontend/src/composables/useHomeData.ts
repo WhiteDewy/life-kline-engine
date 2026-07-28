@@ -109,8 +109,7 @@ export function useHomeData() {
   const dailyQuestion = ref<any>(null);
   const diaryEntries = ref<any[]>([]);
 
-  // ── 今日星象（每日走向面板用）──
-  // TODO: /api/daily-transits/{report_id} 后端同步开发中，暂用 try/catch 兜底
+  // ── 今日星象（每日走向面板用）── /api/daily-transits/{report_id} 已就绪
   const dailyTransitReport = ref<any>(null);
 
   const todaysPlanetProfile = computed(() => {
@@ -165,6 +164,11 @@ export function useHomeData() {
         activationScore: activationScores[key] ?? null,
         greeting: p.personalized_greeting || "",
         healingLabel: HEALING_LABELS[key] || "",
+        // 详情面板用：内在人格深度介绍（来自 PlanetPersona）
+        essence: p.persona?.essence || "",
+        personality: p.persona?.personality || "",
+        gift_to_user: p.persona?.gift_to_user || "",
+        challenge_to_user: p.persona?.challenge_to_user || "",
       };
     }).filter(Boolean) as any[];
   });
@@ -240,11 +244,10 @@ export function useHomeData() {
               const deRes = await apiClient.get(`/spirit-diary/${lastId}?limit=30&offset=0`);
               if (deRes.data?.status === "success") diaryEntries.value = deRes.data.data?.entries || deRes.data.data || [];
             } catch { /* optional */ }
-            // TODO: /api/daily-transits/{report_id} 后端同步开发中，可能尚未就绪
             try {
               const dtRes = await apiClient.get(`/daily-transits/${lastId}`);
               if (dtRes.data?.status === "success") dailyTransitReport.value = dtRes.data.data;
-            } catch { /* API not available yet - gracefully degrade */ }
+            } catch { /* gracefully degrade */ }
           }
         }
       }
@@ -275,11 +278,10 @@ export function useHomeData() {
             const deRes = await apiClient.get(`/spirit-diary/${reportId.value}?limit=30&offset=0`);
             if (deRes.data?.status === "success") diaryEntries.value = deRes.data.data?.entries || deRes.data.data || [];
           } catch { /* optional */ }
-          // TODO: /api/daily-transits/{report_id} 后端同步开发中，可能尚未就绪
           try {
             const dtRes = await apiClient.get(`/daily-transits/${reportId.value}`);
             if (dtRes.data?.status === "success") dailyTransitReport.value = dtRes.data.data;
-          } catch { /* API not available yet - gracefully degrade */ }
+          } catch { /* gracefully degrade */ }
         }
       }
     } catch (err: any) {

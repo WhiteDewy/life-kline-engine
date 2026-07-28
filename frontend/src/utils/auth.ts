@@ -13,6 +13,13 @@ export function isDevBypassPhone(phone: string): boolean {
   return !!DEV_BYPASS_PHONE && phone === DEV_BYPASS_PHONE;
 }
 
+/** 开发旁路验证码（环境变量 VITE_DEV_BYPASS_CODE），由后端 /auth/verify-code 校验。
+ *  生产构建不配置该变量，dev 旁路按钮也不会渲染。 */
+const DEV_BYPASS_CODE = import.meta.env.VITE_DEV_BYPASS_CODE?.trim() || "";
+export function getDevBypassCode(): string {
+  return DEV_BYPASS_CODE;
+}
+
 const token = ref(localStorage.getItem(TOKEN_KEY) || "");
 const user = ref<any>(_loadJson(USER_KEY));
 const profiles = ref<any[]>([]);

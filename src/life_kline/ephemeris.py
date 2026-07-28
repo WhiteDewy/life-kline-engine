@@ -55,9 +55,6 @@ class EphemerisEngine:
             
         if ephe_path:
             swe.set_ephe_path(ephe_path)
-            
-        # 默认设置为地心坐标
-        swe.set_topo(0, 0, 0)
         
     def _get_julian_day(self, dt: datetime) -> float:
         """
@@ -153,7 +150,10 @@ class EphemerisEngine:
         chart.time_accuracy = "exact"
         
         jd = self._get_julian_day(dt)
-        
+
+        # 设置观测位置（地心/地面坐标）
+        swe.set_topo(lon, lat, alt)
+
         # 2. 计算宫位 (Cusps) 和 ASC/MC
         # swe.houses 返回 (cusps, ascmc)
         # 注意：pyswisseph 返回的 cusps 是 12 个元素的元组 (索引 0-11 对应 1-12 宫)

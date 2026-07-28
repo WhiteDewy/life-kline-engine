@@ -4,7 +4,7 @@
 from __future__ import annotations
 from typing import Any
 from .base import DomainAnalyzer
-from .helpers import slabel, planet_sign, planet_house, planet_dignity_code
+from .helpers import slabel, planet_sign, planet_house, planet_dignity_code, asc_sign
 from ..interpretation.narrative_engine import (
     build_sun_narrative, build_moon_narrative, build_asc_narrative,
     build_sun_house, build_moon_house,
@@ -24,7 +24,7 @@ class PersonalAnalyzer(DomainAnalyzer):
         sun_h = planet_house(chart, "SUN")
         moon_s = slabel(planet_sign(chart, "MOON"))
         moon_h = planet_house(chart, "MOON")
-        asc_l = slabel(planet_sign(chart, "SUN"))  # placeholder, real asc from chart
+        asc_l = slabel(asc_sign(chart))
 
         parts = []
 
@@ -55,7 +55,7 @@ class PersonalAnalyzer(DomainAnalyzer):
         sun_s = slabel(planet_sign(chart, "SUN"))
         psychology = (
             f"从心理层面说——你的人格不是一块石头，是三层叠在一起的。"
-            f"最外面是上升（给世界看的），中间是太阳在{sun_s}（自己想成为的样子），"
+            f"最外面是上升{asc_l}（给世界看的），中间是太阳在{sun_s}（自己想成为的样子），"
             f"最里面是月亮在{moon_s}（不用跟任何人解释的真实的你）。"
             f"这三层越一致你越省力，越不一致你越容易内耗。"
         )

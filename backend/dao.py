@@ -96,33 +96,59 @@ def upsert_user_state(user_id: str, **fields) -> dict:
 
 
 def increment_ai_usage(user_id: str) -> int:
-    """记录每日 AI 调用次数，返回最新计数值。"""
+    """记录每日 AI 调用次数，返回最新每日计数值。
+
+    同时维护 VIP 月配额：user_state.extra.ai_usage_this_month / ai_usage_month_label
+    （按月轮转）。月配额被 AccessChecker.check_ai_chat 用于 VIP 每月 30 轮上限。
+    """
     from datetime import datetime, timezone
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    db = get_db()
-    row = db.execute(
-        "SELECT ai_usage_today, ai_usage_date FROM user_state WHERE user_id=?",
-        (user_id,),
-    ).fetchone()
-    if not row:
-        db.execute(
-            "INSERT INTO user_state (user_id, ai_usage_today, ai_usage_date, updated_at) VALUES (?, ?, ?, ?)",
-            (user_id, 1, today, _now()),
-        )
-        db.commit()
-        db.close()
-        return 1
-    cur_count = int(row["ai_usage_today"] or 0)
-    if row["ai_usage_date"] != today:
+    month_label = today[:7]  # YYYY-MM
+
+    state = get_user_state(user_id)
+    # 每日计数（按日轮转）
+    cur_count = int(state.get("ai_usage_today", 0) or 0)
+    if state.get("ai_usage_date", "") != today:
         cur_count = 0
     new_count = cur_count + 1
-    db.execute(
-        "UPDATE user_state SET ai_usage_today=?, ai_usage_date=?, updated_at=? WHERE user_id=?",
-        (new_count, today, _now(), user_id),
+
+    # 月度计数（按月轮转，供 VIP 月配额判定）
+    extra = state.get("extra", {}) or {}
+    if extra.get("ai_usage_month_label") != month_label:
+        extra["ai_usage_this_month"] = 0
+    extra["ai_usage_this_month"] = int(extra.get("ai_usage_this_month", 0)) + 1
+    extra["ai_usage_month_label"] = month_label
+
+    upsert_user_state(
+        user_id,
+        ai_usage_today=new_count,
+        ai_usage_date=today,
+        extra=extra,
     )
-    db.commit()
-    db.close()
     return new_count
+
+
+def increment_engine_usage(user_id: str, planet: str) -> dict:
+    """记录引擎占星师对话用量，返回当日用量 dict {planet: count}。
+
+    存储于 user_state.extra：engine_usage_today(dict{planet:count}) / engine_usage_date
+    （按日轮转）。被 AccessChecker.check_engine_chat 用于非 VIP 日上限
+    （10 轮/天、3 轮/星灵）。
+    """
+    from datetime import datetime, timezone
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    state = get_user_state(user_id)
+    extra = state.get("extra", {}) or {}
+    if extra.get("engine_usage_date") != today:
+        extra["engine_usage_today"] = {}
+    usage = extra.get("engine_usage_today", {}) or {}
+    usage[planet] = int(usage.get(planet, 0)) + 1
+    extra["engine_usage_today"] = usage
+    extra["engine_usage_date"] = today
+
+    upsert_user_state(user_id, extra=extra)
+    return usage
 
 
 def increment_council_usage(user_id: str) -> int:
@@ -142,6 +168,153 @@ def increment_council_usage(user_id: str) -> int:
     extra["council_usage_week_label"] = week_label
     upsert_user_state(user_id, extra=extra)
     return extra["council_usage_this_week"]
+
+
+# ──────────── 账号注销（被遗忘权）────────────────────────────────
+
+def delete_user_completely(user_id: str) -> None:
+    """彻底删除用户全部数据（被遗忘权 / App Store 强制要求）。
+
+    覆盖所有以 user_id 为外键的业务表；reports 软字段 deleted_at 不用，
+    直接硬删（用户主动注销）。growth_milestones / growth_daily_visits 通过
+    report_id 关联，先查出该用户的 report_id 再删。
+    """
+    db = get_db()
+    try:
+        # 收集该用户的 report_id（reports.id 即对外 report_id，用于按 report_id 关联的表）
+        report_rows = db.execute(
+            "SELECT id FROM reports WHERE user_id=?", (user_id,)
+        ).fetchall()
+        report_ids = [r["id"] for r in report_rows if r["id"]]
+
+        # 按 user_id 直接关联的表
+        for tbl in (
+            "user_state", "payments", "star_diary", "chat_messages",
+            "chat_sessions", "checkins", "consultation_sessions",
+            "consultation_reports", "profiles", "verify_codes",
+        ):
+            # verify_codes 按 phone 关联，单独处理；其余按 user_id
+            if tbl == "verify_codes":
+                continue
+            db.execute(f"DELETE FROM {tbl} WHERE user_id=?", (user_id,))
+
+        # verify_codes 按 phone（从 users 取）
+        phone_row = db.execute("SELECT phone FROM users WHERE id=?", (user_id,)).fetchone()
+        if phone_row and phone_row["phone"]:
+            db.execute("DELETE FROM verify_codes WHERE phone=?", (phone_row["phone"],))
+
+        # 按 report_id 关联的表
+        if report_ids:
+            placeholders = ",".join("?" * len(report_ids))
+            for tbl in (
+                "reports", "growth_conversations", "growth_milestones",
+                "growth_daily_visits",
+            ):
+                db.execute(
+                    f"DELETE FROM {tbl} WHERE report_id IN ({placeholders})",
+                    report_ids,
+                )
+        else:
+            # 没有 report 也确保 reports 表该用户被清
+            db.execute("DELETE FROM reports WHERE user_id=?", (user_id,))
+
+        # 最后删 users
+        db.execute("DELETE FROM users WHERE id=?", (user_id,))
+        db.commit()
+    finally:
+        db.close()
+
+
+# ──────────── 计费：订单与授权发放 ────────────────────────────────
+
+def create_payment_order(
+    user_id: str, product_id: str, product_type: str, channel: str, amount_cny: float,
+) -> dict:
+    """创建一笔 pending 订单，返回订单 dict。"""
+    order_id = _uid()
+    db = get_db()
+    db.execute(
+        """
+        INSERT INTO payments
+        (id, user_id, type, amount, status, created_at,
+         product_type, product_id, channel, provider_order_id, receipt_ref, granted)
+        VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?, '', '', '')
+        """,
+        (
+            order_id, user_id, product_type, float(amount_cny), _now(),
+            product_type, product_id, channel,
+        ),
+    )
+    db.commit()
+    db.close()
+    return get_payment_order(order_id) or {
+        "id": order_id, "user_id": user_id, "product_id": product_id,
+        "product_type": product_type, "channel": channel, "amount": amount_cny,
+        "status": "pending",
+    }
+
+
+def get_payment_order(order_id: str) -> Optional[dict]:
+    db = get_db()
+    row = db.execute("SELECT * FROM payments WHERE id=?", (order_id,)).fetchone()
+    db.close()
+    return dict(row) if row else None
+
+
+def complete_payment_order(
+    order_id: str, provider_order_id: str, receipt_ref: str, granted: str,
+) -> Optional[dict]:
+    """标记订单 paid 并记录发放描述。幂等：已是 paid 直接返回。"""
+    db = get_db()
+    row = db.execute("SELECT status FROM payments WHERE id=?", (order_id,)).fetchone()
+    if not row:
+        db.close()
+        return None
+    if row["status"] == "paid":
+        db.close()
+        return get_payment_order(order_id)
+    db.execute(
+        """
+        UPDATE payments
+        SET status='paid', paid_at=?, provider_order_id=?, receipt_ref=?, granted=?
+        WHERE id=?
+        """,
+        (_now(), provider_order_id, receipt_ref, granted, order_id),
+    )
+    db.commit()
+    db.close()
+    return get_payment_order(order_id)
+
+
+def list_user_orders(user_id: str, limit: int = 50) -> list[dict]:
+    db = get_db()
+    rows = db.execute(
+        "SELECT * FROM payments WHERE user_id=? ORDER BY created_at DESC LIMIT ?",
+        (user_id, limit),
+    ).fetchall()
+    db.close()
+    return _rows_to_dicts(rows)
+
+
+def add_coins(user_id: str, delta: int) -> dict:
+    """增加星币余额（用于星币包发放），返回最新 user_state。"""
+    state = get_user_state(user_id)
+    new_coins = int(state.get("coins", 0)) + int(delta)
+    return upsert_user_state(user_id, coins=new_coins)
+
+
+def activate_vip(user_id: str, days: int) -> dict:
+    """激活/续期 VIP（在现有到期日基础上往后延 days 天），返回最新 user_state。"""
+    from datetime import date, timedelta
+    state = get_user_state(user_id)
+    today = date.today()
+    try:
+        existing = date.fromisoformat(state.get("vip_expire_at") or "")
+        base = existing if existing > today else today
+    except (ValueError, TypeError):
+        base = today
+    new_expiry = (base + timedelta(days=int(days))).isoformat()
+    return upsert_user_state(user_id, is_vip=1, vip_expire_at=new_expiry)
 
 
 # ──────────── 星灵日记 ───────────────────────────────────────────

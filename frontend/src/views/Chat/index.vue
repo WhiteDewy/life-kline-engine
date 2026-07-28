@@ -91,6 +91,10 @@
 
     <!-- 输入区 -->
     <div class="chat-input-area">
+      <div v-if="needUpgrade" class="quota-banner">
+        <span class="quota-text">{{ quotaReason || "对话额度已用完" }}</span>
+        <button class="quota-btn" @click="showPayment = true">升级解锁</button>
+      </div>
       <input
         v-model="inputText"
         class="chat-input"
@@ -121,16 +125,26 @@
       <div class="loading-ring" :style="{ '--chat-color': chatColor }"></div>
       <p class="loading-text">正在唤醒 {{ chatName }}…</p>
     </div>
+
+    <PaymentModal
+      :visible="showPayment"
+      :product-id="upgradeProduct"
+      channel="iap"
+      @close="showPayment = false"
+      @success="onPaymentSuccess"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, nextTick, watch, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { apiClient } from "@/config/api";
+import { apiClient, QuotaError } from "@/config/api";
 import { useHomeData } from "@/composables/useHomeData";
+import { useAccess } from "@/utils/payment";
 import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
 import VoicePlayer from "@/views/home/components/VoicePlayer.vue";
+import PaymentModal from "@/components/PaymentModal.vue";
 
 interface EngineReading {
   evidence: string[];
@@ -167,15 +181,66 @@ const isThinking = ref(false);
 const isLoaded = ref(false);
 const messages = ref<ChatMessage[]>([]);
 const messagesEl = ref<HTMLElement | null>(null);
+
+// ── 额度与升级 ──
+const { refresh: refreshAccess } = useAccess();
+const needUpgrade = ref(false);
+const quotaReason = ref("");
+const showPayment = ref(false);
+const upgradeProduct = ref("monthly_auto");
+
+// ── V2 咨询式对话：跨轮状态 token（按 reportId+planet 持久化）──
+const TOKEN_KEY_PREFIX = "lk_dialogue_token";
+function tokenKey() {
+  return `${TOKEN_KEY_PREFIX}_${reportId.value}_${chatPlanet.value}`;
+}
+const dialogueToken = ref<string | null>(
+  sessionStorage.getItem(tokenKey()) || null,
+);
+function persistToken(token: string | null) {
+  dialogueToken.value = token;
+  if (token) sessionStorage.setItem(tokenKey(), token);
+  else sessionStorage.removeItem(tokenKey());
+}
+
+interface V2Result {
+  response: string;
+  stage?: string;
+  dialogue_token?: string | null;
+  ai_access?: { allowed?: boolean; reason?: string };
+  memory_context?: { recent_topics?: string[]; recent_milestones?: string[] };
+}
+
+/** 调用 V2 咨询式对话。返回结果或抛 QuotaError。 */
+async function callV2(message: string, history: { role: string; text: string }[]): Promise<V2Result> {
+  const res = await apiClient.post(`/spirit-chat-v2/${reportId.value}`, {
+    planet: chatPlanet.value,
+    message,
+    history,
+    entry_context: entryContext.value,
+    dialogue_token: dialogueToken.value || undefined,
+  });
+  if (res.data?.status !== "success") throw new Error(res.data?.message || "对话失败");
+  const data = res.data.data || {};
+  if (data.dialogue_token) persistToken(data.dialogue_token);
+  // AI 层静默降级：引擎回复仍展示，但提示可升级
+  if (data.ai_access?.allowed === false) {
+    needUpgrade.value = true;
+    quotaReason.value = data.ai_access.reason || "AI 对话额度已用完";
+  }
+  return data as V2Result;
+}
 const expandedEvidence = ref<number | null>(null);
 
 const entryContext = computed(() => {
   const source = String(route.query.source || "direct");
   const dailyQuestion = String(route.query.question || "");
+  const transitDetail = String(route.query.detail || "");
   return {
     source,
     daily_question: dailyQuestion,
     from_daily_question: source === "today" && !!dailyQuestion,
+    transit_event: transitDetail || undefined,
   };
 });
 
@@ -191,7 +256,6 @@ async function sendMessage() {
   scrollToBottom();
 
   let apiResponse = "";
-  let engineReading: EngineReading | undefined;
 
   if (reportId.value && chatPlanet.value) {
     try {
@@ -199,29 +263,29 @@ async function sendMessage() {
         role: m.role === "spirit" ? "assistant" : "user",
         text: m.text,
       }));
-      const res = await apiClient.post(`/spirit-chat/${reportId.value}`, {
-        planet: chatPlanet.value,
-        message: text,
-        history: chatHistory,
-        entry_context: entryContext.value,
-      });
-      if (res.data?.status === "success") {
-        apiResponse = res.data.data?.response || "";
-        engineReading = res.data.data?.engine_reading;
+      const result = await callV2(text, chatHistory);
+      apiResponse = result.response || "";
+    } catch (e: any) {
+      // 额度超限（HTTP 200 + body error_code，由拦截器抛 QuotaError）
+      if (e instanceof QuotaError) {
+        needUpgrade.value = true;
+        quotaReason.value = e.message || "今日免费对话次数已用完";
       }
-    } catch {
-      // fallback
+      // 其他网络/服务错误：诚实降级，不编造星盘解读
     }
   }
 
   if (!apiResponse) {
-    apiResponse = `抱歉，我现在暂时无法连接。请稍后再试——${chatName.value}一直都在。`;
+    if (needUpgrade.value) {
+      apiResponse = `${quotaReason.value}。升级后可继续与 ${chatName.value} 深度对话。`;
+    } else {
+      apiResponse = `抱歉，我现在暂时无法连接。请稍后再试——${chatName.value} 一直都在。`;
+    }
   }
 
   messages.value.push({
     role: "spirit",
     text: apiResponse,
-    engine_reading: engineReading?.evidence?.length ? engineReading : undefined,
   });
   isThinking.value = false;
 
@@ -245,6 +309,13 @@ async function saveDiaryEntry(userText: string, spiritReply: string) {
   }
 }
 
+async function onPaymentSuccess() {
+  showPayment.value = false;
+  needUpgrade.value = false;
+  quotaReason.value = "";
+  await refreshAccess();
+}
+
 function scrollToBottom() {
   if (messagesEl.value) {
     messagesEl.value.scrollTop = messagesEl.value.scrollHeight;
@@ -265,20 +336,11 @@ onMounted(async () => {
   if (entryContext.value.from_daily_question && entryContext.value.daily_question) {
     isThinking.value = true;
     try {
-      const res = await apiClient.post(`/spirit-chat/${reportId.value}`, {
-        planet: chatPlanet.value,
-        message: entryContext.value.daily_question,
-        history: [],
-        entry_context: entryContext.value,
-      });
-      if (res.data?.status === "success") {
-        const data = res.data.data || {};
-        messages.value.push({
-          role: "spirit",
-          text: data.response || "",
-          engine_reading: data.engine_reading?.evidence?.length ? data.engine_reading : undefined,
-        });
-        saveDiaryEntry(entryContext.value.daily_question, data.response || "");
+      const result = await callV2(entryContext.value.daily_question, []);
+      const reply = result.response || "";
+      if (reply) {
+        messages.value.push({ role: "spirit", text: reply });
+        saveDiaryEntry(entryContext.value.daily_question, reply);
       }
     } catch (e) {
       console.error("[AutoInit] 失败:", e);
@@ -666,5 +728,31 @@ watch(messages, () => {
   font-size: var(--text-sm);
   color: var(--text-secondary);
   margin: 0;
+}
+.quota-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 14px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  background: rgba(255, 154, 139, 0.1);
+  border: 1px solid rgba(255, 154, 139, 0.25);
+}
+.quota-text {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+.quota-btn {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: none;
+  background: #ff9a8b;
+  color: #fff;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
 }
 </style>

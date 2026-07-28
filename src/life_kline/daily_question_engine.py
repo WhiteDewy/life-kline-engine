@@ -280,8 +280,8 @@ class DailyQuestionEngine:
         question = random.choice(questions)
 
         context_note = (
-            f"今日{PLANET_LABELS.get(Planet(today_spirit.planet), today_spirit.planet_label)}指引——"
-            f"这个问题来自你的{today_spirit.planet_label}星灵。"
+            f"基于你的星盘和今日行运，{today_spirit.planet_label}星灵为你提出了这个问题。"
+            f"（行运指引：今日引路星灵为{today_spirit.planet_label}）"
         )
         voice_text = f"{today_spirit.planet_label}想知道：{question}"
 

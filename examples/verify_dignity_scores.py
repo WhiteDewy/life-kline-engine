@@ -122,7 +122,7 @@ def test_accidental_dignities():
     # Oriental/Occidental: 0.1 - 0.0 = 0.1 (East). +0.5.
     # So: Angular(2) + Cazimi(3) + Joy(0.5) + Oriental(0.5) = 6.0.
     # Clamped to 5.0.
-    score = compute_accidental_dignity_raw(p, chart_info)
+    score = compute_accidental_dignity_raw(Planet.MERCURY, p, chart_info)
     print(f"Cazimi + Angular + Joy + Oriental (Mercury): {score} (Expected: 5.0 due to clamp)")
 
     # 2. Combust -3
@@ -136,7 +136,7 @@ def test_accidental_dignities():
     # Oriental (+0.5).
     # Joy? Mercury Joy is 1st. This is 2nd. No joy.
     # Total = 1 - 3 + 0.5 = -1.5.
-    score = compute_accidental_dignity_raw(p, chart_info)
+    score = compute_accidental_dignity_raw(Planet.MERCURY, p, chart_info)
     print(f"Combust + Succedent + Oriental (Mercury): {score} (Expected: -1.5)")
 
     # 3. Under Beams -1
@@ -150,7 +150,7 @@ def test_accidental_dignities():
     # Oriental (+0.5).
     # Joy (Moon in 3rd). Let's use Mercury, no joy.
     # Total = -1 - 1 + 0.5 = -1.5.
-    score = compute_accidental_dignity_raw(p, chart_info)
+    score = compute_accidental_dignity_raw(Planet.MERCURY, p, chart_info)
     print(f"Under Beams + Cadent + Oriental (Mercury): {score} (Expected: -1.5)")
     
     # 4. Retrograde -1.5
@@ -166,7 +166,7 @@ def test_accidental_dignities():
     # Mars Joy is 6th. Let's use Mars.
     # Mars in 6th -> Joy (+0.5).
     # Total = -1 (Cad) - 1.5 (Rx) + 0.5 (Ori) - 0.5 (Slow) + 0.5 (Joy) = -2.0.
-    score = compute_accidental_dignity_raw(p, chart_info)
+    score = compute_accidental_dignity_raw(Planet.MARS, p, chart_info)
     print(f"Retrograde + Cadent + Oriental + Slow + Joy (Mars): {score} (Expected: -2.0)")
 
     # 6. Oriental/Western Test
@@ -177,7 +177,7 @@ def test_accidental_dignities():
     p_ori = PlanetInfo(Sign.ARIES, 5.0, 1)
     p_ori.name = "Mars" # Superior planet
     chart_ori = {'sun_longitude': 10.0, 'is_day': True}
-    score_ori = compute_accidental_dignity_raw(p_ori, chart_ori)
+    score_ori = compute_accidental_dignity_raw(Planet.MARS, p_ori, chart_ori)
     # Base: Angular(+2) + Oriental(+0.5) + Joy(Mars in 6th? No, 1st) = 2.5
     # Wait, Mars Joy is 6th. 
     # Mars in 1st is Angular.
@@ -192,7 +192,7 @@ def test_accidental_dignities():
     # Note: Planet is Under Beams (diff 5 < 8.5 Combust? Yes 5 is Combust).
     # Combust is -3.
     # Angular +2. Occidental -0.5. Combust -3. Total -1.5.
-    score_occ = compute_accidental_dignity_raw(p_occ, chart_occ)
+    score_occ = compute_accidental_dignity_raw(Planet.MARS, p_occ, chart_occ)
     print(f"Occidental (Mars at 15, Sun at 10): {score_occ} (Expected: 2 - 0.5 - 3 = -1.5)")
     
     # Case C: Oriental but far (Not Combust)
@@ -203,7 +203,7 @@ def test_accidental_dignities():
     p_ori_far.name = "Saturn"
     chart_ori_far = {'sun_longitude': 10.0, 'is_day': True}
     # Cadent -1. Joy(Saturn in 12) +0.5. Oriental +0.5. Total 0.0.
-    score_ori_far = compute_accidental_dignity_raw(p_ori_far, chart_ori_far)
+    score_ori_far = compute_accidental_dignity_raw(Planet.SATURN, p_ori_far, chart_ori_far)
     print(f"Oriental Far (Saturn at 340, Sun at 10): {score_ori_far} (Expected: -1 + 0.5 + 0.5 = 0.0)")
 
 if __name__ == "__main__":

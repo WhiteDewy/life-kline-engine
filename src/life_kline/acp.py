@@ -55,11 +55,38 @@ GUARDRAILS = """## 禁止的事
 # 反宿命禁用词 + 后处理
 # ============================================================================
 
-FORBIDDEN_WORDS: tuple[str, ...] = ("注定", "一定", "必须", "命中注定")
+import re
+
+# 词级精确替换（向后兼容）
+FORBIDDEN_WORDS: tuple[str, ...] = (
+    "注定", "一定", "必须", "命中注定", "无可避免", "无法逃脱",
+    "必然发生", "必然结果", "必然导致",
+)
+
+# 短语级正则模式（更隐蔽的宿命论变体）
+_FORBIDDEN_PATTERNS: list[tuple[str, str]] = [
+    # "八成会" / "很可能" / "大概率" → "可能会"
+    (r"八成会", "可能会"),
+    (r"八成", "有可能"),
+    (r"很可能", "可能"),
+    (r"大概率", "有可能"),
+    (r"必然会", "可能会"),
+    (r"必然导致", "可能导致"),
+    # "这件事几乎是必然的" 类过度确定
+    (r"几乎是必然", "有很大可能"),
+    (r"几乎是肯定的", "很可能"),
+    # "很难不..." 类反向宿命
+    (r"很难不", "不太会"),
+    (r"不可避免", "可能需要面对"),
+    # 强命运措辞
+    (r"老天爷", "宇宙"),
+    (r"上天的安排", "各种因素共同作用"),
+    (r"无法抗拒", "可以选择面对的方式"),
+]
 
 
 def sanitize_fatalism(text: str) -> str:
-    """把反宿命禁用词替换为"倾向"，作为 LLM 输出的兜底净化。
+    """把反宿命禁用词和短语替换为中性表述，作为 LLM 输出的兜底净化。
 
     独立于 LLM，不因 LLM 降级而失效（与 safety.py 同属代码级伦理兜底）。
     """
@@ -68,6 +95,8 @@ def sanitize_fatalism(text: str) -> str:
     cleaned = text
     for word in FORBIDDEN_WORDS:
         cleaned = cleaned.replace(word, "倾向")
+    for pattern, replacement in _FORBIDDEN_PATTERNS:
+        cleaned = re.sub(pattern, replacement, cleaned)
     return cleaned
 
 

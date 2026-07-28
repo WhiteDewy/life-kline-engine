@@ -152,6 +152,8 @@ class AccessResult:
     is_vip: bool = False
     is_test_user: bool = False
     action_required: str = ""         # "purchase_coins" | "upgrade_vip" | ""
+    used: int | None = None           # 当前周期已用次数（结构化，供前端进度展示）
+    limit: int | None = None          # 当前周期上限（结构化）
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -163,6 +165,8 @@ class AccessResult:
             "is_vip": self.is_vip,
             "is_test_user": self.is_test_user,
             "action_required": self.action_required,
+            "used": self.used,
+            "limit": self.limit,
         }
 
 
@@ -210,14 +214,14 @@ class AccessChecker:
         if is_test_user(user_id, phone):
             return AccessResult(
                 allowed=True, reason="测试用户", is_test_user=True,
-                remaining_free=999,
+                remaining_free=999, used=0, limit=None,
             )
 
         # VIP 无限
         if self._is_vip_active():
             return AccessResult(
                 allowed=True, reason="VIP 无限对话", is_vip=True,
-                remaining_free=999,
+                remaining_free=999, used=0, limit=None,
             )
 
         # 检查免费额度
@@ -233,6 +237,7 @@ class AccessChecker:
                 cost_coins=0,
                 user_coins=self.state.get("coins", 0),
                 action_required="upgrade_vip",
+                used=total_used, limit=self._quota.engine_daily_rounds,
             )
 
         if planet_used >= self._quota.engine_per_spirit:
@@ -243,6 +248,7 @@ class AccessChecker:
                 cost_coins=0,
                 user_coins=self.state.get("coins", 0),
                 action_required="upgrade_vip",
+                used=planet_used, limit=self._quota.engine_per_spirit,
             )
 
         remaining = self._quota.engine_daily_rounds - total_used
@@ -251,6 +257,7 @@ class AccessChecker:
             reason=f"免费额度（剩余 {remaining} 轮）",
             remaining_free=remaining,
             is_vip=False,
+            used=total_used, limit=self._quota.engine_daily_rounds,
         )
 
     def check_ai_chat(self) -> AccessResult:
@@ -261,7 +268,7 @@ class AccessChecker:
         if is_test_user(user_id, phone):
             return AccessResult(
                 allowed=True, reason="测试用户", is_test_user=True,
-                remaining_free=999,
+                remaining_free=999, used=0, limit=None,
             )
 
         if self._is_vip_active():
@@ -273,6 +280,7 @@ class AccessChecker:
                     reason=f"VIP 每月赠送（剩余 {monthly_quota - monthly_used} 轮）",
                     remaining_free=monthly_quota - monthly_used,
                     is_vip=True,
+                    used=monthly_used, limit=monthly_quota,
                 )
             # VIP 赠送用完，需消耗星币
             coins = self.state.get("coins", 0)
@@ -284,6 +292,7 @@ class AccessChecker:
                     cost_coins=cost,
                     user_coins=coins,
                     is_vip=True,
+                    used=monthly_used, limit=monthly_quota,
                 )
             return AccessResult(
                 allowed=False,
@@ -292,6 +301,7 @@ class AccessChecker:
                 user_coins=coins,
                 is_vip=True,
                 action_required="purchase_coins",
+                used=monthly_used, limit=monthly_quota,
             )
 
         # 非 VIP：先检查免费额度，再消耗星币
@@ -302,6 +312,7 @@ class AccessChecker:
                 allowed=True,
                 reason=f"免费AI体验（剩余 {remaining} 轮）",
                 remaining_free=remaining,
+                used=ai_used, limit=self._quota.ai_daily_rounds,
             )
 
         coins = self.state.get("coins", 0)
@@ -312,6 +323,7 @@ class AccessChecker:
                 reason=f"消耗 {cost} 星币（余额 {coins}）",
                 cost_coins=cost,
                 user_coins=coins,
+                used=ai_used, limit=self._quota.ai_daily_rounds,
             )
         return AccessResult(
             allowed=False,
@@ -319,6 +331,7 @@ class AccessChecker:
             cost_coins=cost,
             user_coins=coins,
             action_required="purchase_coins",
+            used=ai_used, limit=self._quota.ai_daily_rounds,
         )
 
     def check_council(self) -> AccessResult:
@@ -327,10 +340,10 @@ class AccessChecker:
         phone = self.state.get("phone", "")
 
         if is_test_user(user_id, phone):
-            return AccessResult(allowed=True, reason="测试用户", is_test_user=True)
+            return AccessResult(allowed=True, reason="测试用户", is_test_user=True, used=0, limit=None)
 
         if self._is_vip_active():
-            return AccessResult(allowed=True, reason="VIP 无限", is_vip=True)
+            return AccessResult(allowed=True, reason="VIP 无限", is_vip=True, used=0, limit=None)
 
         used = self.state.get("council_usage_this_week", 0)
         if used >= self._quota.council_weekly:
@@ -338,11 +351,13 @@ class AccessChecker:
                 allowed=False,
                 reason=f"本周星灵议会次数已用完（{self._quota.council_weekly}次/周）",
                 action_required="upgrade_vip",
+                used=used, limit=self._quota.council_weekly,
             )
         return AccessResult(
             allowed=True,
             reason=f"免费额度（剩余 {self._quota.council_weekly - used} 次）",
             remaining_free=self._quota.council_weekly - used,
+            used=used, limit=self._quota.council_weekly,
         )
 
     # ── 内部方法 ──
@@ -350,7 +365,9 @@ class AccessChecker:
     def _is_vip_active(self) -> bool:
         if not self.state.get("is_vip", False):
             return False
-        expiry = self.state.get("vip_expiry", "")
+        # 兼容两种字段名：AccessChecker 文档用 vip_expiry，DB/dao 用 vip_expire_at。
+        # 历史上这里只读 vip_expiry → 与 DB 列名不一致 → VIP 判定永远失效。
+        expiry = self.state.get("vip_expiry") or self.state.get("vip_expire_at") or ""
         if not expiry:
             return False
         try:

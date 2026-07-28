@@ -27,28 +27,12 @@
         <p class="brand-sub">十颗星辰，在你的心灵花园里苏醒</p>
       </div>
 
-      <!-- ── 一键登录 ── -->
-      <div class="card" v-if="loginMode === 'oneclick'">
+      <!-- ── 验证码登录 ── -->
+      <div class="card">
         <div class="phone-box">
           <span class="prefix">+86</span>
           <span class="sep"></span>
           <input v-model="phone" class="phone-inp" type="tel" maxlength="11" placeholder="请输入手机号" @input="onPhoneInput" />
-        </div>
-
-        <button class="main-btn" :class="{ 'main-btn--dev': isDevBypass }" :disabled="!canOneClick || oneClicking" @click="doOneClickLogin">
-          <span v-if="oneClicking" class="loader"></span>
-          <span v-else>{{ isDevBypass ? '进入花园' : '一键登录' }}</span>
-        </button>
-
-        <button class="link-btn" @click="loginMode = 'sms'">其他方式登录</button>
-      </div>
-
-      <!-- ── 验证码登录 ── -->
-      <div class="card" v-else>
-        <div class="phone-box">
-          <span class="prefix">+86</span>
-          <span class="sep"></span>
-          <input v-model="phone" class="phone-inp" type="tel" maxlength="11" placeholder="请输入手机号" />
         </div>
 
         <div class="code-row">
@@ -59,13 +43,11 @@
         </div>
 
         <button v-if="isDevBypass" class="main-btn main-btn--dev" :disabled="!agreed || verifying" @click="devDirectLogin">
-          直接进入花园
+          <span v-if="verifying" class="loader"></span><span v-else>直接进入花园</span>
         </button>
         <button v-else class="main-btn" :disabled="!canLogin || verifying" @click="doSmsLogin">
           <span v-if="verifying" class="loader"></span><span v-else>登录</span>
         </button>
-
-        <button class="link-btn" @click="loginMode = 'oneclick'">返回一键登录</button>
       </div>
 
       <!-- ── 协议 ── -->
@@ -85,16 +67,26 @@
               <div class="modal-icon">{{ agreementType === 'user' ? '📋' : '🔒' }}</div>
               <div class="modal-title">{{ agreementType === 'user' ? '用户协议' : '隐私政策' }}</div>
               <div class="agreement-body">
-                <p v-if="agreementType === 'user'">
-                  用户协议内容将在后续版本完善。<br /><br />
-                  使用星灵花园即表示你同意遵守相关服务条款。<br />
-                  我们致力于保护你的数据安全和隐私权利。
-                </p>
-                <p v-else>
-                  隐私政策内容将在后续版本完善。<br /><br />
-                  我们仅收集必要的用户信息用于提供占星分析服务。<br />
-                  你的数据不会分享给第三方。
-                </p>
+                <template v-if="agreementType === 'user'">
+                  <p><b>星灵花园用户协议</b></p>
+                  <p>欢迎你使用星灵花园。继续使用即表示你同意本协议。</p>
+                  <p><b>1. 服务性质。</b>本应用提供基于占星学的心理陪伴与自我探索内容，所产出的星盘分析、星灵对话、每日一问等均为参考性内容，不构成医疗、心理咨询、投资或任何专业决策建议。如你正处于心理危机，请立即联系专业机构或拨打心理援助热线（全国 400-161-9995）。</p>
+                  <p><b>2. 账号。</b>你需使用手机号注册并验证。账号仅供本人使用，不得转让。你可在「设置-注销账号」中随时注销，注销后你的全部数据将被彻底删除且不可恢复。</p>
+                  <p><b>3. 付费服务。</b>AI 深度对话、星灵议会等内容提供每日免费额度，超出部分需购买星币或 VIP 会员。iOS 端通过 Apple 内购支付，安卓端通过微信/支付宝支付。虚拟商品一经购买除法定情形外不予退款。</p>
+                  <p><b>4. 行为规范。</b>不得发布违法、有害、侵犯他人权利的内容，不得干扰服务正常运行。</p>
+                  <p><b>5. 服务变更。</b>我们可能不时更新服务内容，重大变更将提前告知。</p>
+                </template>
+                <template v-else>
+                  <p><b>星灵花园隐私政策</b></p>
+                  <p>我们重视你的隐私，本政策说明我们如何收集、使用与保护你的信息。</p>
+                  <p><b>1. 我们收集的信息。</b>手机号（用于登录注册）；出生日期、时间、出生地/现居地（用于生成你的本命星盘）；你与星灵的对话与日记内容（用于提供陪伴与成长记录）。地理位置信息仅在本地用于行运计算，我们不持续追踪你的位置。</p>
+                  <p><b>2. 我们如何使用。</b>用于提供占星分析、个性化内容、账号管理与客服。我们不会将你的个人信息出售给第三方。</p>
+                  <p><b>3. 第三方服务。</b>为提供支付（Apple 内购 / 微信支付 / 支付宝）与短信验证服务，相关必要信息会经这些服务商处理，受其隐私政策约束。</p>
+                  <p><b>4. 数据安全。</b>我们采取加密传输与访问控制等措施保护你的数据。</p>
+                  <p><b>5. 你的权利。</b>你可查看、更正自己的资料；可随时注销账号，注销后数据将被彻底删除。如需删除特定对话/日记，可在应用内对应位置操作。</p>
+                  <p><b>6. 未成年人。</b>本应用面向 16 岁以上用户。如你是未成年人，请在监护人同意后使用。</p>
+                  <p><b>7. 联系我们。</b>如有隐私问题，可通过应用内反馈渠道联系我们。</p>
+                </template>
               </div>
               <button class="link-btn" @click="agreementType = ''">关闭</button>
             </div>
@@ -102,29 +94,13 @@
         </transition>
       </Teleport>
     </div>
-
-    <!-- ── 运营商弹窗 ── -->
-    <Teleport to="body">
-      <transition name="modal">
-        <div v-if="showCarrierDialog" class="modal-mask" @click.self="showCarrierDialog = false">
-          <div class="modal-card">
-            <div class="modal-icon">📶</div>
-            <div class="modal-title">中国移动认证</div>
-            <div class="modal-phone">{{ maskedPhone }}</div>
-            <div class="modal-desc">本机号码一键登录</div>
-            <button class="main-btn" @click="confirmOneClick" style="width:100%;margin-bottom:10px">确认登录</button>
-            <button class="link-btn" @click="showCarrierDialog = false">取消</button>
-          </div>
-        </div>
-      </transition>
-    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { useAuth, isDevBypassPhone } from "@/utils/auth";
+import { useAuth, isDevBypassPhone, getDevBypassCode } from "@/utils/auth";
 
 const router = useRouter();
 const route = useRoute();
@@ -137,41 +113,29 @@ const redirectPath = computed(() => {
   return "/onboarding";
 });
 
-const loginMode = ref<"oneclick" | "sms">("oneclick");
 const phone = ref("");
 const code = ref("");
 const agreed = ref(false);
 const countdown = ref(0);
-const oneClicking = ref(false);
-const verifying = ref(true);
+const verifying = ref(false);
 const sending = ref(false);
-const showCarrierDialog = ref(false);
 const agreementType = ref<"" | "user" | "privacy">("");
 
 function showAgreement(type: "user" | "privacy") { agreementType.value = type; }
 
-const canOneClick = computed(() => phone.value.length === 11 && agreed.value);
 const canSend = computed(() => phone.value.length === 11);
 const canLogin = computed(() => phone.value.length === 11 && code.value.length >= 4 && agreed.value);
-const isDevBypass = computed(() => isDevBypassPhone(phone.value));
-const maskedPhone = computed(() => { const p = phone.value; return p.length < 11 ? p : p.slice(0, 3) + " **** " + p.slice(-4); });
+/** 开发旁路：仅开发构建生效，且手机号必须匹配 VITE_DEV_BYPASS_PHONE。
+ *  生产构建（import.meta.env.PROD）下本 computed 永远返回 false，对应按钮也不会渲染。 */
+const isDevBypass = computed(() => !import.meta.env.PROD && isDevBypassPhone(phone.value));
 
 function onPhoneInput() { phone.value = phone.value.replace(/\D/g, "").slice(0, 11); }
 
-function doOneClickLogin() {
-  if (!canOneClick.value) return;
-  if (isDevBypass.value) { devDirectLogin(); return; }
-  showCarrierDialog.value = true;
-}
 async function devDirectLogin() {
-  oneClicking.value = true;
-  try { await verifyCode(phone.value, "000000"); router.replace(redirectPath.value); } catch { loginMode.value = "sms"; }
-  oneClicking.value = false;
-}
-async function confirmOneClick() {
-  showCarrierDialog.value = false; oneClicking.value = true;
-  try { await verifyCode(phone.value, "888888"); router.replace(redirectPath.value); } catch { loginMode.value = "sms"; }
-  oneClicking.value = false;
+  if (!isDevBypass.value) return;
+  verifying.value = true;
+  try { await verifyCode(phone.value, getDevBypassCode()); router.replace(redirectPath.value); } catch {}
+  verifying.value = false;
 }
 let timer: any = null;
 async function doSendCode() {

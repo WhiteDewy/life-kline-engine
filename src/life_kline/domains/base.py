@@ -283,20 +283,79 @@ class DomainAnalyzer(ABC):
     def _analyze_modern(self, chart: Any) -> dict[str, Any]:
         ...
 
+    def _derive_theme_conditions(self, chart: Any) -> dict[str, bool]:
+        """计算基础theme条件（当analyzer未返回conditions时 fallback 使用）。"""
+        conditions: dict[str, bool] = {}
+        try:
+            from ..constants import ANGULAR_HOUSES, CADENT_HOUSES
+            from .helpers import planet_sign, planet_house, planet_dignity_code
+
+            # 群星角宫/果宫计数
+            angular_count = sum(
+                1 for p in ["SUN", "MOON", "MERCURY", "VENUS", "MARS",
+                             "JUPITER", "SATURN"]
+                if planet_house(chart, p) in ANGULAR_HOUSES
+            )
+            cadent_count = sum(
+                1 for p in ["SUN", "MOON", "MERCURY", "VENUS", "MARS",
+                             "JUPITER", "SATURN"]
+                if planet_house(chart, p) in CADENT_HOUSES
+            )
+            conditions["群星角宫>=3"] = angular_count >= 3
+            conditions["群星果宫>=3"] = cadent_count >= 3
+
+            # 2宫主（财星）状态
+            h2_ruler_sign = planet_sign(chart, "2")
+            h2_ruler_dignity = planet_dignity_code(chart, "2")
+            conditions["2R庙旺"] = h2_ruler_dignity in ("domicile", "exaltation")
+            conditions["2R落陷"] = h2_ruler_dignity in ("detriment", "fall")
+
+            # 10宫主（事业星）状态
+            h10_ruler_sign = planet_sign(chart, "10")
+            h10_ruler_dignity = planet_dignity_code(chart, "10")
+            conditions["10R庙旺"] = h10_ruler_dignity in ("domicile", "exaltation")
+            conditions["10R落陷"] = h10_ruler_dignity in ("detriment", "fall")
+
+            # 7宫主状态（伴侣/合伙）
+            h7_ruler_dignity = planet_dignity_code(chart, "7")
+            conditions["7R庙旺"] = h7_ruler_dignity in ("domicile", "exaltation")
+            conditions["7R落陷"] = h7_ruler_dignity in ("detriment", "fall")
+
+            # 5宫主状态（恋爱/创造）
+            h5_ruler_dignity = planet_dignity_code(chart, "5")
+            conditions["5R庙旺"] = h5_ruler_dignity in ("domicile", "exaltation")
+            conditions["5R落陷"] = h5_ruler_dignity in ("detriment", "fall")
+
+        except Exception:
+            pass
+        return conditions
+
     def _fuse(self, traditional: dict[str, Any], modern: dict[str, Any], chart: Any) -> DomainReport:
         w = self.tradition_weight
         structure = traditional.get("structure", "")
         psychology = modern.get("psychology", "")
         suggestion = self._build_suggestion(traditional, modern)
 
+        # 按 tradition_weight 标注古典/现代来源后拼接
+        if structure and psychology:
+            tag_cl = f"【古典 {int(w*100)}%】" if w > 0.5 else "【古典】"
+            tag_mo = f"【现代 {int((1-w)*100)}%】" if w < 0.5 else "【现代】"
+            narrative = f"{tag_cl} {structure}\n\n{tag_mo} {psychology}\n\n{suggestion}"
+        elif structure:
+            narrative = f"【古典】 {structure}\n\n{suggestion}"
+        else:
+            narrative = f"【现代】 {psychology}\n\n{suggestion}"
+
         primary = AngleEntry(
             angle_id="main",
             angle_label="主取象",
-            narrative=f"{structure}\n\n{psychology}\n\n{suggestion}",
+            narrative=narrative,
         )
         alternatives = self._build_alt_angles(traditional, modern, chart)
 
         theme_ctx = traditional.get("theme_conditions", {})
+        if not theme_ctx:
+            theme_ctx = self._derive_theme_conditions(chart)
         core_theme = resolve_core_theme(self.domain_key, theme_ctx)
 
         return DomainReport(

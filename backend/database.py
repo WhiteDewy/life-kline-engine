@@ -371,5 +371,21 @@ def migrate_db() -> None:
     if "spirit_planet_label" not in dcols:
         db.execute("ALTER TABLE star_diary ADD COLUMN spirit_planet_label TEXT DEFAULT ''")
 
+    # payments：计费后端订单字段（P1.2）。原表仅有 id/user_id/type/amount/status/
+    # created_at/paid_at，不足以承载 IAP/微信/支付宝下单-验签-发放链路。
+    pcols = {row[1] for row in db.execute("PRAGMA table_info(payments)").fetchall()}
+    if "product_type" not in pcols:
+        db.execute("ALTER TABLE payments ADD COLUMN product_type TEXT DEFAULT ''")   # 'coin'|'vip'
+    if "product_id" not in pcols:
+        db.execute("ALTER TABLE payments ADD COLUMN product_id TEXT DEFAULT ''")     # coin_100 / monthly_auto ...
+    if "channel" not in pcols:
+        db.execute("ALTER TABLE payments ADD COLUMN channel TEXT DEFAULT ''")        # 'iap'|'wechat'|'alipay'|'dev'
+    if "provider_order_id" not in pcols:
+        db.execute("ALTER TABLE payments ADD COLUMN provider_order_id TEXT DEFAULT ''")
+    if "receipt_ref" not in pcols:
+        db.execute("ALTER TABLE payments ADD COLUMN receipt_ref TEXT DEFAULT ''")    # 凭证摘要（不存原文 PII）
+    if "granted" not in pcols:
+        db.execute("ALTER TABLE payments ADD COLUMN granted TEXT DEFAULT ''")        # 发放描述，如 "coins:+100" / "vip:30d"
+
     db.commit()
     db.close()
