@@ -89,23 +89,20 @@ def detect_aspect_between(
     best_aspect = None
     best_orb = float('inf')  # 寻找容许度最小的相位
     
-    # 计算两星的容许度半径之和的一半 (Moiety of Orbs)
-    # 古典占星原则：相位容许度取决于行星而非相位类型
+    # 容许度 = 两星光线和 (非平均), 角度越大影响越小
     orb1 = get_planet_orb(planet1)
     orb2 = get_planet_orb(planet2)
-    moiety_orb = (orb1 + orb2) / 2.0
+    max_orb = orb1 + orb2
     
     for aspect_type, config in ASPECT_CONFIG.items():
         exact_angle = config['angle']
         
-        # 使用 Moiety Orb 作为主要容许度
-        # 但对于梅花相位(Quincunx)等次要相位，保持较小的固定容许度
+        # 容许度 = 两星光线和; 角度越大强度越低
         if aspect_type == AspectType.QUINCUNX:
             limit_orb = config['orb']
         else:
-            limit_orb = moiety_orb
-            
-        # 检查是否在容许度内
+            limit_orb = max_orb
+
         if abs(actual_angle - exact_angle) <= limit_orb:
             current_orb = abs(actual_angle - exact_angle)
             

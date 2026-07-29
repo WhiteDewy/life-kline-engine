@@ -30,6 +30,13 @@ class EphemerisEngine:
     """
     
     # 行星映射表：Life-Kline Planet -> Swisseph Planet ID
+    _SIGN_ZH = {
+        Sign.ARIES: "白羊座", Sign.TAURUS: "金牛座", Sign.GEMINI: "双子座",
+        Sign.CANCER: "巨蟹座", Sign.LEO: "狮子座", Sign.VIRGO: "处女座",
+        Sign.LIBRA: "天秤座", Sign.SCORPIO: "天蝎座", Sign.SAGITTARIUS: "射手座",
+        Sign.CAPRICORN: "摩羯座", Sign.AQUARIUS: "水瓶座", Sign.PISCES: "双鱼座",
+    }
+
     PLANET_MAPPING = {
         Planet.SUN: swe.SUN,
         Planet.MOON: swe.MOON,
@@ -41,6 +48,7 @@ class EphemerisEngine:
         Planet.URANUS: swe.URANUS,
         Planet.NEPTUNE: swe.NEPTUNE,
         Planet.PLUTO: swe.PLUTO,
+        Planet.NORTH_NODE: swe.TRUE_NODE,
     }
     
     def __init__(self, ephe_path: Optional[str] = None):
@@ -219,7 +227,35 @@ class EphemerisEngine:
                     
             except swe.Error as e:
                 print(f"Error calculating {planet_enum}: {e}")
-                
+
+        # 3.5 南交点 + 四轴 (ASC/DSC/MC/IC)
+        # 南交点 = 北交点 + 180°
+        nn_info = chart.get_planet_info(Planet.NORTH_NODE)
+        if nn_info:
+            sn_lon = (nn_info.longitude + 180) % 360
+            sn_sign, sn_deg = self._get_sign_from_longitude(sn_lon)
+            sn_house = self._infer_house_from_cusps(chart_houses, sn_lon) or 12
+            chart.add_planet(Planet.SOUTH_NODE, PlanetInfo(
+                sign=sn_sign, degree=sn_deg, house=sn_house,
+                longitude=sn_lon, latitude=0, speed=0, is_retrograde=True,
+            ))
+
+        # 四轴: ASC[0] DSC[1]=ASC+180 MC[2] IC[3]=MC+180
+        from .constants import Sign
+        axis_map = [('ASC', 0), ('DSC', 1), ('MC', 2), ('IC', 3)]
+        chart.angles = {}
+        for name, idx in axis_map:
+            axis_lon = ascmc[idx]
+            axis_sign, axis_deg = self._get_sign_from_longitude(axis_lon)
+            axis_house = self._infer_house_from_cusps(chart_houses, axis_lon) or (idx + 1)
+            chart.angles[name] = {
+                'longitude': axis_lon,
+                'sign': axis_sign.value,
+                'sign_label': self._SIGN_ZH.get(axis_sign, axis_sign.value),
+                'degree': axis_deg,
+                'house': axis_house,
+            }
+
         # 4. 判断昼夜盘
         # 简单的判断：太阳在地平线上方为昼，下方为夜
         # 我们可以利用 house_pos，如果在 7,8,9,10,11,12 宫，通常为昼（取决于分宫制）
