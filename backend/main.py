@@ -2478,12 +2478,20 @@ async def spirit_chat_v2(report_id: str, body: SpiritChatV2Input, request: Reque
         ai_access_info = ai_access.to_dict()
         if ai_access.allowed:
             try:
+                # Sprint: 从 report_data 提取接纳/互容数据注入 LLM prompt
+                adv = report_data.get("advanced_patterns", {}) if isinstance(report_data, dict) else {}
+                receptions_data = {
+                    "reception_groups": adv.get("reception_groups", []),
+                    "mutual_receptions": adv.get("mutual_receptions", []),
+                } if adv else None
+
                 system_prompt = build_spirit_system_prompt_v2(
                     report_data,
                     body.planet,
                     topic=body.topic,
                     entry_context=entry_context,
                     memory_context=memory_context,
+                    receptions_data=receptions_data,
                 )
 
                 # 阶段提示（不门控），LLM 自主决定如何回应

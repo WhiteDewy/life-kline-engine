@@ -486,6 +486,7 @@ def build_spirit_system_prompt_v2(
     topic: str = "personal",
     entry_context: dict | None = None,
     memory_context: dict | None = None,
+    receptions_data: dict | None = None,
 ) -> str:
     """为指定行星构建咨询式 System Prompt (V2)。
 
@@ -510,7 +511,7 @@ def build_spirit_system_prompt_v2(
         return "你是一个温暖的占星陪伴者。请用中文、温和的语气回复用户。"
 
     # Sprint: 组装完整行星档案（单准则——所有数据从引擎模块提取）
-    planet_dossier = _build_planet_dossier(report_data, planet)
+    planet_dossier = _build_planet_dossier(report_data, planet, receptions_data)
 
     # Memory 上下文
     memory_section = ""
@@ -551,12 +552,13 @@ def build_spirit_system_prompt_v2(
 
 
 def _build_planet_dossier(
-    report_data: dict, planet: str
+    report_data: dict, planet: str,
+    receptions_data: dict | None = None,
 ) -> str:
     """为单颗行星组装完整星盘档案。
 
     单一准则：所有数据从引擎模块提取，不在此处硬编码任何占星规则。
-    档案覆盖：现占人格 + 古占尊贵 + 相位 + 接纳 + 飞星 + 法达 + 全盘快照。
+    档案覆盖：现占人格 + 古占尊贵 + 相位 + 接纳/互容 + 飞星 + 法达 + 全盘快照。
     """
     from .constants import Planet as P, ASPECT_CONFIG, DOMICILE_SIGNS
     from .engine_astrologer import _dignity_note
@@ -636,7 +638,29 @@ def _build_planet_dossier(
     except Exception:
         pass
 
-    # ── 6. 法达当前周期 ──
+    # ── 6. 接纳与互容 ──
+    try:
+        if receptions_data:
+            lines.append("")
+            lines.append("## 接纳与互容")
+            mutuals = receptions_data.get("mutual_receptions", []) or []
+            groups = receptions_data.get("reception_groups", []) or []
+            for m in mutuals:
+                if isinstance(m, dict):
+                    line = m.get("line", str(m))
+                    if planet in line:
+                        lines.append(f"- 互容: {line}")
+            for g in groups:
+                if isinstance(g, dict):
+                    line = g.get("line", str(g))
+                    if planet in line:
+                        lines.append(f"- 接纳: {line}")
+            if not any(planet in str(x) for x in mutuals + groups):
+                lines.append("- (未参与互容/接纳关系)")
+    except Exception:
+        pass
+
+    # ── 7. 法达当前周期 ──
     try:
         from .firdaria import calculate_firdaria_periods
         natal = report_data.get("natal_chart") or report_data.get("chart") or {}
