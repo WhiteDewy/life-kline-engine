@@ -48,6 +48,7 @@ from backend import admin as _admin
 from backend import dao as _dao
 from backend.routers import billing as _billing_router
 from backend.routers import account as _account_router
+from backend.routers import spirit_chat_stream as _spirit_chat_stream_router
 from fastapi import Depends
 from typing import Annotated
 
@@ -493,6 +494,7 @@ app.add_middleware(
 app.include_router(_billing_router.router)
 # 账号注销路由（P5 合规：被遗忘权）
 app.include_router(_account_router.router)
+app.include_router(_spirit_chat_stream_router.router)
 
 service: Optional[LifeKlineService] = None
 

@@ -244,6 +244,9 @@ const entryContext = computed(() => {
   };
 });
 
+// Sprint 6: SSE 流式灰度开关（LIFE_KLINE_LLM_STREAM=1）
+const ENABLE_STREAM = import.meta.env.VITE_ENABLE_LLM_STREAM === "1";
+
 async function sendMessage() {
   const text = inputText.value.trim();
   if (!text || isThinking.value) return;
@@ -255,23 +258,29 @@ async function sendMessage() {
   await nextTick();
   scrollToBottom();
 
+  // 插入占位消息
+  const placeholderIdx = messages.value.length;
+  messages.value.push({ role: "spirit", text: "" });
+
   let apiResponse = "";
 
   if (reportId.value && chatPlanet.value) {
-    try {
-      const chatHistory = messages.value.map((m) => ({
-        role: m.role === "spirit" ? "assistant" : "user",
-        text: m.text,
-      }));
-      const result = await callV2(text, chatHistory);
-      apiResponse = result.response || "";
-    } catch (e: any) {
-      // 额度超限（HTTP 200 + body error_code，由拦截器抛 QuotaError）
-      if (e instanceof QuotaError) {
-        needUpgrade.value = true;
-        quotaReason.value = e.message || "今日免费对话次数已用完";
+    if (ENABLE_STREAM) {
+      apiResponse = await streamChat(text);
+    } else {
+      try {
+        const chatHistory = messages.value.map((m) => ({
+          role: m.role === "spirit" ? "assistant" : "user",
+          text: m.text,
+        }));
+        const result = await callV2(text, chatHistory);
+        apiResponse = result.response || "";
+      } catch (e: any) {
+        if (e instanceof QuotaError) {
+          needUpgrade.value = true;
+          quotaReason.value = e.message || "今日免费对话次数已用完";
+        }
       }
-      // 其他网络/服务错误：诚实降级，不编造星盘解读
     }
   }
 
@@ -283,16 +292,92 @@ async function sendMessage() {
     }
   }
 
-  messages.value.push({
-    role: "spirit",
-    text: apiResponse,
-  });
+  messages.value[placeholderIdx] = { role: "spirit", text: apiResponse };
   isThinking.value = false;
 
   saveDiaryEntry(text, apiResponse);
 
   await nextTick();
   scrollToBottom();
+}
+
+async function streamChat(userMessage: string): Promise<string> {
+  const token = localStorage.getItem("lk_token");
+  if (!token || !reportId.value) return "";
+
+  let fullText = "";
+  try {
+    const resp = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL || "/api"}/spirit-chat-stream/${reportId.value}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          message: userMessage,
+          planet: chatPlanet.value,
+          topic: "personal",
+          entry_context: entryContext.value,
+        }),
+      },
+    );
+
+    if (!resp.ok) {
+      if (resp.status === 429) {
+        needUpgrade.value = true;
+        quotaReason.value = "已达今日聊天上限";
+      }
+      return "";
+    }
+
+    const reader = resp.body?.getReader();
+    if (!reader) return "";
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || "";
+
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        try {
+          const data = JSON.parse(line.slice(6));
+          if (data.type === "opening") {
+            fullText = data.text || "";
+            updateLastMessage(fullText);
+          } else if (data.type === "token") {
+            fullText += data.text || "";
+            updateLastMessage(fullText);
+          } else if (data.type === "fallback") {
+            if (!fullText) fullText = data.text || "";
+            updateLastMessage(fullText);
+          } else if (data.type === "limit") {
+            fullText += data.text || "";
+            updateLastMessage(fullText);
+          }
+        } catch { /* skip malformed SSE */ }
+      }
+    }
+  } catch {
+    // 流式失败 → 回退空白，由外层降级处理
+  }
+  return fullText;
+}
+
+function updateLastMessage(text: string) {
+  const arr = messages.value;
+  if (arr.length === 0) return;
+  const last = arr[arr.length - 1];
+  if (last && last.role === "spirit") {
+    last.text = text;
+  }
 }
 
 async function saveDiaryEntry(userText: string, spiritReply: string) {

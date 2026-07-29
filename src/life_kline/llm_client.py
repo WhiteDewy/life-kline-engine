@@ -212,6 +212,84 @@ class LLMClient:
         print(f"[LLMClient] 异步 API 调用失败（降级到引擎原文）: {last_err}")
         return ""
 
+    async def chat_stream(
+        self,
+        messages: list[dict[str, str]],
+        *,
+        timeout_seconds: float | None = None,
+    ):
+        """Sprint 6: 流式对话 async generator。Yields token strings。
+
+        首 token ≤10s；4xx 不重试；5xx/timeout 退避 2 次。
+        """
+        import asyncio
+
+        try:
+            import httpx
+        except ImportError:
+            result = await asyncio.to_thread(self._call_api, messages)
+            if result:
+                yield result
+            return
+
+        stream_body = json.dumps({
+            "model": self.config.model,
+            "messages": messages,
+            "max_tokens": self.config.max_tokens,
+            "temperature": self.config.temperature,
+            "stream": True,
+        }).encode("utf-8")
+
+        read_timeout = timeout_seconds or self.config.read_timeout
+        timeout = httpx.Timeout(read_timeout, connect=self.config.connect_timeout)
+        last_err: Exception | None = None
+
+        for attempt in range(self.config.max_retries + 1):
+            try:
+                async with httpx.AsyncClient(timeout=timeout) as client:
+                    async with client.stream(
+                        "POST", self._url, content=stream_body, headers=self._headers,
+                    ) as resp:
+                        if 400 <= resp.status_code < 500:
+                            print(f"[LLMClient stream] 4xx: {resp.status_code}")
+                            return
+                        resp.raise_for_status()
+                        async for line in resp.aiter_lines():
+                            if not line or line.startswith(":"):
+                                continue
+                            if line.startswith("data: "):
+                                data_str = line[6:]
+                                if data_str.strip() == "[DONE]":
+                                    return
+                                try:
+                                    data = json.loads(data_str)
+                                    delta = data["choices"][0].get("delta", {})
+                                    content = delta.get("content", "")
+                                    if content:
+                                        yield content
+                                except (json.JSONDecodeError, KeyError, IndexError):
+                                    continue
+                        return
+            except httpx.TimeoutException:
+                last_err = TimeoutError("LLM stream timeout")
+                if attempt < self.config.max_retries:
+                    await asyncio.sleep(0.5 * (2 ** attempt))
+                    continue
+                break
+            except (httpx.TransportError, httpx.HTTPStatusError) as e:
+                last_err = e
+                if attempt < self.config.max_retries:
+                    await asyncio.sleep(0.5 * (2 ** attempt))
+                    continue
+                break
+            except asyncio.CancelledError:
+                raise
+            except Exception as e:
+                last_err = e
+                break
+
+        print(f"[LLMClient stream] 失败（降级）: {last_err}")
+
 
 # ═══════════════════════════════════════════════════════════════
 # System Prompt 构建
