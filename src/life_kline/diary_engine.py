@@ -33,6 +33,7 @@ from .spirit_diary_styles import (
     render_diary,
 )
 from .growth.signal_analyzer import analyze_growth_signals, GrowthSignals
+from .growth.detector import GrowthDetector
 
 try:
     from backend import dao as _dao
@@ -202,6 +203,25 @@ class DiaryEngine:
         if not user_summary:
             user_summary = "你没有说很多，但愿意停下来看看自己此刻的状态。"
 
+        # Sprint 4: 成长信号分析 + 主题升华
+        growth_signals = analyze_growth_signals(user_context)
+        growth_insight_text = _growth_signal_to_insight(growth_signals)
+
+        # 构建成长信号描述
+        growth_parts: list[str] = []
+        growth_badge = ""
+        if growth_signals.awareness_delta > 0.2:
+            growth_parts.append("觉察力在提升——你对自己更诚实了")
+            growth_badge = "觉察↑"
+        if growth_signals.action_delta > 0.2:
+            growth_parts.append("你已经迈出了行动的第一步")
+            growth_badge = growth_badge or "行动↑"
+        if growth_signals.fear_delta < -0.1:
+            growth_parts.append("恐惧感在减少，你比想象中更勇敢")
+            growth_badge = growth_badge or "勇气↑"
+        growth_signal_text = "；".join(growth_parts) if growth_parts else "今天在平稳中度过，这也是一种成长。"
+        growth_theme = "、".join(growth_signals.detected_themes[:2]) if growth_signals.detected_themes else ""
+
         # 渲染上下文（多风格统一）
         ctx = DiaryRenderContext(
             date=today_date,
@@ -213,7 +233,7 @@ class DiaryEngine:
             user_content_summary=user_summary,
             spirit_insight=insight_text or "你已经做得够好了。",
             evening_expectation=evening_expectation or infer_evening_expectation(user_context),
-            insight=_growth_signal_to_insight(analyze_growth_signals(user_context)),
+            insight=growth_insight_text,
             conclusion=infer_conclusion(topic),
             action=infer_action(topic, mood_emoji),
             spirit_guidance=self._pick_guide(keywords),
@@ -223,6 +243,10 @@ class DiaryEngine:
             topic_tag_line=(topic_tag + " ") if topic_tag else "",
             closing=infer_closing(user_context, planet_label),
             keywords=keywords,
+            # Sprint 4: 成长信号与主题升华
+            growth_signal=growth_signal_text,
+            growth_theme=growth_theme,
+            growth_badge=growth_badge,
         )
 
         entry_text = render_diary(style, ctx)
@@ -294,6 +318,8 @@ class DiaryEngine:
         insight_text = self._pick_best_spirit_insight(spirit_responses) or self._pick_guide(keywords)
         user_summary = self._summarize(" ".join(user_messages), 220) or "你没有说很多。"
 
+        gs_preview = analyze_growth_signals(user_context)
+        growth_theme_preview = "、".join(gs_preview.detected_themes[:2]) if gs_preview.detected_themes else ""
         ctx = DiaryRenderContext(
             date=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
             weekday=self._weekday_label(datetime.now(timezone.utc).strftime("%Y-%m-%d")),
@@ -304,7 +330,7 @@ class DiaryEngine:
             user_content_summary=user_summary,
             spirit_insight=insight_text or "你已经做得够好了。",
             evening_expectation=infer_evening_expectation(user_context),
-            insight=_growth_signal_to_insight(analyze_growth_signals(user_context)),
+            insight=_growth_signal_to_insight(gs_preview),
             conclusion=infer_conclusion(topic),
             action=infer_action(topic, mood_emoji),
             spirit_guidance=self._pick_guide(keywords),
@@ -314,6 +340,9 @@ class DiaryEngine:
             topic_tag_line=(topic_tag + " ") if topic_tag else "",
             closing=infer_closing(user_context, planet_label),
             keywords=keywords,
+            growth_signal="今天在平稳中度过，这也是成长。",
+            growth_theme=growth_theme_preview,
+            growth_badge="",
         )
         return get_style_previews(ctx)
 

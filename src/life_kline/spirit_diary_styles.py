@@ -150,6 +150,7 @@ DIARY_STYLE_TEMPLATES: dict[DiaryStyle, str] = {
 今日吐槽：{user_content_summary}
 今日领悟：{spirit_insight}
 今日小确幸：{evening_expectation}
+成长信号：{growth_signal}
 {topic_tag_line}#星灵日记""",
 
     DiaryStyle.DIALOGUE: """📅 {date} {weekday} {title}
@@ -157,6 +158,7 @@ DIARY_STYLE_TEMPLATES: dict[DiaryStyle, str] = {
 你说：{user_content_summary}
 {planet_label}说：{spirit_insight}
 今天被{planet_label}治愈到了。{closing}
+成长印记：{growth_theme}{growth_signal}
 {topic_tag_line}""",
 
     DiaryStyle.REFLECTION: """📅 {date} {weekday}
@@ -165,18 +167,21 @@ DIARY_STYLE_TEMPLATES: dict[DiaryStyle, str] = {
 以前总觉得{topic}很难，但今天突然想通了：{insight}
 既然{conclusion}，不如{action}。
 {planet_label}想告诉你：{spirit_guidance}
+成长信号：{growth_signal}{growth_theme}
 {topic_tag_line}""",
 
     DiaryStyle.SPIRIT: """🌙 {date} {weekday} 与{planet_label}的对话
 {planet_label}：{spirit_insight}
 你说：{user_content_summary}
 {planet_label}：{closing}
+成长印记：{growth_signal}
 {topic_tag_line}#星灵日记""",
 
     DiaryStyle.SUMMARY: """📝 {date} {weekday}
 今天你和{planet_label}聊了关于「{topic}」的事。
 你说起了：{user_content_summary}
 留给你的一句启发是：{spirit_insight}
+成长印记：{growth_signal}
 {topic_tag_line}""",
 }
 
@@ -207,6 +212,10 @@ class DiaryRenderContext:
     topic_tag_line: str = ""
     closing: str = "今天被允许的疲惫，也是一种温柔。"
     keywords: list[str] = field(default_factory=list)
+    # Sprint 4: 成长信号与主题升华
+    growth_signal: str = ""           # GrowthSignalAnalyzer 分析出的成长描述
+    growth_theme: str = ""            # 检测到的成长主题
+    growth_badge: str = ""            # 前端徽章文案（如 "觉察↑" "行动↑"）
 
     def to_dict(self) -> dict:
         return {k: v for k, v in self.__dict__.items()}
