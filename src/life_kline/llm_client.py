@@ -582,11 +582,15 @@ def build_spirit_system_prompt_v2(
 
 {GUARDRAILS}"""
 
+    # 用户星盘数据（供引用）
+    natal_data = _build_natal_snapshot(report_data, planet)
+
     # 规则
-    rules = f"""## 规则
-- 你用中文回复，温暖但不黏腻
-- 回复控制在 200 字以内（咨询中简短更有力）
-- 如果用户表达告别意图，回复末尾加：💫 今天的对话已保存
+    rules = f"""## 铁规则（违反=对话失败）
+- 每轮回复 ≤ 120 字。短才有力量。你不是在写文章，你在和人说话。
+- 禁止每轮重复自己的角色设定。用户已经知道你是谁。说一遍就够了。
+- 禁止空洞的哲理（如'星盘不是魔法''答案在你自己手里'）。给具体的、个性化的回应。
+- 用户问星盘时，直接引用下方【用户星盘】的数据回答。不要回避。
 - 你始终是{persona.get('name_zh', planet)}，不要切换角色"""
 
     return f"""{preamble}{return_note}
@@ -599,6 +603,7 @@ def build_spirit_system_prompt_v2(
 你活在用户的星盘里，用{planet}的方式去感受这个世界。
 
 {chart_section}
+{natal_data}
 {memory_section}
 
 {consultation_principles}
@@ -716,7 +721,7 @@ def _get_planet_meaning_for_position(
 
 
 def _build_entry_preamble_v2(entry_context: dict | None, planet: str) -> str:
-    """构建入口上下文 preamble"""
+    """构建入口上下文 preamble（仅首轮提示，后续禁止重复提及）。"""
     if not entry_context:
         return ""
 
@@ -724,24 +729,71 @@ def _build_entry_preamble_v2(entry_context: dict | None, planet: str) -> str:
     planet_name = _PLANET_NAMES.get(planet, planet)
 
     preambles = {
-        "today_star_spirit": f"""你是今天的引路{planet_name}——用户今天第一个来找的就是你。
-用温暖、欢迎的方式开启今天的对话，像一个守护者。
-不要急着分析，先让用户感到安全、被倾听。""",
+        "today_star_spirit": (
+            f"⚠️ 你是今天的引路{planet_name}。用户今天第一个来找的就是你。\n"
+            "首轮用守护者的温暖开场（1-2句即可）。后续轮次不要再提'今天引路'这件事。\n"
+        ),
 
-        "daily_question": """用户刚刚回答了一个每日一问。
-从这个问题自然切入，先问问用户为什么想这个问题。""",
+        "daily_question": (
+            "⚠️ 用户刚回答了一个每日一问。首轮自然承接那个问题。后续轮次不要再提。\n"
+        ),
 
-        "transit": """用户因为今天的行运来找你。
-先感受一下，行运对这个用户意味着什么，而不是急着解读星盘。""",
+        "transit": (
+            "⚠️ 用户因行运来找你。首轮简短回应这个天象。后续轮次不要再提。\n"
+        ),
 
-        "council": """用户刚刚结束了星灵议会，和不同的星灵讨论过。
-你是用户选择继续对话的那一个——用户在你身上看到了什么？""",
+        "council": (
+            "⚠️ 用户从星灵议会中选择了你。\n"
+            "首轮可以用1句话简短回应这个选择（如'你来找我了'），然后立刻进入倾听。\n"
+            "绝对禁止：每轮都提'你选了我'、'你不是来找糖吃'、反复强调自己的角色设定。\n"
+        ),
 
-        "diary_revisit": """用户重读了你们之前的对话，回来了。
-用重逢的温暖开场，但不要重复之前说过的话。""",
+        "diary_revisit": (
+            "⚠️ 用户从日记回来看你。首轮用重逢感开场（1句）。后续不要再提。\n"
+        ),
     }
 
     return preambles.get(source, "")
+
+
+def _build_natal_snapshot(report_data: dict, current_planet: str) -> str:
+    """提取用户星盘关键数据，供 LLM 在回答星盘问题时引用。"""
+    chart = report_data.get("natal_chart") or report_data.get("chart") or {}
+    planets = chart.get("planets", {})
+    if not planets:
+        return ""
+
+    lines = ["## 用户星盘（你可以引用这些数据）"]
+    for key in ("SUN", "MOON", "MERCURY", "VENUS", "MARS", "JUPITER", "SATURN"):
+        p = planets.get(key, {})
+        if not p:
+            continue
+        sign = p.get("sign_label") or p.get("sign", "")
+        house = p.get("house", "")
+        house_title = p.get("house_title", "")
+        dignity = p.get("dignity_label", "")
+        marker = " ← 你" if key == current_planet else ""
+        lines.append(f"- {key}：{sign} {house}宫{house_title} {dignity}{marker}")
+
+    # 上升
+    asc = chart.get("ascendant", {})
+    if asc:
+        asc_sign = asc.get("sign_label") or asc.get("sign", "")
+        lines.append(f"- 上升：{asc_sign}")
+
+    # 主要相位（最多5条）
+    aspects = chart.get("major_aspects") or []
+    if aspects:
+        aspect_lines = []
+        for a in aspects[:5]:
+            title = a.get("title", "")
+            if title:
+                aspect_lines.append(f"  {title}")
+        if aspect_lines:
+            lines.append("- 主要相位：")
+            lines.extend(aspect_lines)
+
+    return "\n".join(lines)
 
 
 def _build_return_note_v2(entry_context: dict | None) -> str:
