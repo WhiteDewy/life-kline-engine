@@ -99,9 +99,14 @@ function transformReport(report: LifeReport | null): {
   const lifePoints: ChartPoint[] = [];
   const domainPoints: DomainPoint[] = [];
 
-  const getScoreAt = (age: number) => {
+  // Sprint 5: 优先使用后端 OHLC，否则退化为 legacy 线性公式
+  const getOHLCAt = (age: number) => {
     const period = periods.find((item) => age >= item.timing.start_age && age < item.timing.end_age);
-    return period ? 50 + period.trend.bonus_coefficient * 40 : 50;
+    if (period?.ohlc) {
+      return period.ohlc;
+    }
+    const score = period ? 50 + period.trend.bonus_coefficient * 40 : 50;
+    return { open: score, high: score + 4.5, low: score - 4.5, close: score };
   };
 
   for (let age = startAge; age < endAge; age++) {
@@ -137,11 +142,13 @@ function transformReport(report: LifeReport | null): {
       }
     }
 
-    const open = clamp(getScoreAt(windowStart));
-    const close = clamp(getScoreAt(windowEnd - 0.0001));
+    const ohlcStart = getOHLCAt(windowStart);
+    const ohlcEnd = getOHLCAt(windowEnd - 0.0001);
     const average = clamp(totalWeight > 0 ? weightedScore / totalWeight : 50);
-    const high = clamp(Math.max(open, close, maxScore) + 4.5);
-    const low = clamp(Math.min(open, close, minScore) - 4.5);
+    const open = clamp(ohlcStart.open);
+    const close = clamp(ohlcEnd.close);
+    const high = clamp(Math.max(ohlcStart.high, ohlcEnd.high, maxScore));
+    const low = clamp(Math.min(ohlcStart.low, ohlcEnd.low, minScore));
 
     lifePoints.push({
       x: `${age}岁`,

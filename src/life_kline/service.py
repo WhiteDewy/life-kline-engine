@@ -1235,9 +1235,47 @@ class LifeKlineService:
                     "action_focus": summary_pack["action_focus"],
                     "insight": summary_pack["insight"],
                     "type": "major",
+                    # Sprint 5: OHLC 四象限（保持旧 domains 不动，双轨过渡）
+                    "ohlc": self._compute_period_ohlc(major_score, sub_score, bonus, major_profile),
                 }
             )
         return data
+
+    # Sprint 5: 尊贵码→数值
+    _DIGNITY_NUMERIC: dict[str, float] = {
+        "domicile": 1.0, "exaltation": 0.8, "peregrine": 0.0,
+        "detriment": -0.7, "fall": -0.9,
+    }
+
+    def _compute_period_ohlc(
+        self,
+        major_score: float,
+        sub_score: float,
+        bonus: float,
+        major_profile: dict,
+    ) -> dict[str, float]:
+        """Sprint 5: 为单个法达周期计算 OHLC 四象限值。
+
+        基于 scoring.py compute_ohlc_breakdown_safe 的思路：
+        - Open: 50 + dignity_numeric * 20（起始状态）
+        - High: Open + |bonus| * 25（周期内能冲到的最高点）
+        - Low: Open - (50 - base_open) * 0.5（周期内的压力下限）
+        - Close: major_score 加权（最终落点，综合所有因素）
+        """
+        dignity_code = str(major_profile.get("dignity", "peregrine"))
+        dignity_num = self._DIGNITY_NUMERIC.get(dignity_code, 0.0)
+        base_open = 50 + dignity_num * 20
+        open_val = base_open + (major_score - 50) * 0.3
+        high_val = open_val + abs(bonus) * 25 + 5
+        low_val = open_val - abs(50 - base_open) * 0.5 - 3
+        close_val = open_val + bonus * 25 + (sub_score - major_score) * 0.15
+
+        return {
+            "open": round(clamp(open_val, 10, 95), 1),
+            "high": round(clamp(high_val, 15, 98), 1),
+            "low": round(clamp(low_val, 5, 90), 1),
+            "close": round(clamp(close_val, 10, 95), 1),
+        }
 
     def _build_domain_scores(
         self,

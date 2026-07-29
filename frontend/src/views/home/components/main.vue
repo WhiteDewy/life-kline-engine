@@ -137,6 +137,7 @@
         @go-history="goHistory"
         @go-profile="goProfile"
         @go-diary="goDiary"
+        @go-kline="goKline"
         @logout="doLogout"
       />
 
@@ -347,6 +348,11 @@ function onTransitChat(payload: { planet: string; detail: string; transit?: any 
 // ═══════════════════════════════════════
 
 function goGarden() { router.push("/spirit-garden"); }
+function goKline() {
+  const rid = homeData.reportId.value;
+  if (rid) router.push(`/reports/${rid}`);
+  else router.push("/my-chart");
+}
 function goChart() { router.push("/my-chart"); }
 function goHistory() { router.push("/history"); }
 function goProfile() { router.push("/profile"); }

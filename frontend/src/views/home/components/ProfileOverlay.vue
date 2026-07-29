@@ -55,6 +55,13 @@
                 <path d="M9 18l6-6-6-6" />
               </svg>
             </button>
+            <button class="pm-item pm-item--kline" @click="$emit('go-kline'); $emit('close')">
+              <span class="pm-item__icon">📈</span>
+              <span class="pm-item__label">人生K线</span>
+              <svg class="pm-item__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </button>
             <button class="pm-item" @click="$emit('go-diary'); $emit('close')">
               <span class="pm-item__icon">📖</span>
               <span class="pm-item__label">星灵日记</span>
@@ -112,6 +119,7 @@ const props = defineProps<{
 defineEmits<{
   close: [];
   "go-garden": [];
+  "go-kline": [];
   "go-history": [];
   "go-onboarding": [];
   "go-profile": [];

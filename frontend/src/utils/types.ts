@@ -104,6 +104,12 @@ export interface KlinePeriod {
     bonus_coefficient: number;
     type: string;
   };
+  ohlc?: {
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+  };
   domains: DomainScores;
   astrology: {
     sign: string;
