@@ -240,14 +240,22 @@ class EphemerisEngine:
                 longitude=sn_lon, latitude=0, speed=0, is_retrograde=True,
             ))
 
-        # 四轴: ASC[0] DSC[1]=ASC+180 MC[2] IC[3]=MC+180
-        from .constants import Sign
-        axis_map = [('ASC', 0), ('DSC', 1), ('MC', 2), ('IC', 3)]
+        # 四轴: ascmc[0]=ASC, ascmc[1]=MC, DSC=ASC+180, IC=MC+180
+        asc_lon = ascmc[0]
+        mc_lon = ascmc[1]
+        dsc_lon = (asc_lon + 180) % 360
+        ic_lon = (mc_lon + 180) % 360
+
+        axis_data = [
+            ('ASC', asc_lon),
+            ('DSC', dsc_lon),
+            ('MC', mc_lon),
+            ('IC', ic_lon),
+        ]
         chart.angles = {}
-        for name, idx in axis_map:
-            axis_lon = ascmc[idx]
+        for name, axis_lon in axis_data:
             axis_sign, axis_deg = self._get_sign_from_longitude(axis_lon)
-            axis_house = self._infer_house_from_cusps(chart_houses, axis_lon) or (idx + 1)
+            axis_house = self._infer_house_from_cusps(chart_houses, axis_lon) or 1
             chart.angles[name] = {
                 'longitude': axis_lon,
                 'sign': axis_sign.value,
