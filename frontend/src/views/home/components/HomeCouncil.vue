@@ -79,17 +79,19 @@
               @click="onSelectPlanet(p)"
             >
               <div class="buddy-avatar">
-                <div class="avatar-ring" :style="{ borderColor: p.color }">
+                <div class="avatar-ring" :style="{ borderColor: p.color, opacity: 0.5 + (p.core_strength ?? 50) / 200 }">
                   <SpiritAvatar :planet="p.planet" :symbol="p.symbol" :color="p.color" :name="p.shortName" :sign="p.sign" :gender="gender" size="lg" />
                 </div>
+                <span v-if="p.isChartRuler" class="buddy-badge buddy-badge--ruler">👑 命主</span>
                 <span v-if="p.isFeatured" class="buddy-badge buddy-badge--today">✨ 今日</span>
-                <span v-else-if="p.planet !== 'SUN'" class="buddy-badge buddy-badge--rest">💤</span>
+                <span v-else-if="p.planet !== 'SUN' && !p.isChartRuler" class="buddy-badge buddy-badge--rest">💤</span>
               </div>
 
               <div class="buddy-info">
                 <div class="buddy-name">{{ p.shortName }}</div>
                 <div class="buddy-archetype">{{ p.archetypeShort }}</div>
                 <div class="buddy-sign">{{ p.signLabel }} · {{ p.dignityLabel || '' }}</div>
+                <div v-if="p.role_tag" class="buddy-role">{{ p.role_tag }}</div>
               </div>
 
               <span v-if="p.healingLabel" class="healing-tag">{{ p.healingLabel }}</span>
@@ -117,9 +119,21 @@
                   <span class="detail-name">{{ detailPlanet.shortName }}</span>
                   <span class="detail-archetype">{{ detailPlanet.archetypeShort }}</span>
                 </div>
-                <div class="detail-meta">{{ detailPlanet.signLabel }} · {{ detailPlanet.dignityLabel || '' }}</div>
+                <div class="detail-meta">{{ detailPlanet.signLabel }} · {{ detailPlanet.dignityLabel || '' }} · {{ detailPlanet.house_label || '' }}</div>
                 <p v-if="detailPlanet.essence" class="detail-essence">「{{ detailPlanet.essence }}」</p>
                 <p v-if="detailPlanet.personality" class="detail-section">{{ detailPlanet.personality }}</p>
+                <div v-if="detailPlanet.role_tag" class="detail-row">
+                  <span class="detail-label">你的角色维度</span>
+                  <span>{{ detailPlanet.role_tag }}</span>
+                </div>
+                <div v-if="detailPlanet.social_mask" class="detail-row">
+                  <span class="detail-label">给人的第一印象</span>
+                  <span>{{ detailPlanet.social_mask }}</span>
+                </div>
+                <div v-if="detailPlanet.stress_response" class="detail-row">
+                  <span class="detail-label">压力下的反应</span>
+                  <span>{{ detailPlanet.stress_response }}</span>
+                </div>
                 <div v-if="detailPlanet.gift_to_user" class="detail-row">
                   <span class="detail-label">给你的礼物</span>
                   <span>{{ detailPlanet.gift_to_user }}</span>
@@ -127,6 +141,10 @@
                 <div v-if="detailPlanet.challenge_to_user" class="detail-row">
                   <span class="detail-label">你的课题</span>
                   <span>{{ detailPlanet.challenge_to_user }}</span>
+                </div>
+                <div v-if="detailPlanet.linked_domains?.length" class="detail-row">
+                  <span class="detail-label">关联领域</span>
+                  <span>{{ detailPlanet.linked_domains.join(' · ') }}</span>
                 </div>
                 <div v-if="detailPlanet.greeting" class="detail-row">
                   <span class="detail-label">TA对你说</span>
@@ -462,6 +480,19 @@ function onChatFromDetail() {
 .buddy-sign {
   font-size: 11px;
   color: #a89880;
+}
+
+.buddy-role {
+  font-size: 10px;
+  color: var(--gold);
+  margin-top: 4px;
+  letter-spacing: 0.04em;
+}
+
+.buddy-badge--ruler {
+  background: rgba(212, 175, 55, 0.18);
+  color: var(--gold);
+  border: 1px solid rgba(212, 175, 55, 0.3);
 }
 
 .healing-tag {

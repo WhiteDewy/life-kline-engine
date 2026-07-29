@@ -169,6 +169,15 @@ export function useHomeData() {
         personality: p.persona?.personality || "",
         gift_to_user: p.persona?.gift_to_user || "",
         challenge_to_user: p.persona?.challenge_to_user || "",
+        // Sprint 3: PlanetCharacterEngine 6 隐藏字段暴露
+        core_strength: p.core_strength ?? 50,
+        role_tag: p.role_tag || "",
+        is_chart_ruler: Boolean(p.is_chart_ruler),
+        linked_domains: p.linked_domains || [],
+        social_mask: p.persona?.social_mask || "",
+        stress_response: p.persona?.stress_response || "",
+        house_label: p.house_label || "",
+        nature: p.persona?.nature || "",
       };
     }).filter(Boolean) as any[];
   });
