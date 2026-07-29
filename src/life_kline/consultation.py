@@ -316,15 +316,22 @@ class ConsultationV2:
     # ── 辅助方法 ──────────────────────────────────────────
 
     def _get_opening_prompt(self) -> str:
-        """获取开场白"""
+        """获取开场白（仅 LLM 不可用时作为 fallback）。"""
         planet_name = self._get_planet_name()
-        openings = [
-            f"我是你的{planet_name}灵。今天想聊些什么？",
-            f"你今天来找我，想聊什么？",
-            f"我在听。你想说什么都可以。",
-        ]
-        import random
-        return random.choice(openings)
+        # 尝试从 persona 取 greeting_style 作为语气参考
+        tone = ""
+        try:
+            planet_chars = self.report_data.get("planet_characters", {}).get("planet_characters", {})
+            profile = planet_chars.get(self.planet, {})
+            persona = profile.get("persona", {})
+            greeting = persona.get("personalized_greeting", "") or persona.get("greeting_style", "")
+            if greeting:
+                # 用 persona greeting 的前半句作为个性化开场
+                short = greeting[:80].rstrip("，。、") + "。想聊什么都可以，我听着。"
+                return short
+        except Exception:
+            pass
+        return f"我是你的{planet_name}灵。想聊什么都可以，我听着。"
 
     def _get_planet_name(self) -> str:
         """获取行星中文名"""

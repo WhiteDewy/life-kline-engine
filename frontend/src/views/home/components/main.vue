@@ -306,7 +306,7 @@ function closeAllPanels() {
 function openChatPage(planet?: string, opts?: { source?: string; question?: string; detail?: string }) {
   const target = planet || homeData.todayStarSpirit.value?.planet || "SUN";
   const query: Record<string, string> = {
-    source: opts?.source || (planet ? "council" : "today"),
+    source: opts?.source || (planet ? "council" : "today_star_spirit"),
     question: opts?.question ?? homeData.dailyQuestion.value?.question ?? "",
   };
   if (opts?.detail) query.detail = opts.detail;

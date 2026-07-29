@@ -319,42 +319,18 @@ class PlanetCharacterEngine:
     # ── 个性化开场白 ──────────────────────────────────────
 
     def _build_greeting(self, profile: PlanetCharacterProfile) -> str:
-        """三层融合开场白：行星本性 + 星座风格 + 宫位语境"""
+        """简短开场白（1句），仅用行星身份 + 星座风格。"""
         p = profile.persona
         sign = self._planet_signs.get(profile.planet)
-        house = self._planet_houses.get(profile.planet)
-        dignity = self._planet_dignities.get(profile.planet, "peregrine")
 
-        parts: list[str] = []
-
-        # 第一层：行星自介
-        parts.append(f"我是你的{p.name_zh}——{p.archetype_zh}。{p.essence}")
-
-        # 第二层：星座风格
+        base = f"我是你的{p.name_zh}灵"
         if sign and sign in SIGN_PERSONAS:
             sp = SIGN_PERSONAS[sign]
-            element_word = {"火": "热烈地", "土": "踏实地", "风": "灵活地", "水": "敏感地"}.get(sp.element, "")
-            parts.append(f"我在{sp.name}，所以我的表达方式是{element_word}、{sp.modality}的——{sp.voice_tone[:60]}。")
+            element_word = {"火": "热烈", "土": "务实", "风": "灵动", "水": "细腻"}.get(sp.element, "")
+            archetype_short = p.archetype_zh.split("/")[0].strip() if p.archetype_zh else ""
+            base += f"——{element_word}的{sp.name}{archetype_short}"
 
-        # 第三层：宫位语境
-        if house:
-            hc = self.get_house_context(house)
-            title = hc.get("title", f"第{house}宫")
-            parts.append(f"我在你的第{house}宫「{title}」运作——这是我在你生命中主要发挥影响的领域。")
-
-        # 尊贵注脚
-        dignity_notes = {
-            "domicile": "在这里我很自在——这是我最舒服的位置，你可以放心依靠我。",
-            "exaltation": "这个位置让我发挥得特别好——你在这方面有超出常人的天赋。",
-            "peregrine": "在这里我没有特别的加持——但也没有阻力。一切看你后天怎么用我。",
-            "detriment": "老实说，这个位置让我不太舒服。但这不代表你做不到——只是需要更努力、更有意识。",
-            "fall": "这是我最难发挥的位置。但好消息是——你最难的功课，往往也是你成长最多的地方。",
-        }
-        note = dignity_notes.get(dignity, "")
-        if note:
-            parts.append(note)
-
-        return "".join(parts)
+        return base + "。想聊什么都可以，我听着。"
 
     # ── 公共方法 ──────────────────────────────────────────
 

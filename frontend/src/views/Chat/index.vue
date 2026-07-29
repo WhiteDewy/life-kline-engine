@@ -239,13 +239,13 @@ const entryContext = computed(() => {
   return {
     source,
     daily_question: dailyQuestion,
-    from_daily_question: source === "today" && !!dailyQuestion,
+    from_daily_question: (source === "today" || source === "today_star_spirit") && !!dailyQuestion,
     transit_event: transitDetail || undefined,
   };
 });
 
-// Sprint 6: SSE 流式灰度开关（LIFE_KLINE_LLM_STREAM=1）
-const ENABLE_STREAM = import.meta.env.VITE_ENABLE_LLM_STREAM === "1";
+// Sprint 6: SSE 流式默认开启；设 VITE_DISABLE_LLM_STREAM=1 可关闭
+const ENABLE_STREAM = import.meta.env.VITE_DISABLE_LLM_STREAM !== "1";
 
 async function sendMessage() {
   const text = inputText.value.trim();

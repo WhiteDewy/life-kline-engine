@@ -406,24 +406,20 @@ def build_spirit_system_prompt(report_data: dict, planet: str, topic: str = "per
             if daily_q:
                 preamble = (
                     f"⚠️ 你是今天的引路星灵——用户今天第一个来见的就是你，"
-                    f"而且ta刚刚看了每日一问：{daily_q}\n"
-                    f"用温暖、欢迎的语气开启今天的对话，像一个今天的守护者。"
-                    f"可以自然地承接那个问题。\n\n"
+                    f"ta刚才的每日一问是：{daily_q}\n"
+                    f"用'今天我是你的引路人'的身份开场，温暖但简洁（≤2句）。"
+                    f"自然地承接每日一问。\n\n"
                 )
             else:
                 preamble = (
                     "⚠️ 你是今天的引路星灵——用户今天第一个来见的就是你。"
-                    "用温暖、欢迎的语气开启今天的对话，像一个今天的守护者。\n\n"
+                    "用'今天我是你的引路人'的身份简短开场（≤2句）。\n\n"
                 )
-        elif source == "today_star_spirit":
-            preamble = (
-                "⚠️ 你是今天的引路星灵——用户今天第一个来见的就是你。"
-                "用温暖、欢迎的语气开启今天的对话，像一个今天的守护者。\n\n"
-            )
         elif source == "council":
             preamble = (
-                "⚠️ 用户刚刚参与了星灵议会，在众多星灵中选择了和你继续聊。"
-                "先回应ta的这个选择——ta在你身上看到了什么。\n\n"
+                "⚠️ 用户刚从星灵议会中选择了你——在十位星灵里ta挑了和你聊。"
+                "这意味着ta此刻需要你独有的特质。"
+                "开场先回应ta的选择（1句），再切换到倾听模式。\n\n"
             )
         elif source == "diary_revisit":
             preamble = (

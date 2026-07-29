@@ -2466,25 +2466,18 @@ async def spirit_chat_v2(report_id: str, body: SpiritChatV2Input, request: Reque
         except Exception:
             pass
 
-    # ── 第 2 层：AI 增强（使用 V2 System Prompt）──
+    # ── 第 2 层：AI 增强 —— LLM 永远在线（占星咨询体验）──
+    # ConsultationV2 output = fallback only; AI 未配置/超额时才用
     client = LLMClient()
     final_response = consultation_result["response"]
     source = "consultation_v2"
     ai_access_info = None
 
-    # 决定是否需要 AI 增强
-    # 如果用户明确需要深入分析，或者 ConsultationV2 说需要引入星盘，则调用 AI
-    need_ai_enhance = (
-        consultation_result["stage"] in ("reflect", "understand")
-        and client.is_configured
-    )
-
-    if need_ai_enhance:
+    if client.is_configured:
         ai_access = access_checker.check_ai_chat()
         ai_access_info = ai_access.to_dict()
         if ai_access.allowed:
             try:
-                # 构建 V2 System Prompt
                 system_prompt = build_spirit_system_prompt_v2(
                     report_data,
                     body.planet,
@@ -2493,17 +2486,22 @@ async def spirit_chat_v2(report_id: str, body: SpiritChatV2Input, request: Reque
                     memory_context=memory_context,
                 )
 
-                # 注入 ConsultationV2 的分析作为上下文
-                consultation_hint = f"""[当前对话阶段: {consultation_result['stage']}]
-用户说: {body.message}
-对话状态: {consultation_result['dialogue_state'].user_expressed[:100] if consultation_result['dialogue_state'].user_expressed else '(首次对话)'}
-阶段目标: {consultation_result['stage']}
+                # 阶段提示（不门控），LLM 自主决定如何回应
+                stage = consultation_result["stage"]
+                stage_hints = {
+                    "listen": "用户刚开始和你对话。先倾听、承接情绪，不要急着分析。——你是ta的占星师，先建立信任。",
+                    "explore": "你正在了解用户。可以问一个温和的探索性问题，帮ta说清楚自己的感受。——像咨询师一样，提问比给答案重要。",
+                    "reflect": "现在可以自然地引入星盘视角——用你的星座和宫位，把用户正在经历的事翻译成ta能感受到的语言。",
+                    "understand": "帮用户看到模式——ta反复遇到的课题，在你的星盘语言里对应着什么。让ta感到被理解。",
+                }
+                stage_hint = stage_hints.get(stage, "")
 
-请基于以上对话阶段，用温暖、专业的方式回复。
-保持咨询师的态度：先倾听，再回应，适时引入星盘视角。
-"""
-
-                full_prompt = consultation_hint + "\n\n" + system_prompt
+                full_prompt = (
+                    f"{system_prompt}\n\n"
+                    f"## 当前对话\n"
+                    f"阶段：{stage_hint}\n"
+                    f"用户表达了：{consultation_result['dialogue_state'].user_expressed[:200] or '(尚在倾听)'}"
+                )
 
                 ai_response = await client.chat_async(
                     system_prompt=full_prompt,
@@ -2513,10 +2511,8 @@ async def spirit_chat_v2(report_id: str, body: SpiritChatV2Input, request: Reque
                 if ai_response:
                     final_response = ai_response
                     source = "consultation_v2_ai"
-
             except Exception as e:
                 print(f"[spirit_chat_v2] AI enhancement failed: {e}")
-                # 降级到 ConsultationV2 输出
 
     # ── 更新 Memory（成长追踪）──
     try:
