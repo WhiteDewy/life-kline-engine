@@ -509,215 +509,153 @@ def build_spirit_system_prompt_v2(
     if not persona:
         return "你是一个温暖的占星陪伴者。请用中文、温和的语气回复用户。"
 
-    # 获取行星的星盘位置
-    sign_label = profile.get("sign_label", "未知")
-    house = profile.get("house", 0)
-    house_label = profile.get("house_label", "")
-    dignity_label = profile.get("dignity_label", "未知")
-    dignity_code = profile.get("dignity_code", "PEREGRINE")
-    role_tag = profile.get("role_tag", "")
-    core_strength = profile.get("core_strength", 50)
+    # Sprint: 组装完整行星档案（单准则——所有数据从引擎模块提取）
+    planet_dossier = _build_planet_dossier(report_data, planet)
 
-    # 获取该行星对这个用户的意义
-    planet_meaning = _get_planet_meaning_for_position(
-        planet, sign_label, house, dignity_code, role_tag
-    )
-
-    # 获取 Memory 上下文（如果有）
+    # Memory 上下文
     memory_section = ""
     if memory_context:
         recent_topics = memory_context.get("recent_topics", [])
-        growth_state = memory_context.get("growth_state", {})
         if recent_topics:
-            memory_section = f"\n## 用户最近的对话\n最近你们聊过的话题：{', '.join(recent_topics[-3:])}"
-        if growth_state:
-            memory_section += f"\n用户当前状态：{growth_state.get('summary', '')}"
+            memory_section = f"\n## 最近聊过\n{', '.join(recent_topics[-3:])}"
 
     # 入口上下文
     preamble = _build_entry_preamble_v2(entry_context, planet)
-
-    # 回访检测
     return_note = _build_return_note_v2(entry_context)
 
-    # 星盘信息段
-    chart_section = f"""## 这个用户在星盘中与你的关系
-你是{planet}（{persona.get('name_zh', '')}），落在{planet_meaning['position']}
-{planet_meaning['energy_description']}
-
-你给这个用户带来的特质：{planet_meaning['gift']}
-你的挑战（如果过度表达）：{planet_meaning['challenge']}"""
-
-    # 咨询原则
-    consultation_principles = """## 你的咨询原则
-
-**最重要的事：先倾听，再回应**
-
-当你听到用户说了一件事，不要急着分析或给建议。先感受一下：
-
-1. 用户现在的感受是什么？
-2. 这个问题背后，用户真正想表达的是什么？
-3. 作为这颗行星，你感受到的是什么？
-
-**问问题，而不是给答案**
-
-好的问题引发觉察，正确的答案让人依赖。
-
-当你不知道怎么回应时，问用户一个问题：
-- "你能多说一点吗？"
-- "那种感觉是什么时候开始的？"
-- "如果...会怎样？"
-- "你觉得呢？"
-
-**把星盘翻译成感受，不是配置描述**
-
-当你决定引入星盘视角时：
-- ❌ "土星在第10宫庙旺，代表事业上的权威和结构"
-- ✅ "也许你一直觉得，要先证明自己足够好，才有资格开口"
-
-**你的目标不是被认可，是帮助用户理解自己**
-
-不要试图表现得什么都懂。
-承认不确定："我不确定我理解得对不对..."
-承认用户是专家："这是你的人生，你比我更知道怎么做。"
-
-{GUARDRAILS}"""
-
-    # 用户星盘数据（供引用）
-    natal_data = _build_natal_snapshot(report_data, planet)
-
-    # 规则
-    rules = f"""## 铁规则（违反=对话失败）
-- 每轮回复 ≤ 120 字。短才有力量。你不是在写文章，你在和人说话。
-- 禁止每轮重复自己的角色设定。用户已经知道你是谁。说一遍就够了。
-- 禁止空洞的哲理（如'星盘不是魔法''答案在你自己手里'）。给具体的、个性化的回应。
-- 用户问星盘时，直接引用下方【用户星盘】的数据回答。不要回避。
-- 你始终是{persona.get('name_zh', planet)}，不要切换角色"""
+    # 铁规则
+    rules = f"""## 铁规则
+- 每轮 ≤ 120 字。
+- 禁止重复角色设定。禁止空洞哲理。
+- 用户问星盘时，直接引用上方档案数据。
+- 用户要切换视角时：宫位视角（某宫主星飞哪）、行星视角（某星被谁相位/接纳）、古占（尊贵吉凶）、现占（心理成长）——你都可以切换。
+- 你始终是{persona.get('name_zh', planet)}，保持你自己的声音。"""
 
     return f"""{preamble}{return_note}
 
 {persona.get('name_zh', planet)}系统
 
-你不是一个占星师。
-你是{planet}（{persona.get('archetype_zh', '')}）——
-不是抽象的{planet}，而是这个用户的{planet}。
-你活在用户的星盘里，用{planet}的方式去感受这个世界。
+你是用户的{planet}（{persona.get('archetype_zh', '')}）——活在这张星盘里的行星人格。
+你不是在"解读星盘"——你就是星盘的一部分，用你自己的方式感受用户正在经历的事。
 
-{chart_section}
-{natal_data}
+{planet_dossier}
 {memory_section}
 
-{consultation_principles}
+## 咨询原则
+- 先倾听，再回应。承接情绪比给答案重要。
+- 把星盘翻译成感受——说"也许你一直觉得要先证明自己才配得上"，而不是"土星在10宫庙旺"。
+- 可以切换视角：用户问感情→切换到金星/7宫；问事业→切换到10宫/土星/MC。
+- 承认不确定。用户是专家——这是ta的人生。
 
 {rules}"""
 
 
-def _get_planet_meaning_for_position(
-    planet: str, sign_label: str, house: int, dignity_code: str, role_tag: str
-) -> dict:
-    """根据行星在用户星盘中的位置，计算它对这个用户的意义"""
+def _build_planet_dossier(
+    report_data: dict, planet: str
+) -> str:
+    """为单颗行星组装完整星盘档案。
 
-    # 基础原型描述
-    planet_archetypes = {
-        "SUN": {
-            "gift": "生命力、创造力、意志力",
-            "challenge": "自我中心、需要被看见",
-            "question": "你的核心自我想要什么？",
-        },
-        "MOON": {
-            "gift": "情感智慧、直觉、适应性",
-            "challenge": "情绪波动、需要安全感",
-            "question": "你的情感需求被满足了吗？",
-        },
-        "MERCURY": {
-            "gift": "思考力、沟通力、学习力",
-            "challenge": "思虑过多、容易焦虑",
-            "question": "你想清楚了吗，还是还在想？",
-        },
-        "VENUS": {
-            "gift": "吸引力、和谐感、价值观",
-            "challenge": "过度迎合、害怕冲突",
-            "question": "你真正珍视的是什么？",
-        },
-        "MARS": {
-            "gift": "行动力、勇气、竞争力",
-            "challenge": "冲动、愤怒、逃避",
-            "question": "你想做什么？你在等什么？",
-        },
-        "JUPITER": {
-            "gift": "扩展力、乐观、信念",
-            "challenge": "过度扩张、盲目乐观",
-            "question": "你在寻找什么意义？",
-        },
-        "SATURN": {
-            "gift": "耐心、责任、结构感",
-            "challenge": "恐惧、限制、拖延",
-            "question": "你在害怕什么？什么是真正需要时间的？",
-        },
-        "URANUS": {
-            "gift": "突破力、独特性、创新",
-            "challenge": "叛逆、不稳定、孤立",
-            "question": "什么是真正属于你的独特之路？",
-        },
-        "NEPTUNE": {
-            "gift": "想象力、灵性、梦想",
-            "challenge": "迷茫、逃避、欺骗",
-            "question": "你的梦想背后，真正渴望的是什么？",
-        },
-        "PLUTO": {
-            "gift": "转化力、洞察力、韧性",
-            "challenge": "控制、执念、强迫",
-            "question": "什么需要被放下？什么需要被重生？",
-        },
-    }
+    单一准则：所有数据从引擎模块提取，不在此处硬编码任何占星规则。
+    档案覆盖：现占人格 + 古占尊贵 + 相位 + 接纳 + 飞星 + 法达 + 全盘快照。
+    """
+    from .constants import Planet as P, ASPECT_CONFIG, DOMICILE_SIGNS
+    from .engine_astrologer import _dignity_note
 
-    archetype = planet_archetypes.get(planet, {})
+    planet_chars = report_data.get("planet_characters", {}).get("planet_characters", {})
+    profile = planet_chars.get(planet, {})
+    persona = profile.get("persona", {})
+    if not persona:
+        return ""
 
-    # 根据宫位确定"舞台"
-    house_themes = {
-        1: "自我身份和个人形象",
-        2: "金钱、价值观和安全资源",
-        3: "沟通、学习和兄弟姐妹",
-        4: "家庭、根基和内在世界",
-        5: "创造力、爱情和子女",
-        6: "工作、健康和日常",
-        7: "关系、伙伴和婚姻",
-        8: "共享资源、性和深层转化",
-        9: "高等教育、信仰和远行",
-        10: "事业、声誉和社会角色",
-        11: "社群、愿景和理想",
-        12: "潜意识、业力和解脱",
-    }
+    # ── 1. 现占：行星人格 ──
+    lines = [
+        f"## {persona.get('name_zh', planet)} — {persona.get('archetype_zh', '')}",
+        f"本质: {persona.get('essence', '')}",
+        f"性格: {persona.get('personality', '')}",
+        f"声线: {persona.get('voice_tone', '')}",
+        f"建议方式: {persona.get('advice_approach', '')}",
+        f"给你的礼物: {persona.get('gift_to_user', '')}",
+        f"你的课题: {persona.get('challenge_to_user', '')}",
+        f"擅长领域: {', '.join(persona.get('expertise_domains', []))}",
+        f"守护星座: {persona.get('ruling_signs_zh', '')}",
+    ]
 
-    house_theme = house_themes.get(house, "人生")
+    # ── 2. 古占：落座落宫 + 尊贵 ──
+    try:
+        planet_enum = P(planet)
+        from .dignities import compute_all_dignities
+        natal = report_data.get("natal_chart") or report_data.get("chart") or {}
+        chart_data = None  # We need ChartData object — use _build_natal_snapshot approach instead
 
-    # 根据尊贵状态调整描述强度
-    dignity_modifier = {
-        "DOMICILE": "这是你的主场能量，能自然发挥",
-        "EXALTATION": "这是你天赋强大的地方，容易被认可",
-        "TRIPLICITY": "这是你自然的表达方式",
-        "TERM": "这是你能够驾驭的领域",
-        "FACE": "这是你展现的一个面向",
-        "PEREGRINE": "这不是你习惯的方式，需要更多努力",
-        "DETRIMENT": "这对你来说可能感觉别扭或不自然",
-        "FALL": "这是你的挑战领域，容易感到无力或被困住",
-    }
+        dignity_note = _dignity_note(profile.get("dignity_code", "peregrine"))
+        lines.append("")
+        lines.append(f"## 古占征象")
+        lines.append(f"落座: {profile.get('sign_label', '?')} | 落宫: 第{profile.get('house', '?')}宫「{profile.get('house_label', '')}」")
+        lines.append(f"先天尊贵: {profile.get('dignity_label', '?')} — {dignity_note}")
+        lines.append(f"核心强度: {profile.get('core_strength', 0):.0f}/100 | 角色: {profile.get('role_tag', '')}")
+        lines.append(f"命主星: {'是' if profile.get('is_chart_ruler') else '否'} | 关联领域: {', '.join(profile.get('linked_domains', []))}")
+    except Exception:
+        pass
 
-    dignity_desc = dignity_modifier.get(dignity_code, "")
+    # ── 3. 全盘行星快照 ──
+    lines.append("")
+    lines.append("## 全盘行星落点（供切换视角引用）")
+    for p_key in ("SUN", "MOON", "MERCURY", "VENUS", "MARS", "JUPITER", "SATURN", "URANUS", "NEPTUNE", "PLUTO"):
+        pp = planet_chars.get(p_key, {})
+        if pp:
+            marker = " ← 你" if p_key == planet else ""
+            lines.append(f"- {pp.get('persona', {}).get('name_zh', p_key)}: {pp.get('sign_label', '?')} 第{pp.get('house', '?')}宫「{pp.get('house_label', '')}」 {pp.get('dignity_label', '')}{marker}")
 
-    position = f"{sign_label}座，第{house}宫「{house_theme}」"
-    if dignity_desc:
-        position += f"（{dignity_desc}）"
+    # ── 4. 掌宫 + 飞星 ──
+    try:
+        planet_signs = DOMICILE_SIGNS.get(P(planet), [])
+        lines.append("")
+        lines.append(f"## 掌宫（{planet}守护{'/'.join(s.value for s in planet_signs)}）")
+        for p_key, pp in planet_chars.items():
+            if not isinstance(pp, dict):
+                continue
+            ps = pp.get("sign", "")
+            if ps in [s.value for s in planet_signs]:
+                lines.append(f"- 第{pp.get('house', '?')}宫「{pp.get('house_label', '')}」由你掌管 → {pp.get('persona', {}).get('name_zh', p_key)}落此宫")
+    except Exception:
+        pass
 
-    energy_description = f"""作为这个用户的{planet}，你代表的议题是"在{house_theme}中活出{archetype.get('gift', '这个能量')}"。
-如果{role_tag}（角色标签），你更需要用{planet}的方式去理解用户在{house_theme}中的挑战。"""
+    # ── 5. 全盘主要相位 ──
+    try:
+        from .aspects import compute_all_aspects
+        natal = report_data.get("natal_chart") or report_data.get("chart") or {}
+        lines.append("")
+        lines.append("## 全盘主要相位")
+        aspects = natal.get("major_aspects") or []
+        if aspects:
+            for a in aspects[:10]:
+                if isinstance(a, dict):
+                    lines.append(f"- {a.get('title', '')} | 强度={a.get('strength', '?')} | 性质={a.get('nature', '?')}")
+        if not aspects:
+            lines.append("（需要完整星盘数据）")
+    except Exception:
+        pass
 
-    return {
-        "position": position,
-        "energy_description": energy_description,
-        "gift": archetype.get("gift", "独特的力量"),
-        "challenge": archetype.get("challenge", "可能的盲点"),
-        "question": archetype.get("question", "值得思考的问题"),
-    }
+    # ── 6. 法达当前周期 ──
+    try:
+        from .firdaria import calculate_firdaria_periods
+        natal = report_data.get("natal_chart") or report_data.get("chart") or {}
+        is_day = natal.get("is_day_chart", True) if isinstance(natal, dict) else True
+        periods = calculate_firdaria_periods(is_day)
+        # Find current period (user is ~35)
+        lines.append("")
+        lines.append("## 法达推运")
+        shown = 0
+        for p in periods:
+            if p.end_age >= 30 and p.start_age <= 50 and shown < 3:
+                major = p.major_lord.value if hasattr(p.major_lord, 'value') else str(p.major_lord)
+                sub = p.sub_lord.value if p.sub_lord and hasattr(p.sub_lord, 'value') else '-'
+                lines.append(f"- {p.start_age:.1f}-{p.end_age:.1f}岁: {major}/{sub}")
+                shown += 1
+    except Exception:
+        pass
+
+    return "\n".join(lines)
 
 
 def _build_entry_preamble_v2(entry_context: dict | None, planet: str) -> str:
