@@ -191,16 +191,16 @@ ASPECT_CONFIG: Dict[AspectType, Dict[str, float]] = {
 }
 
 PLANET_ORBS: Dict[Planet, float] = {
-    Planet.SUN: 8.0,
-    Planet.MOON: 7.0,
-    Planet.MERCURY: 5.5,
-    Planet.VENUS: 5.5,
-    Planet.MARS: 6.0,
-    Planet.JUPITER: 6.0,
-    Planet.SATURN: 6.0,
-    Planet.URANUS: 4.0,
-    Planet.NEPTUNE: 4.0,
-    Planet.PLUTO: 4.0,
+    Planet.SUN: 15.0,
+    Planet.MOON: 12.0,
+    Planet.MERCURY: 7.0,
+    Planet.VENUS: 7.0,
+    Planet.MARS: 8.0,
+    Planet.JUPITER: 9.0,
+    Planet.SATURN: 9.0,
+    Planet.URANUS: 5.0,
+    Planet.NEPTUNE: 5.0,
+    Planet.PLUTO: 5.0,
     Planet.NORTH_NODE: 3.0,
     Planet.SOUTH_NODE: 3.0,
 }

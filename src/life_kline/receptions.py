@@ -133,6 +133,35 @@ def check_reception_detail(
     
     # 暂时省略三分、界、面的详细检测，只考虑庙宫和擢升接纳
     
+    # 4. 三分/界/面: 任中两个 = 构成接纳
+    from .dignities import is_any_triplicity_lord, get_term_lord, get_face_lord
+
+    minor_hits = 0
+    minor_types = []
+
+    if is_any_triplicity_lord(planet1, sign2):
+        minor_hits += 1
+        minor_types.append('TRIPLICITY')
+
+    degree2 = info2.degree if hasattr(info2, 'degree') else 0
+    if get_term_lord(sign2, degree2) == planet1:
+        minor_hits += 1
+        minor_types.append('TERM')
+
+    if get_face_lord(sign2, degree2) == planet1:
+        minor_hits += 1
+        minor_types.append('FACE')
+
+    if minor_hits >= 2:
+        return {
+            'type': ReceptionType.TRIPLICITY,
+            'strength': 0.6,
+            'description': f"{planet1.value}接纳{planet2.value}({'+'.join(minor_types)})",
+            'planets': (planet1.value, planet2.value),
+            'signs': (sign1.value, sign2.value),
+            'minor_types': minor_types,
+        }
+
     return {'type': ReceptionType.NONE, 'strength': 0.0}
 
 
