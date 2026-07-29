@@ -728,6 +728,7 @@ def _compute_aspect_reception_bonus(planet: Planet, chart_data) -> float:
         HARMONIC = {AspectType.CONJUNCTION, AspectType.TRINE, AspectType.SEXTILE}
         TENSE = {AspectType.OPPOSITION, AspectType.SQUARE}
 
+        # 相位 ±3/条
         aspects = compute_all_aspects(chart_data)
         for a in aspects:
             if not isinstance(a, dict):
@@ -742,20 +743,32 @@ def _compute_aspect_reception_bonus(planet: Planet, chart_data) -> float:
                 continue
             asp_type = a.get("aspect_type")
             if other in BENEFICS and asp_type in HARMONIC:
-                bonus += 0.5
-                print(f"调试: {planet.value}与吉星{other.value}和谐相位 +0.5分")
+                bonus += 3.0
+                print(f"调试: {planet.value}与吉星{other.value}和谐相位 +3.0分")
             elif other in MALEFICS and asp_type in TENSE:
-                bonus -= 0.5
-                print(f"调试: {planet.value}与凶星{other.value}紧张相位 -0.5分")
+                bonus -= 3.0
+                print(f"调试: {planet.value}与凶星{other.value}紧张相位 -3.0分")
 
-        receptions = compute_all_receptions(chart_data)
-        if isinstance(receptions, dict):
-            mutuals = receptions.get("mutuals", [])
-            for m in mutuals:
-                line = m.get("line", "") if isinstance(m, dict) else str(m)
-                if planet.value in line:
-                    bonus += 1.0
-                    print(f"调试: {planet.value}参与互容 +1.0分")
+        # 互容 +4/组, 接纳 +4/条（去重：互容只算一次）
+        rec_matrix = compute_all_receptions(chart_data)
+        counted_mutual: set = set()
+        if isinstance(rec_matrix, dict):
+            for p1, inner in rec_matrix.items():
+                if not isinstance(inner, dict):
+                    continue
+                for p2, score in inner.items():
+                    if p2 != planet or score <= 0:
+                        continue
+                    # p1 receives planet
+                    reverse = rec_matrix.get(planet, {}).get(p1, 0)
+                    pair_key = tuple(sorted([planet.value, p1.value]))
+                    if reverse > 0 and pair_key not in counted_mutual:
+                        bonus += 4.0
+                        counted_mutual.add(pair_key)
+                        print(f"调试: {planet.value}与{p1.value}互容 +4.0分")
+                    elif reverse <= 0:
+                        bonus += 4.0
+                        print(f"调试: {planet.value}被{p1.value}接纳 +4.0分")
     except Exception:
         pass
     return bonus
