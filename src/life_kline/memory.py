@@ -66,7 +66,8 @@ class MemoryManager:
     def __init__(self, report_id: str):
         self.report_id = report_id
         self._theme_states: dict[str, ThemeState] = {}
-        self._recent_topics: list[str] = []
+        self._recent_topics: list[str] = []          # 向后兼容：聚合所有 planet 的 topics
+        self._planet_topics: dict[str, list[str]] = {}  # Sprint 1: per-planet 隔离
         self._milestones: list[dict] = []
         self._loaded = False
 
@@ -83,7 +84,7 @@ class MemoryManager:
         self._load_from_db()
 
     def _load_from_db(self) -> None:
-        """从 dao 加载对话历史和里程碑，构建 recent_topics。"""
+        """从 dao 加载对话历史和里程碑，构建 recent_topics + per-planet topics。"""
         try:
             from ..backend.dao import (
                 list_growth_conversations,
@@ -94,13 +95,20 @@ class MemoryManager:
 
             self._milestones = milestones
 
-            # 从对话中提取最近话题
+            # 从对话中提取最近话题（全局 + 按 planet 隔离）
             topics: list[str] = []
             for c in convos:
                 topic = c.get("topic", "").strip()
+                sign = c.get("sign", "").strip()
                 if topic and topic not in topics:
                     topics.append(topic)
-            self._recent_topics = topics[-10:]  # 保留最近 10 个
+                # Sprint 1: per-planet 话题
+                if sign and topic:
+                    if sign not in self._planet_topics:
+                        self._planet_topics[sign] = []
+                    if topic not in self._planet_topics[sign]:
+                        self._planet_topics[sign].append(topic)
+            self._recent_topics = topics[-10:]
 
         except Exception:
             self._recent_topics = []
@@ -198,12 +206,18 @@ class MemoryManager:
         except Exception:
             pass
 
-    def add_topic(self, topic: str) -> None:
-        """记录一个新话题到记忆。"""
+    def add_topic(self, topic: str, planet: str = "") -> None:
+        """记录一个新话题到记忆（支持 per-planet 隔离）。"""
         self._ensure_loaded()
         if topic and topic not in self._recent_topics:
             self._recent_topics.append(topic)
             self._recent_topics = self._recent_topics[-20:]
+        # Sprint 1: per-planet topics
+        if planet and topic:
+            if planet not in self._planet_topics:
+                self._planet_topics[planet] = []
+            if topic not in self._planet_topics[planet]:
+                self._planet_topics[planet].append(topic)
 
     def add_conversation(
         self,
@@ -226,7 +240,7 @@ class MemoryManager:
                 character_response=character_response,
                 emotional_context=emotional_context,
             )
-            self.add_topic(topic)
+            self.add_topic(topic, planet=sign)
         except Exception:
             pass
 

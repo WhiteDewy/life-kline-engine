@@ -1368,3 +1368,87 @@ def list_settings() -> list[dict]:
     ).fetchall()
     db.close()
     return _rows_to_dicts(rows)
+
+
+# ──────────── 对话上下文（Sprint 1 — 替代 engine_astrologer._conversations）─
+
+def get_dialogue_context(report_id: str, planet: str) -> dict:
+    """获取 report_id+planet 的对话上下文，不存在时返回初始默认值。"""
+    db = get_db()
+    row = db.execute(
+        "SELECT * FROM dialogue_context WHERE report_id=? AND planet=?",
+        (report_id, planet),
+    ).fetchone()
+    db.close()
+    if row:
+        d = dict(row)
+        for json_field in ("active_domains", "readings_given", "user_expressed_history"):
+            try:
+                d[json_field] = json.loads(d.get(json_field) or "[]")
+            except Exception:
+                d[json_field] = []
+        return d
+    return {
+        "report_id": report_id,
+        "planet": planet,
+        "turn_count": 0,
+        "depth_level": 0,
+        "active_domains": [],
+        "emotional_state": "",
+        "readings_given": [],
+        "user_expressed_history": [],
+        "updated_at": _now(),
+    }
+
+
+def upsert_dialogue_context(report_id: str, planet: str, **fields) -> dict:
+    """按需更新 report_id+planet 的对话上下文字段。"""
+    db = get_db()
+    existing = db.execute(
+        "SELECT report_id, planet FROM dialogue_context WHERE report_id=? AND planet=?",
+        (report_id, planet),
+    ).fetchone()
+    if not existing:
+        active_domains_json = json.dumps(fields.get("active_domains", []), ensure_ascii=False)
+        readings_given_json = json.dumps(fields.get("readings_given", []), ensure_ascii=False)
+        user_expressed_json = json.dumps(fields.get("user_expressed_history", []), ensure_ascii=False)
+        db.execute(
+            """
+            INSERT INTO dialogue_context
+            (report_id, planet, turn_count, depth_level, active_domains,
+             emotional_state, readings_given, user_expressed_history, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                report_id, planet,
+                int(fields.get("turn_count", 0)),
+                int(fields.get("depth_level", 0)),
+                active_domains_json,
+                fields.get("emotional_state", ""),
+                readings_given_json,
+                user_expressed_json,
+                _now(),
+            ),
+        )
+    else:
+        sets = []
+        values = []
+        for col in ("turn_count", "depth_level", "emotional_state"):
+            if col in fields:
+                sets.append(f"{col}=?")
+                values.append(fields[col] if col == "emotional_state" else int(fields[col]))
+        for json_col in ("active_domains", "readings_given", "user_expressed_history"):
+            if json_col in fields:
+                sets.append(f"{json_col}=?")
+                values.append(json.dumps(fields[json_col], ensure_ascii=False))
+        if sets:
+            sets.append("updated_at=?")
+            values.append(_now())
+            values.extend([report_id, planet])
+            db.execute(
+                f"UPDATE dialogue_context SET {', '.join(sets)} WHERE report_id=? AND planet=?",
+                values,
+            )
+    db.commit()
+    db.close()
+    return get_dialogue_context(report_id, planet)

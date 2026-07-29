@@ -906,6 +906,7 @@ class EngineAstrologer:
         self.router = IntentRouter()
         self.reader = ChartReader(report_data)
         self.renderer = VoiceRenderer()
+        # Sprint 1: _conversations 保留为 DAO 不可用时的降级 fallback
         self._conversations: dict[str, ConversationContext] = {}
 
     def _context_key(self, report_id: str, planet: str) -> str:
@@ -945,12 +946,25 @@ class EngineAstrologer:
                 crisis=crisis.to_dict(),
             )
 
-        # 1. 获取或创建对话上下文
+        # 1. 获取或创建对话上下文（Sprint 1: DAO 优先，内存降级）
         key = self._context_key(report_id, planet)
-        ctx = self._conversations.get(key)
-        if ctx is None:
-            ctx = ConversationContext(planet=planet)
-            self._conversations[key] = ctx
+        ctx = None
+        try:
+            from backend.dao import get_dialogue_context as _dao_get_ctx
+            dctx = _dao_get_ctx(report_id, planet)
+            ctx = ConversationContext(
+                planet=planet,
+                turn_count=int(dctx.get("turn_count", 0)),
+                depth_level=int(dctx.get("depth_level", 0)),
+                active_domains=dctx.get("active_domains", []) or [],
+                emotional_state=dctx.get("emotional_state", ""),
+                readings_given=dctx.get("readings_given", []) or [],
+            )
+        except Exception:
+            ctx = self._conversations.get(key)
+            if ctx is None:
+                ctx = ConversationContext(planet=planet)
+                self._conversations[key] = ctx
         # API 调用可能每轮重建引擎，用客户端 history 恢复对话深度。
         if history:
             prior_user_turns = sum(
@@ -1033,6 +1047,20 @@ class EngineAstrologer:
 
         # 7. 收尾记录
         ctx.readings_given.append(primary_domain)
+
+        # 8. 会话上下文写回 DAO（Sprint 1）；失败时保留在内存降级 dict
+        try:
+            from backend.dao import upsert_dialogue_context as _dao_upsert_ctx
+            _dao_upsert_ctx(
+                report_id, planet,
+                turn_count=ctx.turn_count,
+                depth_level=ctx.depth_level,
+                active_domains=ctx.active_domains,
+                emotional_state=ctx.emotional_state,
+                readings_given=ctx.readings_given,
+            )
+        except Exception:
+            self._conversations[key] = ctx
 
         return response
 

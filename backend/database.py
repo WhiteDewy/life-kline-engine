@@ -233,6 +233,20 @@ CREATE TABLE IF NOT EXISTS payments (
     paid_at TEXT
 );
 
+-- 新增：星灵对话上下文（Sprint 1 — 替代 engine_astrologer._conversations 内存 dict）
+CREATE TABLE IF NOT EXISTS dialogue_context (
+    report_id TEXT NOT NULL,
+    planet TEXT NOT NULL,
+    turn_count INTEGER DEFAULT 0,
+    depth_level INTEGER DEFAULT 0,
+    active_domains TEXT DEFAULT '[]',
+    emotional_state TEXT DEFAULT '',
+    readings_given TEXT DEFAULT '[]',
+    user_expressed_history TEXT DEFAULT '[]',
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (report_id, planet)
+);
+
 CREATE INDEX IF NOT EXISTS idx_profiles_user ON profiles(user_id);
 CREATE INDEX IF NOT EXISTS idx_reports_user ON reports(user_id);
 CREATE INDEX IF NOT EXISTS idx_reports_profile ON reports(profile_id);

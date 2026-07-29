@@ -2446,7 +2446,10 @@ async def spirit_chat_v2(report_id: str, body: SpiritChatV2Input, request: Reque
         }
 
     # ── 第 1 层：ConsultationV2 引擎 ──
-    consultation_engine = ConsultationV2(report_data, body.planet, dialogue_state)
+    consultation_engine = ConsultationV2(
+        report_data, body.planet, dialogue_state,
+        dao=_dao, report_id=report_id,  # Sprint 1: DAO 注入
+    )
 
     # 如果是继续对话，先用 ConsultationV2 处理
     consultation_result = consultation_engine.chat(body.message, history=body.history)

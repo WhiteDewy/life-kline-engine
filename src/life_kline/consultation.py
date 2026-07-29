@@ -41,7 +41,8 @@ class DialogueState:
     """一次对话的状态"""
     stage: str = DialogueStage.LISTEN
     turn_count: int = 0              # 对话轮次
-    user_expressed: str = ""         # 用户表达了什么
+    user_expressed: str = ""         # 用户最新表达了什么
+    user_expressed_history: list[str] = field(default_factory=list)  # Sprint 1: 累积用户表达
     emotional_tone: str = "好奇"      # 用户当前的情绪基调
     topic_hints: list[str] = field(default_factory=list)  # 用户提到的话题
     theme_key: str = ""             # 识别到的 Theme
@@ -70,6 +71,7 @@ class DialogueState:
             "stage": self.stage,
             "turn_count": self.turn_count,
             "user_expressed": self.user_expressed,
+            "user_expressed_history": self.user_expressed_history,
             "emotional_tone": self.emotional_tone,
             "topic_hints": self.topic_hints,
             "theme_key": self.theme_key,
@@ -102,10 +104,14 @@ class ConsultationV2:
         report_data: dict[str, Any],
         planet: str = "MOON",
         dialogue_state: DialogueState | None = None,
+        dao: Any = None,           # Sprint 1: DAO 注入（backend.dao 模块）
+        report_id: str = "",       # Sprint 1: 报告 ID
     ):
         self.report_data = report_data
         self.planet = planet
         self.dialogue_state = dialogue_state or DialogueState()
+        self._dao = dao
+        self._report_id = report_id
 
         # 分析用户问题，获得 Theme 上下文
         self._analyze_context()
@@ -149,9 +155,11 @@ class ConsultationV2:
         state = self.dialogue_state
         state.turn_count += 1
 
-        # 更新用户表达内容
+        # Sprint 1 P0-2 fix: 累积而非覆写用户表达
         if user_message:
             state.user_expressed = user_message
+            if user_message not in state.user_expressed_history:
+                state.user_expressed_history.append(user_message)
 
         # 根据阶段生成回复
         if state.stage == DialogueStage.LISTEN:
@@ -172,6 +180,21 @@ class ConsultationV2:
         # 推进不会干扰它——它只读 stage 做策略，回复仍由 LLM 主导。
         if state.turn_count > 0 and state.turn_count % 2 == 0:
             state.advance_stage()
+
+        # Sprint 1: 会话状态写回 DAO
+        if self._dao and self._report_id:
+            try:
+                self._dao.upsert_dialogue_context(
+                    self._report_id, self.planet,
+                    turn_count=state.turn_count,
+                    depth_level=1,
+                    active_domains=state.topic_hints,
+                    emotional_state=state.emotional_tone,
+                    readings_given=[],
+                    user_expressed_history=state.user_expressed_history,
+                )
+            except Exception:
+                pass
 
         return {
             "response": response,

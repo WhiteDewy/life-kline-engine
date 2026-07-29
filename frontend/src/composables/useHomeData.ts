@@ -132,7 +132,21 @@ export function useHomeData() {
   const councilPlanetList = computed(() => {
     const profiles = planetProfiles.value?.planet_characters || {};
     const activationScores = dailyData.value?.activation_scores || {};
-    const featuredSet = new Set((dailyData.value?.featured_planets || []).map((f: any) => f.planet));
+    // Sprint 1: featured_planets 优先，降级到 featured_characters（按 sign→planet 映射）
+    const rawFeatured = dailyData.value?.featured_planets || [];
+    const featuredPlanets: string[] = rawFeatured.length
+      ? rawFeatured.map((f: any) => f.planet)
+      : (dailyData.value?.featured_characters || []).map((f: any) => {
+          // sign→planet 简易映射作为 fallback
+          const signPlanetMap: Record<string, string> = {
+            ARIES: "MARS", TAURUS: "VENUS", GEMINI: "MERCURY", CANCER: "MOON",
+            LEO: "SUN", VIRGO: "MERCURY", LIBRA: "VENUS", SCORPIO: "MARS",
+            SAGITTARIUS: "JUPITER", CAPRICORN: "SATURN", AQUARIUS: "SATURN",
+            PISCES: "JUPITER",
+          };
+          return signPlanetMap[f.sign] || f.sign;
+        });
+    const featuredSet = new Set(featuredPlanets);
     return PLANET_ORDER.map((key) => {
       const p = profiles[key];
       if (!p) return null;

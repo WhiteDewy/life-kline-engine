@@ -99,12 +99,41 @@ class DailyActivation:
     daily_theme: str                             # 今日主题
 
     def to_dict(self) -> dict[str, Any]:
+        # Sprint 1: 从星座激活度衍生行星激活度
+        from ..service import SIGN_RULERS, PLANET_LABELS
+        planet_scores: dict[str, float] = {}
+        planet_reasons: dict[str, list[str]] = {}
+        for sign_str, score in self.activation_scores.items():
+            try:
+                sign = Sign(sign_str)
+            except (ValueError, TypeError):
+                continue
+            ruler = SIGN_RULERS.get(sign)
+            if ruler is None:
+                continue
+            planet_key = ruler.value
+            planet_scores[planet_key] = planet_scores.get(planet_key, 0) + float(score)
+            planet_reasons.setdefault(planet_key, []).append(sign_str)
+        featured_planets = sorted(
+            [
+                {
+                    "planet": pk,
+                    "score": round(ps, 1),
+                    "reason": "、".join(planet_reasons.get(pk, [])[:2]) + " 星座激活",
+                }
+                for pk, ps in planet_scores.items()
+            ],
+            key=lambda x: x["score"],
+            reverse=True,
+        )[:5]
+
         return {
             "date": self.date,
             "activation_scores": {
                 k: round(v, 1) for k, v in self.activation_scores.items()
             },
             "featured_characters": [f.to_dict() for f in self.featured_characters],
+            "featured_planets": featured_planets,
             "lunar_note": self.lunar_note,
             "firdaria_note": self.firdaria_note,
             "daily_theme": self.daily_theme,
