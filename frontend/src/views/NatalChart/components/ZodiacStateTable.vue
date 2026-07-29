@@ -70,15 +70,6 @@ const STATE_META: Record<string, { icon: string; zh: string; cls: string }> = {
   auxiliary: { icon: "🔒", zh: "附加点", cls: "peregrine" },
 };
 
-const MEANING_HINTS: Record<string, string> = {
-  domicile: "得位有力，本位能量饱满",
-  exaltation: "最被推崇的状态，能力易被高估",
-  detriment: "与环境摩擦，需额外努力补足",
-  fall: "能量受压，需要靠经验累积化解",
-  peregrine: "中性状态，需借助与其他星的相位运作",
-  auxiliary: "辅助参考点",
-};
-
 function formatDegree(deg: number): string {
   if (typeof deg !== "number" || Number.isNaN(deg)) return "-";
   const total = Math.min(Math.round(Math.abs(deg) * 60), 29 * 60 + 59);
@@ -100,7 +91,7 @@ const rows = computed(() => {
     const signZh = p.sign_label || p.sign || "-";
     const meaning =
       (p.gift && String(p.gift)) ||
-      MEANING_HINTS[state] ||
+      p.dignity_note ||
       `${meta.zh}落于${signZh}，体现其核心能量如何运作。`;
     list.push({
       planet: key,

@@ -129,20 +129,6 @@ export function useHomeData() {
   // 星灵议会
   // ═══════════════════════════════════════
 
-    /** 行星 → 疗愈主题映射 */
-  const HEALING_LABELS: Record<string, string> = {
-    SUN: "自我认同",
-    MOON: "情感安全",
-    MERCURY: "思维清晰",
-    VENUS: "关系和谐",
-    MARS: "行动勇气",
-    JUPITER: "信念希望",
-    SATURN: "结构边界",
-    URANUS: "突破创新",
-    NEPTUNE: "内在平静",
-    PLUTO: "深度转化",
-  };
-
   const councilPlanetList = computed(() => {
     const profiles = planetProfiles.value?.planet_characters || {};
     const activationScores = dailyData.value?.activation_scores || {};
@@ -163,7 +149,7 @@ export function useHomeData() {
         isFeatured: featuredSet.has(key),
         activationScore: activationScores[key] ?? null,
         greeting: p.personalized_greeting || "",
-        healingLabel: HEALING_LABELS[key] || "",
+        healingLabel: p.persona?.gift_to_user || p.role_tag || "",
         // 详情面板用：内在人格深度介绍（来自 PlanetPersona）
         essence: p.persona?.essence || "",
         personality: p.persona?.personality || "",

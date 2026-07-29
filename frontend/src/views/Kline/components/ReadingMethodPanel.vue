@@ -1,123 +1,29 @@
 <template>
-  <section class="methodSection">
-    <article class="methodPanel">
-      <div class="introGrid">
+  <section class=”methodSection”>
+    <article class=”methodPanel”>
+      <div class=”introGrid”>
         <div>
-          <div class="panelEyebrow">怎么读这份报告</div>
-          <h2 class="panelTitle">{{ guide.title }}</h2>
-          <p class="panelSummary">{{ guide.summary }}</p>
-        </div>
-
-        <div class="beliefCard">
-          <div class="beliefEyebrow">核心判断</div>
-          <p>{{ coreBelief }}</p>
+          <div class=”panelEyebrow”>怎么读这份报告</div>
+          <h2 class=”panelTitle”>{{ guide.title }}</h2>
+          <p class=”panelSummary”>{{ guide.summary }}</p>
         </div>
       </div>
 
-      <div class="pathGrid">
-        <article v-for="item in guide.steps" :key="item.step" class="pathCard">
-          <div class="pathStep">{{ item.step }}</div>
+      <div class=”pathGrid”>
+        <article v-for=”item in guide.steps” :key=”item.step” class=”pathCard”>
+          <div class=”pathStep”>{{ item.step }}</div>
           <h3>{{ item.title }}</h3>
           <p>{{ item.summary }}</p>
         </article>
       </div>
-
-      <details class="methodFold">
-        <summary class="foldSummary">
-          <div>
-            <div class="foldEyebrow">为什么先看这些</div>
-            <div class="foldTitle">阅读原则与三组星体框架</div>
-          </div>
-          <span class="foldBadge">默认折叠 / 点击展开</span>
-        </summary>
-
-        <div class="foldBody">
-          <div class="principleGrid">
-            <article v-for="item in readingPrinciples" :key="item.key" class="principleCard">
-              <div class="principleTitle">{{ item.title }}</div>
-              <p>{{ item.summary }}</p>
-            </article>
-          </div>
-
-          <div class="groupGrid">
-            <article v-for="group in groupCards" :key="group.key" class="groupCard">
-              <div class="groupEyebrow">{{ group.title }}</div>
-              <h3>{{ group.summary }}</h3>
-              <p class="groupFocus">{{ group.focus }}</p>
-              <div class="planetRow">
-                <span v-for="planet in group.planets" :key="planet.name" class="planetChip">
-                  {{ planet.name }}
-                </span>
-              </div>
-            </article>
-          </div>
-
-          <div class="caseBlock">
-            <div class="foldEyebrow">事业和财富怎么判断</div>
-            <div class="caseIntro">
-              先把职业和财富的基础判断框架立住，再回头看真实案例，就不会被个别标签带偏。
-            </div>
-
-            <div class="caseGrid">
-              <article v-for="item in wealthCareerRules" :key="item.key" class="caseCard">
-                <h3>{{ item.title }}</h3>
-                <p class="caseFocus">{{ item.summary }}</p>
-                <ul class="caseList">
-                  <li v-for="point in item.notes" :key="point">{{ point }}</li>
-                </ul>
-              </article>
-            </div>
-          </div>
-
-          <div class="caseBlock">
-            <div class="foldEyebrow">现实样例参考</div>
-            <div class="caseIntro">
-              用真实案例校正“事业格局”和“财富格局”的判断，不只看某一颗星，而是一起看四财宫、事业轴线、社交合作与相位支持。
-            </div>
-
-            <div class="caseGrid">
-              <article v-for="item in caseCards" :key="item.key" class="caseCard">
-                <div class="caseMeta">{{ item.subject }}</div>
-                <h3>{{ item.title }}</h3>
-                <p class="caseFocus">{{ item.focus }}</p>
-                <p class="caseSummary">{{ item.summary }}</p>
-
-                <div class="planetRow caseTagRow">
-                  <span v-for="tag in item.tags" :key="tag" class="planetChip">
-                    {{ tag }}
-                  </span>
-                </div>
-
-                <ul class="caseList">
-                  <li v-for="point in item.userPoints" :key="point">{{ point }}</li>
-                </ul>
-
-                <details class="caseDetail">
-                  <summary>专业备注</summary>
-                  <ul class="caseList">
-                    <li v-for="point in item.astrologerNotes" :key="point">{{ point }}</li>
-                  </ul>
-                </details>
-              </article>
-            </div>
-          </div>
-        </div>
-      </details>
     </article>
   </section>
 </template>
 
-<script setup lang="ts">
-import { computed } from "vue";
-import {
-  CAREER_WEALTH_CASES,
-  CAREER_WEALTH_RULES,
-  CORE_BELIEF,
-  PLANET_GROUPS,
-  READING_PRINCIPLES,
-} from "@/config/methodology";
+<script setup lang=”ts”>
+import { computed } from “vue”;
 
-type AnalysisKey = "natal_blueprint" | "phase_navigation";
+type AnalysisKey = “natal_blueprint” | “phase_navigation”;
 
 interface ReadingStep {
   step: string;
@@ -129,11 +35,6 @@ const props = defineProps<{
   analysisKey?: string;
 }>();
 
-const coreBelief = CORE_BELIEF;
-const readingPrinciples = READING_PRINCIPLES;
-const caseCards = CAREER_WEALTH_CASES;
-const wealthCareerRules = CAREER_WEALTH_RULES;
-
 const GUIDE_BY_ANALYSIS: Record<
   AnalysisKey,
   {
@@ -143,68 +44,55 @@ const GUIDE_BY_ANALYSIS: Record<
   }
 > = {
   natal_blueprint: {
-    title: "这份本命蓝图先看什么",
+    title: “这份本命蓝图先看什么”,
     summary:
-      "先直接回答你最关心的六个问题，再回头看星盘、相位、飞宫和接纳这些底层依据，不要一开始就陷进细节。",
+      “先直接回答你最关心的六个问题，再回头看星盘、相位、飞宫和接纳这些底层依据，不要一开始就陷进细节。”,
     steps: [
       {
-        step: "01",
-        title: "先看你是谁",
-        summary: "先确认你的底层角色、核心气质和现实里的主要发力方式。",
+        step: “01”,
+        title: “先看你是谁”,
+        summary: “先确认你的底层角色、核心气质和现实里的主要发力方式。”,
       },
       {
-        step: "02",
-        title: "再看你适合什么",
-        summary: "把适合做什么、怎么成事、怎么拿结果连起来看，才知道主轴在哪里。",
+        step: “02”,
+        title: “再看你适合什么”,
+        summary: “把适合做什么、怎么成事、怎么拿结果连起来看，才知道主轴在哪里。”,
       },
       {
-        step: "03",
-        title: "最后看风险与证据",
-        summary: "再回头核对事业、财富、感情里的代价点，以及星盘和规则层的证据。",
+        step: “03”,
+        title: “最后看风险与证据”,
+        summary: “再回头核对事业、财富、感情里的代价点，以及星盘和规则层的证据。”,
       },
     ],
   },
   phase_navigation: {
-    title: "这份阶段报告先看什么",
+    title: “这份阶段报告先看什么”,
     summary:
-      "先认清本命底盘，再看你现在正走到哪一段，最后把阶段窗口翻译成现实里的推进和取舍。",
+      “先认清本命底盘，再看你现在正走到哪一段，最后把阶段窗口翻译成现实里的推进和取舍。”,
     steps: [
       {
-        step: "01",
-        title: "先看本命底盘",
-        summary: "先知道自己的长期结构，避免被短期波动带偏判断。",
+        step: “01”,
+        title: “先看本命底盘”,
+        summary: “先知道自己的长期结构，避免被短期波动带偏判断。”,
       },
       {
-        step: "02",
-        title: "再看当前阶段",
-        summary: "把主运、副运和阶段主题放在一起，看现在适合扩张、沉淀还是重组。",
+        step: “02”,
+        title: “再看当前阶段”,
+        summary: “把主运、副运和阶段主题放在一起，看现在适合扩张、沉淀还是重组。”,
       },
       {
-        step: "03",
-        title: "最后看窗口与行动",
-        summary: "把时间窗口、机会和注意点转成现实动作，而不是只看热闹。",
+        step: “03”,
+        title: “最后看窗口与行动”,
+        summary: “把时间窗口、机会和注意点转成现实动作，而不是只看热闹。”,
       },
     ],
   },
 };
 
-const GROUP_FOCUS_MAP: Record<string, string> = {
-  will: "看你如何发展自我意志，如何经历理性突破、迷雾和重塑。",
-  behavior: "看你如何寻找安全感、表达价值、建立连接并主动行动。",
-  belief: "看你靠什么扩张自己，又会在哪些地方被现实长期磨炼。",
-};
-
 const guide = computed(() => {
-  const key = props.analysisKey === "natal_blueprint" ? "natal_blueprint" : "phase_navigation";
+  const key = props.analysisKey === “natal_blueprint” ? “natal_blueprint” : “phase_navigation”;
   return GUIDE_BY_ANALYSIS[key];
 });
-
-const groupCards = computed(() =>
-  PLANET_GROUPS.map((group) => ({
-    ...group,
-    focus: GROUP_FOCUS_MAP[group.key] || "",
-  }))
-);
 </script>
 
 <style scoped lang="less">

@@ -235,11 +235,10 @@
                           {{ item.flight_tone_label }}
                         </span>
                         <span
-                          v-if="fortuneForRuler(item.house, item.ruler_house)"
-                          class="fortuneChip"
-                          :class="fortuneLevelClass(fortuneForRuler(item.house, item.ruler_house).fortune_level)"
+                          v-if="fortuneForRuler(item.house, item.ruler_house)?.fortune_summary"
+                          class="fortuneChip fortuneGood"
                         >
-                          {{ fortuneLevelLabel(fortuneForRuler(item.house, item.ruler_house).fortune_level) }}
+                          {{ fortuneForRuler(item.house, item.ruler_house).fortune_summary }}
                           <span class="fortuneScore">
                             {{ fortuneForRuler(item.house, item.ruler_house).fortune_score > 0 ? '+' : '' }}{{ fortuneForRuler(item.house, item.ruler_house).fortune_score.toFixed(0) }}
                           </span>
@@ -394,18 +393,6 @@ const flystarFortunes = computed(() =>
 const interceptionInfo = computed(() =>
   props.advancedPatterns?.interception_info || null
 );
-
-function fortuneLevelLabel(level: string) {
-  if (level === "fortunate") return "得吉";
-  if (level === "afflicted") return "受克";
-  return "中性";
-}
-
-function fortuneLevelClass(level: string) {
-  if (level === "fortunate") return "fortuneGood";
-  if (level === "afflicted") return "fortuneBad";
-  return "fortuneNeutral";
-}
 
 function patternTypeLabel(type: string) {
   const labels: Record<string, string> = {

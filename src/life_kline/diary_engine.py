@@ -29,10 +29,10 @@ from .spirit_diary_styles import (
     infer_closing,
     infer_conclusion,
     infer_evening_expectation,
-    infer_insight,
     infer_topic_tag,
     render_diary,
 )
+from .growth.signal_analyzer import analyze_growth_signals, GrowthSignals
 
 try:
     from backend import dao as _dao
@@ -109,6 +109,30 @@ class DiaryEntry:
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+
+def _growth_signal_to_insight(signals: GrowthSignals) -> str:
+    """将 GrowthSignals 转为反思金句（替代旧 infer_insight 硬编码映射）。"""
+    theme_insights: dict[str, str] = {
+        "authority": "你在重新定义自己和权威的关系。",
+        "intimacy": "你在学习靠近一个人而不丢掉自己。",
+        "money": "你开始把价值和数字分开看。",
+        "self_worth": "你在重新认识自己值不值得。",
+        "family": "家从来不只是血缘，是你走多远都会回头的地方。",
+        "career": "工作不只是做什么，是你选择成为谁。",
+        "health": "身体是第一个提醒你慢下来的朋友。",
+    }
+    if signals.detected_themes:
+        for theme in signals.detected_themes:
+            if theme in theme_insights:
+                return theme_insights[theme]
+    if signals.awareness_delta > 0.2:
+        return "你今天对自己的觉察，比昨天多了一点。"
+    if signals.action_delta > 0.2:
+        return "你已经迈出了第一步，那是最难的。"
+    if signals.fear_delta < -0.1:
+        return "恐惧少了一点点，那就是在往前走了。"
+    return "今天到这里，已经足够好了。"
 
 
 class DiaryEngine:
@@ -189,7 +213,7 @@ class DiaryEngine:
             user_content_summary=user_summary,
             spirit_insight=insight_text or "你已经做得够好了。",
             evening_expectation=evening_expectation or infer_evening_expectation(user_context),
-            insight=infer_insight(keywords, topic),
+            insight=_growth_signal_to_insight(analyze_growth_signals(user_context)),
             conclusion=infer_conclusion(topic),
             action=infer_action(topic, mood_emoji),
             spirit_guidance=self._pick_guide(keywords),
@@ -280,7 +304,7 @@ class DiaryEngine:
             user_content_summary=user_summary,
             spirit_insight=insight_text or "你已经做得够好了。",
             evening_expectation=infer_evening_expectation(user_context),
-            insight=infer_insight(keywords, topic),
+            insight=_growth_signal_to_insight(analyze_growth_signals(user_context)),
             conclusion=infer_conclusion(topic),
             action=infer_action(topic, mood_emoji),
             spirit_guidance=self._pick_guide(keywords),

@@ -159,7 +159,7 @@
               <button class="characterChatClose" @click="activeCharacter = ''; chatOpen = false">✕</button>
             </div>
             <AIChatPanel
-              :greeting="currentCharacter?.personalized_greeting || '嘿，我是你的' + selectedCharacterPersona.name + '角色。想聊聊什么？'"
+              :greeting="currentCharacter?.personalized_greeting || '你好，我是你的专属星灵，想聊聊什么？'"
               :has-unlimited="true"
               :character-sign="activeCharacter"
               :character-name="selectedCharacterPersona.name"
