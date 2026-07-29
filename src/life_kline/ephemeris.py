@@ -30,13 +30,6 @@ class EphemerisEngine:
     """
     
     # 行星映射表：Life-Kline Planet -> Swisseph Planet ID
-    _SIGN_ZH = {
-        Sign.ARIES: "白羊座", Sign.TAURUS: "金牛座", Sign.GEMINI: "双子座",
-        Sign.CANCER: "巨蟹座", Sign.LEO: "狮子座", Sign.VIRGO: "处女座",
-        Sign.LIBRA: "天秤座", Sign.SCORPIO: "天蝎座", Sign.SAGITTARIUS: "射手座",
-        Sign.CAPRICORN: "摩羯座", Sign.AQUARIUS: "水瓶座", Sign.PISCES: "双鱼座",
-    }
-
     PLANET_MAPPING = {
         Planet.SUN: swe.SUN,
         Planet.MOON: swe.MOON,
@@ -228,8 +221,7 @@ class EphemerisEngine:
             except swe.Error as e:
                 print(f"Error calculating {planet_enum}: {e}")
 
-        # 3.5 南交点 + 四轴 (ASC/DSC/MC/IC)
-        # 南交点 = 北交点 + 180°
+        # 3.5 南交点 = 北交点 + 180°
         nn_info = chart.get_planet_info(Planet.NORTH_NODE)
         if nn_info:
             sn_lon = (nn_info.longitude + 180) % 360
@@ -239,30 +231,6 @@ class EphemerisEngine:
                 sign=sn_sign, degree=sn_deg, house=sn_house,
                 longitude=sn_lon, latitude=0, speed=0, is_retrograde=True,
             ))
-
-        # 四轴: ascmc[0]=ASC, ascmc[1]=MC, DSC=ASC+180, IC=MC+180
-        asc_lon = ascmc[0]
-        mc_lon = ascmc[1]
-        dsc_lon = (asc_lon + 180) % 360
-        ic_lon = (mc_lon + 180) % 360
-
-        axis_data = [
-            ('ASC', asc_lon),
-            ('DSC', dsc_lon),
-            ('MC', mc_lon),
-            ('IC', ic_lon),
-        ]
-        chart.angles = {}
-        for name, axis_lon in axis_data:
-            axis_sign, axis_deg = self._get_sign_from_longitude(axis_lon)
-            axis_house = self._infer_house_from_cusps(chart_houses, axis_lon) or 1
-            chart.angles[name] = {
-                'longitude': axis_lon,
-                'sign': axis_sign.value,
-                'sign_label': self._SIGN_ZH.get(axis_sign, axis_sign.value),
-                'degree': axis_deg,
-                'house': axis_house,
-            }
 
         # 4. 判断昼夜盘
         # 简单的判断：太阳在地平线上方为昼，下方为夜
