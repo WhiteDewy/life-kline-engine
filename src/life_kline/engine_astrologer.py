@@ -853,14 +853,26 @@ class VoiceRenderer:
         planet_aspects = aspects.get("planet_aspects") or []
         receptions = reading.get("receptions") or {}
 
-        # 优先：飞星（有 fortune 评估）
+        # 优先：飞星（Sprint 2: 优先用 engine fortune_summary，降级旧 hardcoded tone）
         if flystars:
             fs = flystars[0]
+            fortune_summary = fs.get("fortune_summary", "")
+            fortune_recommendation = fs.get("fortune_recommendation", "")
+
+            if fortune_summary:
+                # Engine 已计算完整 fortune 文本（含动机/落点/建议）
+                main = fortune_summary[:200]
+                if fortune_recommendation:
+                    rec = fortune_recommendation[:100]
+                    return f"{main}。{rec}" if main else rec
+                return main
+
+            # 降级：旧 hardcoded tone（向后兼容）
             tone = ""
             if fs.get("fortune_level") == "fortunate":
-                tone = "这条飞星是得吉的——你在这块的投入是有回报的。"
+                tone = "你在这块的投入是有回报的——顺着它走。"
             elif fs.get("fortune_level") == "afflicted":
-                tone = "这条飞星是受克的——你在意的方向上阻力会比较明显，得有耐心。"
+                tone = "这部分阻力会比较明显，但耐心和策略会让你走出自己的路。"
             return (
                 f"顺便一提，你掌管第{fs['from_house']}宫「{fs['from_house_title']}」"
                 f"的能量，飞到了第{fs['to_house']}宫「{fs['to_house_title']}」"

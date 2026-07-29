@@ -362,15 +362,25 @@ def build_spirit_system_prompt(report_data: dict, planet: str, topic: str = "per
             "用'又见面了'的熟悉感开场，不要重新自我介绍。\n"
         )
 
-    # ── 跨星灵调侃（C） ──
+    # ── 跨星灵上下文（C）── Sprint 2 P0-4: 跨星提示 + 同行星回连
     cross_spirit_note = ""
     previous_spirit = entry_context.get("previous_spirit") if entry_context else None
     if previous_spirit and previous_spirit != planet:
+        # 跨星：用户刚和另一个星灵聊过
         prev_name = _PLANET_NAMES.get(previous_spirit, previous_spirit)
+        curr_name = persona.get('name_zh', planet)
         cross_spirit_note = (
-            f"\n⚠️ 用户刚刚和{prev_name}灵聊过。"
-            "有30%的概率用一句温和的调侃开场（不要贬低对方，像朋友间的打趣）。\n"
-            f"例如：\"{prev_name}刚才跟你说了些扎心的话吧？别怪ta——ta就是那个脾气。\"\n"
+            f"\n⚠️ 用户刚刚和{prev_name}灵聊过，现在选择了你（{curr_name}）。"
+            "用一句自然的承接开场——可以温和地提到ta刚才和另一位星灵的对话，"
+            "但不要贬低对方。像朋友之间自然交接话题。\n"
+        )
+    elif previous_spirit and previous_spirit == planet and previous_chats > 0:
+        # 同行星回连：用户同一星灵多次对话
+        planet_name = persona.get('name_zh', planet)
+        cross_spirit_note = (
+            f"\n⚠️ 用户今天第{previous_chats + 1}次来找你了（{planet_name}灵）。"
+            "你仍在和ta对话——延续之前的熟悉感，可以简短回顾上次聊了什么，"
+            f"用\"我们又见面了\"的亲切感开场。\n"
         )
 
     # ── 规则（含日记提示 D） ──

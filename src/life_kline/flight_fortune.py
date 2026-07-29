@@ -492,18 +492,25 @@ def evaluate_flight_fortune(
 
 
 def _build_summary(level: str, score: float, *details: str) -> str:
-    """生成综合摘要"""
+    """生成综合摘要 — Sprint 2: 章节化（动机 / 具体落点 / 建议 / 证据）"""
     all_details = [d for d in details if d]
-    detail_text = "。".join(all_details[:4])
 
     if level == "fortunate":
-        prefix = "【得吉】此飞星整体偏吉——"
+        prefix = "【得吉】此飞星整体偏吉"
     elif level == "afflicted":
-        prefix = "【受克】此飞星整体偏凶——"
+        prefix = "【受克】此飞星整体偏凶"
     else:
-        prefix = "【中性】此飞星吉凶参半——"
+        prefix = "【中性】此飞星吉凶参半"
 
-    return f"{prefix}{detail_text}（综合得分：{score:+.1f}）"
+    # 章节化输出，方便 LLM 按章节消费
+    section_labels = ["动机", "具体落点", "建议", "证据"]
+    sections: list[str] = []
+    for i, detail in enumerate(all_details[:4]):
+        tag = section_labels[i] if i < len(section_labels) else ""
+        sections.append(f"{tag}：{detail}" if tag else detail)
+
+    body = "；".join(sections)
+    return f"{prefix}——{body}（综合得分：{score:+.1f}）"
 
 
 def _build_recommendation(
