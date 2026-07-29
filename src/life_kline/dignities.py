@@ -233,9 +233,8 @@ def is_any_triplicity_lord(planet: Planet, sign: Sign, is_day: bool = True) -> b
 
     day_lord, night_lord, particip_lord = triplicity_lords[sign]
 
-    # 根据日夜盘选择对应主星，再加上共同主星
-    primary_lord = day_lord if is_day else night_lord
-    return planet in (primary_lord, particip_lord)
+    # 三分主星三颗全部有效（不分日夜间）
+    return planet in (day_lord, night_lord, particip_lord)
 
 
 def is_peregrine(planet: Planet, sign: Sign, degree: float, is_day: bool) -> bool:

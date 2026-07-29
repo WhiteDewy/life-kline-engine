@@ -66,7 +66,12 @@ def check_reception_detail(
     """
     if planet1 == planet2:
         return {'type': ReceptionType.NONE, 'strength': 0.0}
-    
+
+    # 三王星不参与
+    OUTER = {Planet.URANUS, Planet.NEPTUNE, Planet.PLUTO}
+    if planet1 in OUTER or planet2 in OUTER:
+        return {'type': ReceptionType.NONE, 'strength': 0.0}
+
     # 获取行星信息
     info1 = chart_data.get_planet_info(planet1)
     info2 = chart_data.get_planet_info(planet2)
@@ -193,9 +198,11 @@ def check_mutual_reception(
     rec1 = check_reception_detail(planet1, planet2, chart_data)
     rec2 = check_reception_detail(planet2, planet1, chart_data)
     
-    has_rec1 = rec1['type'] != ReceptionType.NONE
-    has_rec2 = rec2['type'] != ReceptionType.NONE
-    
+    # 仅庙/旺构成互容；三分/界/面不算互容
+    valid_mutual = {ReceptionType.DOMICILE, ReceptionType.EXALTATION}
+    has_rec1 = rec1['type'] in valid_mutual
+    has_rec2 = rec2['type'] in valid_mutual
+
     if has_rec1 and has_rec2:
         # 互容成立
         mutual_type = None
@@ -257,7 +264,12 @@ def compute_reception_score(
     """
     if planet1 == planet2:
         return 0.0
-    
+
+    # 三王星不参与互溶接纳
+    OUTER = {Planet.URANUS, Planet.NEPTUNE, Planet.PLUTO}
+    if planet1 in OUTER or planet2 in OUTER:
+        return 0.0
+
     print(f"计算接纳分数: {planet1.value} ↔ {planet2.value}")
     
     # 检查双向接纳（互容）
@@ -278,14 +290,15 @@ def compute_reception_score(
         
         return score
     
-    # 检查单向接纳
-    rec1 = check_reception_detail(planet1, planet2, chart_data)  # 1接纳2
-    rec2 = check_reception_detail(planet2, planet1, chart_data)  # 2接纳1
+    # 检查单向接纳(必须有相位连接，互溶不需要相位)
+    rec1 = check_reception_detail(planet1, planet2, chart_data)
+    rec2 = check_reception_detail(planet2, planet1, chart_data)
+    from .aspects import detect_aspect_between
     
-    has_rec1 = rec1['type'] != ReceptionType.NONE
-    has_rec2 = rec2['type'] != ReceptionType.NONE
+    has_rec1 = rec1['type'] in {ReceptionType.DOMICILE, ReceptionType.EXALTATION, ReceptionType.TRIPLICITY}
+    has_rec2 = rec2['type'] in {ReceptionType.DOMICILE, ReceptionType.EXALTATION, ReceptionType.TRIPLICITY}
     
-    if has_rec1:
+    if has_rec1 and detect_aspect_between(planet1, planet2, chart_data):
         rec_type = rec1['type'].value
         weight_key = rec_type if rec_type in RECEPTION_WEIGHTS else rec_type.upper()
         score = RECEPTION_WEIGHTS.get(weight_key, 0.0)
@@ -293,7 +306,7 @@ def compute_reception_score(
         print(f"  单向接纳: {planet1.value}接纳{planet2.value} ({rec1['type'].value})，分数: {score}")
         return score
     
-    if has_rec2:
+    if has_rec2 and detect_aspect_between(planet2, planet1, chart_data):
         rec_type = rec2['type'].value
         weight_key = rec_type if rec_type in RECEPTION_WEIGHTS else rec_type.upper()
         score = RECEPTION_WEIGHTS.get(weight_key, 0.0)
