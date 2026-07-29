@@ -89,10 +89,10 @@ def detect_aspect_between(
     best_aspect = None
     best_orb = float('inf')  # 寻找容许度最小的相位
     
-    # 容许度 = 两星光线和 (非平均), 角度越大影响越小
+    # 容许度 = 两星光线和, 上限10°
     orb1 = get_planet_orb(planet1)
     orb2 = get_planet_orb(planet2)
-    max_orb = orb1 + orb2
+    max_orb = min(orb1 + orb2, 10.0)
     
     for aspect_type, config in ASPECT_CONFIG.items():
         exact_angle = config['angle']
