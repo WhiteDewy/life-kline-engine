@@ -76,10 +76,10 @@ def get_term_lord(sign: Sign, degree: float) -> Optional[Planet]:
         ],
         Sign.CANCER: [
             (0, 6, Planet.MARS),      # 0-6° 火
-            (6, 12, Planet.VENUS),    # 6-12° 金
-            (12, 19, Planet.MERCURY), # 12-19° 水
-            (19, 26, Planet.JUPITER), # 19-26° 木
-            (26, 30, Planet.SATURN),  # 26-30° 土
+            (6, 13, Planet.JUPITER),  # 6-13° 木
+            (13, 20, Planet.VENUS),   # 13-20° 金
+            (20, 27, Planet.MERCURY), # 20-27° 水
+            (27, 30, Planet.SATURN),  # 27-30° 土
         ],
         Sign.LEO: [
             (0, 6, Planet.JUPITER),   # 0-6° 木

@@ -48,97 +48,36 @@ def check_reception_detail(
     planet2: Planet,
     chart_data: ChartData
 ) -> Dict[str, Any]:
-    """
-    检查行星1对行星2的接纳详情
-    
-    参数:
-        planet1: 接纳方行星（检查此行星是否接纳对方）
-        planet2: 被接纳方行星
-        chart_data: ChartData对象
-    
-    返回:
-        接纳详情字典，包含类型和强度
-    
-    示例:
-        >>> detail = check_reception_detail(Planet.SUN, Planet.MOON, chart_data)
-        >>> if detail['type'] != ReceptionType.NONE:
-        >>>     print(f"太阳接纳月亮: {detail['type'].value}")
-    """
+    """检查行星1对行星2的接纳详情。传统定义: A接纳B = B在A的尊贵中。"""
     if planet1 == planet2:
         return {'type': ReceptionType.NONE, 'strength': 0.0}
 
-    # 三王星不参与
     OUTER = {Planet.URANUS, Planet.NEPTUNE, Planet.PLUTO}
     if planet1 in OUTER or planet2 in OUTER:
         return {'type': ReceptionType.NONE, 'strength': 0.0}
 
-    # 获取行星信息
     info1 = chart_data.get_planet_info(planet1)
     info2 = chart_data.get_planet_info(planet2)
-    
     if not info1 or not info2:
         return {'type': ReceptionType.NONE, 'strength': 0.0}
-    
-    sign1 = info1.sign  # 行星1所在的星座
-    sign2 = info2.sign  # 行星2所在的星座
-    
-    # 1. 庙宫接纳（Domicile Reception）
-    # 行星1在行星2的庙宫中（即行星1的星座是行星2守护的星座）
-    if sign1 in DOMICILE_SIGNS.get(planet2, []):
-        return {
-            'type': ReceptionType.DOMICILE,
-            'strength': 1.0,  # 庙宫接纳最强
-            'description': f"{planet1.value}在{planet2.value}的庙宫{sign1.value}中",
-            'planets': (planet1.value, planet2.value),
-            'signs': (sign1.value, sign2.value)
-        }
-    
-    # 2. 擢升接纳（Exaltation Reception）
-    # 行星1在行星2的擢升宫中
-    if sign1 in EXALTATION_SIGNS.get(planet2, []):
-        # 检查是否接近擢升度数
-        strength = 1.0
-        if planet2 in EXALTATION_SIGNS:  # 行星2有擢升度数定义
-            # 可以增加接近擢升度数的强度调整
-            pass
-        
-        return {
-            'type': ReceptionType.EXALTATION,
-            'strength': 0.8,  # 擢升接纳稍弱于庙宫接纳
-            'description': f"{planet1.value}在{planet2.value}的擢升宫{sign1.value}中",
-            'planets': (planet1.value, planet2.value),
-            'signs': (sign1.value, sign2.value)
-        }
-    
-    # 3. 失势和落陷接纳（通常不考虑或视为负面）
-    # 古典占星中通常不考虑失势和落陷的接纳，因为它们是负面状态
-    # 但为了完整性，这里仍然检测
-    
-    if sign1 in DETRIMENT_SIGNS.get(planet2, []):
-        return {
-            'type': ReceptionType.DETRIMENT,
-            'strength': -0.5,  # 负面接纳
-            'description': f"{planet1.value}在{planet2.value}的失势宫{sign1.value}中（负面）",
-            'planets': (planet1.value, planet2.value),
-            'signs': (sign1.value, sign2.value)
-        }
-    
-    if sign1 in FALL_SIGNS.get(planet2, []):
-        return {
-            'type': ReceptionType.FALL,
-            'strength': -0.4,  # 负面接纳
-            'description': f"{planet1.value}在{planet2.value}的落陷宫{sign1.value}中（负面）",
-            'planets': (planet1.value, planet2.value),
-            'signs': (sign1.value, sign2.value)
-        }
-    
-    # 4. 其他接纳类型（三分、界、面）
-    # 注意：这里需要实现get_term_lord和get_face_lord函数
-    # 这些函数在dignities.py中已经实现，但这里需要导入或重新实现
-    
-    # 暂时省略三分、界、面的详细检测，只考虑庙宫和擢升接纳
-    
-    # 4. 三分/界/面: 任中两个 = 构成接纳
+
+    sign1 = info1.sign
+    sign2 = info2.sign
+
+    # 传统: A接纳B = B在A的尊贵中 (check sign2 against planet1's dignities)
+
+    if sign2 in DOMICILE_SIGNS.get(planet1, []):
+        return {'type': ReceptionType.DOMICILE, 'strength': 1.0,
+                'description': f"{planet1.value}接纳{planet2.value}(庙宫)",
+                'planets': (planet1.value, planet2.value),
+                'signs': (sign1.value, sign2.value)}
+
+    if sign2 in EXALTATION_SIGNS.get(planet1, []):
+        return {'type': ReceptionType.EXALTATION, 'strength': 0.8,
+                'description': f"{planet1.value}接纳{planet2.value}(擢升)",
+                'planets': (planet1.value, planet2.value),
+                'signs': (sign1.value, sign2.value)}
+
     from .dignities import is_any_triplicity_lord, get_term_lord, get_face_lord
 
     minor_hits = 0
@@ -158,18 +97,13 @@ def check_reception_detail(
         minor_types.append('FACE')
 
     if minor_hits >= 2:
-        return {
-            'type': ReceptionType.TRIPLICITY,
-            'strength': 0.6,
-            'description': f"{planet1.value}接纳{planet2.value}({'+'.join(minor_types)})",
-            'planets': (planet1.value, planet2.value),
-            'signs': (sign1.value, sign2.value),
-            'minor_types': minor_types,
-        }
+        return {'type': ReceptionType.TRIPLICITY, 'strength': 0.6,
+                'description': f"{planet1.value}接纳{planet2.value}({"+".join(minor_types)})",
+                'planets': (planet1.value, planet2.value),
+                'signs': (sign1.value, sign2.value),
+                'minor_types': minor_types}
 
     return {'type': ReceptionType.NONE, 'strength': 0.0}
-
-
 def check_mutual_reception(
     planet1: Planet,
     planet2: Planet,
@@ -298,21 +232,25 @@ def compute_reception_score(
     has_rec1 = rec1['type'] in {ReceptionType.DOMICILE, ReceptionType.EXALTATION, ReceptionType.TRIPLICITY}
     has_rec2 = rec2['type'] in {ReceptionType.DOMICILE, ReceptionType.EXALTATION, ReceptionType.TRIPLICITY}
     
-    if has_rec1 and detect_aspect_between(planet1, planet2, chart_data):
-        rec_type = rec1['type'].value
-        weight_key = rec_type if rec_type in RECEPTION_WEIGHTS else rec_type.upper()
-        score = RECEPTION_WEIGHTS.get(weight_key, 0.0)
-        
-        print(f"  单向接纳: {planet1.value}接纳{planet2.value} ({rec1['type'].value})，分数: {score}")
-        return score
-    
-    if has_rec2 and detect_aspect_between(planet2, planet1, chart_data):
-        rec_type = rec2['type'].value
-        weight_key = rec_type if rec_type in RECEPTION_WEIGHTS else rec_type.upper()
-        score = RECEPTION_WEIGHTS.get(weight_key, 0.0)
-        
-        print(f"  单向接纳: {planet2.value}接纳{planet1.value} ({rec2['type'].value})，分数: {score}")
-        return score
+    MAJOR = {AspectType.CONJUNCTION, AspectType.SEXTILE, AspectType.SQUARE, AspectType.TRINE, AspectType.OPPOSITION}
+
+    if has_rec1:
+        asp = detect_aspect_between(planet1, planet2, chart_data)
+        if asp and asp.aspect_type in MAJOR:
+            rec_type = rec1['type'].value
+            weight_key = rec_type if rec_type in RECEPTION_WEIGHTS else rec_type.upper()
+            score = RECEPTION_WEIGHTS.get(weight_key, 0.0)
+            print(f"  单向接纳: {planet1.value}接纳{planet2.value} ({rec1['type'].value})，分数: {score}")
+            return score
+
+    if has_rec2:
+        asp = detect_aspect_between(planet2, planet1, chart_data)
+        if asp and asp.aspect_type in MAJOR:
+            rec_type = rec2['type'].value
+            weight_key = rec_type if rec_type in RECEPTION_WEIGHTS else rec_type.upper()
+            score = RECEPTION_WEIGHTS.get(weight_key, 0.0)
+            print(f"  单向接纳: {planet2.value}接纳{planet1.value} ({rec2['type'].value})，分数: {score}")
+            return score
     
     # 无接纳
     print(f"  无接纳")
