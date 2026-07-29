@@ -1055,29 +1055,53 @@ def _build_natal_chart_response(report_id: str, record: Dict[str, Any]) -> Dict[
     receptions_out: List[Dict[str, Any]] = []
 
     if chart is not None:
-        chart_planets = list(chart.planets.keys())
+        from life_kline.receptions import check_reception_detail, ReceptionType
+        from life_kline.aspects import detect_aspect_between
+        from life_kline.constants import AspectType as _AspType
+
+        MAJOR = {_AspType.CONJUNCTION, _AspType.SEXTILE, _AspType.SQUARE, _AspType.TRINE, _AspType.OPPOSITION}
+        VALID_REC = {ReceptionType.DOMICILE, ReceptionType.EXALTATION, ReceptionType.TRIPLICITY}
+        VALID_MUTUAL = {ReceptionType.DOMICILE, ReceptionType.EXALTATION}
+        TRAD_PLANETS = {Planet.SUN, Planet.MOON, Planet.MERCURY, Planet.VENUS, Planet.MARS,
+                        Planet.JUPITER, Planet.SATURN}
+
+        chart_planets = [p for p in chart.planets.keys() if p in TRAD_PLANETS]
+
+        # 互容
         for i in range(len(chart_planets)):
             for j in range(i + 1, len(chart_planets)):
-                p1 = chart_planets[i]
-                p2 = chart_planets[j]
-                mutual = check_mutual_reception(p1, p2, chart)
-                if mutual is None:
-                    continue
+                p1, p2 = chart_planets[i], chart_planets[j]
+                d1 = check_reception_detail(p1, p2, chart)
+                d2 = check_reception_detail(p2, p1, chart)
+                if d1['type'] in VALID_MUTUAL and d2['type'] in VALID_MUTUAL:
+                    receptions_out.append({
+                        "from": p1.value.lower(),
+                        "to": p2.value.lower(),
+                        "type": "mutual",
+                        "type_zh": "互溶",
+                        "detail": f"{d1['type'].value}/{d2['type'].value}",
+                        "description": d1.get('description', ''),
+                    })
 
-                m_type_value = mutual["type"].value
-                sign1 = chart.get_planet_info(p1).sign.value if chart.get_planet_info(p1) else ""
-                sign2 = chart.get_planet_info(p2).sign.value if chart.get_planet_info(p2) else ""
-
-                receptions_out.append({
-                    "from": p1.value.lower(),
-                    "to": p2.value.lower(),
-                    "type": m_type_value.lower(),
-                    "type_zh": _natal_reception_zh(m_type_value),
-                    "description": (
-                        f"{p1.value}在{sign1}，{p2.value}在{sign2}，"
-                        f"形成{_natal_reception_zh(m_type_value)}"
-                    ),
-                })
+        # 单向接纳（有主要相位）
+        for i in range(len(chart_planets)):
+            for j in range(len(chart_planets)):
+                if i == j: continue
+                p1, p2 = chart_planets[i], chart_planets[j]
+                d1 = check_reception_detail(p1, p2, chart)
+                d2 = check_reception_detail(p2, p1, chart)
+                if d1['type'] in VALID_REC and d2['type'] not in VALID_MUTUAL:
+                    asp = detect_aspect_between(p1, p2, chart)
+                    if asp and asp.aspect_type in MAJOR:
+                        receptions_out.append({
+                            "from": p1.value.lower(),
+                            "to": p2.value.lower(),
+                            "type": d1['type'].value.lower(),
+                            "type_zh": _natal_reception_zh(d1['type'].value),
+                            "aspect": asp.aspect_type.value,
+                            "orb": round(asp.orb, 1),
+                            "description": d1.get('description', ''),
+                        })
 
     # ── 7) 黄道状态 ──
     zodiac_state_out: List[Dict[str, Any]] = []
