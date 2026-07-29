@@ -13,20 +13,19 @@ import math
 
 from .constants import Planet
 
-# 法达年限配置（扩展至100年，PRD v2.3 §14.1）
-# 原标准75年按比例扩展并微调
+# 法达年限配置（标准75年，波斯中古体系）
 FIRDARIA_YEARS = {
-    Planet.SUN: 14,
-    Planet.VENUS: 10,
-    Planet.MERCURY: 16,
-    Planet.MOON: 11,
-    Planet.SATURN: 14,
-    Planet.JUPITER: 15,
-    Planet.MARS: 11,
-    Planet.NORTH_NODE: 5,
-    Planet.SOUTH_NODE: 4,
+    Planet.SUN: 10,
+    Planet.VENUS: 8,
+    Planet.MERCURY: 13,
+    Planet.MOON: 9,
+    Planet.SATURN: 11,
+    Planet.JUPITER: 12,
+    Planet.MARS: 7,
+    Planet.NORTH_NODE: 3,
+    Planet.SOUTH_NODE: 2,
 }
-# 总计: 14+10+16+11+14+15+11+5+4 = 100
+# 总计: 10+8+13+9+11+12+7+3+2 = 75
 
 # 迦勒底星序 (Chaldean Order): 土 -> 木 -> 火 -> 日 -> 金 -> 水 -> 月
 # 用于确定子运（Sub-period）的顺序
