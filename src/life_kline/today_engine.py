@@ -77,7 +77,7 @@ class TodayStarSpiritEngine:
     def __init__(self, service: LifeKlineService):
         self.service = service
 
-    def compute_today_star_spirit(self, chart) -> TodayStarSpirit:
+    def compute_today_star_spirit(self, chart, firdaria_period=None) -> TodayStarSpirit:
         """
         计算用户今日的引路星灵。
 
@@ -85,7 +85,8 @@ class TodayStarSpiritEngine:
         1. 精准行运（orb <= 1.0°），行运行星即为星灵
         2. 行运月亮触发本命行星，被触发的本命行星成为星灵
         3. 当前月亮星座的守护行星
-        4. 默认回退：月亮
+        4. Sprint 8: 法达主运星（当前人生阶段的守护行星）
+        5. 默认回退：月亮
         """
         now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
         lat = chart.location.get("lat", 0.0) if getattr(chart, "location", None) else 0.0
@@ -107,6 +108,11 @@ class TodayStarSpiritEngine:
 
         # ── 优先级 3：月亮星座守护 ──
         result = self._try_priority_3(moon_info)
+        if result is not None:
+            return result
+
+        # ── 优先级 4: 法达主运星（Sprint 8）──
+        result = self._try_priority_4_firdaria(firdaria_period)
         if result is not None:
             return result
 
@@ -252,4 +258,31 @@ class TodayStarSpiritEngine:
             confidence=35.0,
             sign=moon_sign.value,
             sign_label=moon_sign_label,
+        )
+
+    def _try_priority_4_firdaria(self, firdaria_period=None) -> Optional[TodayStarSpirit]:
+        """Sprint 8: 法达主运星作为引路星灵。
+
+        当前人生阶段的主运星是你的"长期守护星"——在没有强行运的日子里，
+        它是你默认的内在指引。
+        """
+        if firdaria_period is None:
+            return None
+
+        try:
+            major_lord = firdaria_period.major_lord
+        except AttributeError:
+            return None
+
+        lbl = _planet_label(major_lord)
+        reason = f"你正处在法达{ lbl }大运——{ lbl }是你这段人生的守护星，今天也不例外"
+
+        return TodayStarSpirit(
+            planet=major_lord.value,
+            planet_label=lbl,
+            symbol=PLANET_SYMBOLS.get(major_lord, ""),
+            reason=reason,
+            confidence=40.0,
+            sign="UNKNOWN",
+            sign_label="",
         )

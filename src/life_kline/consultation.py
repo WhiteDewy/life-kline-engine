@@ -334,14 +334,11 @@ class ConsultationV2:
         return f"我是你的{planet_name}灵。想聊什么都可以，我听着。"
 
     def _get_planet_name(self) -> str:
-        """获取行星中文名"""
-        names = {
-            "SUN": "太阳", "MOON": "月亮", "MERCURY": "水星",
-            "VENUS": "金星", "MARS": "火星", "JUPITER": "木星",
-            "SATURN": "土星", "URANUS": "天王星", "NEPTUNE": "海王星",
-            "PLUTO": "冥王星",
-        }
-        return names.get(self.planet, self.planet)
+        try:
+            from .llm_client import _PLANET_NAMES
+            return _PLANET_NAMES.get(self.planet, self.planet)
+        except Exception:
+            return self.planet
 
     def _detect_emotional_hint(self, message: str) -> str:
         """从用户消息中检测情绪基调"""

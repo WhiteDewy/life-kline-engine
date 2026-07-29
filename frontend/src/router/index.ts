@@ -9,13 +9,15 @@ const devOnlyRoutes: RouteRecordRaw[] = import.meta.env.DEV
         name: "users",
         component: () => import("@/views/Users/index.vue"),
       },
-      {
-        path: "/constellation-stories",
-        name: "constellation-stories",
-        component: () => import("@/views/ConstellationStories/index.vue"),
-      },
     ]
   : [];
+
+// Sprint 7: 12星座灵生产入口 — 从 DEV-only 移到生产路由
+const constellationRoute: RouteRecordRaw = {
+  path: "/constellation-stories",
+  name: "constellation-stories",
+  component: () => import("@/views/ConstellationStories/index.vue"),
+};
 
 const router = createRouter({
   history: createWebHistory(),
@@ -98,6 +100,7 @@ const router = createRouter({
       name: "profile",
       component: () => import("@/views/Profile/index.vue"),
     },
+    constellationRoute,
     ...devOnlyRoutes,
   ],
 });
