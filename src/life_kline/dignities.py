@@ -510,15 +510,15 @@ def compute_essential_dignity_raw(
         score += 4.0
         print(f"调试: {planet.value}在旺宫{sign.value} +4.0分")
 
-    # 3. 失势（Detriment）：庙宫的对宫 -4分
+    # 3. 失势（Detriment）：庙宫的对宫 -5分
     if sign in DETRIMENT_SIGNS.get(planet, []):
-        score -= 4.0
-        print(f"调试: {planet.value}在失势{sign.value} -4.0分")
+        score -= 5.0
+        print(f"调试: {planet.value}在失势{sign.value} -5.0分")
 
-    # 4. 落陷（Fall）：旺宫的对宫 -3分
+    # 4. 落陷（Fall）：旺宫的对宫 -4分
     if sign in FALL_SIGNS.get(planet, []):
-        score -= 3.0
-        print(f"调试: {planet.value}在落陷{sign.value} -3.0分")
+        score -= 4.0
+        print(f"调试: {planet.value}在落陷{sign.value} -4.0分")
 
     # 5. 三分宫主星（Triplicity）：+3分
     # 只要是任意一个三分主星，即获得+3分（不叠加）
@@ -539,42 +539,11 @@ def compute_essential_dignity_raw(
         score += 0.5
         print(f"调试: {planet.value}是面主星 +0.5分")
 
-    # 8. 游走（Peregrine）：-5.0分 或 -2.0分（缓解）
-    # 如果以上尊贵都没有（庙旺三分界面），则为游走
+    # 8. 游走（Peregrine）：0分（现代中性）
+    # 游走=没有庙旺三分界面尊贵，仅代表"无特殊加持"，不扣分
+    # 互容/接纳/相位有正面作用的，在意外尊贵中加分
     if is_peregrine(planet, sign, degree, is_day):
-        # 检查是否可以缓解
-        mitigated = False
-        
-        if chart_data:
-            # 动态导入避免循环依赖
-            from .receptions import check_mutual_reception
-            from .aspects import detect_aspect_between
-            
-            # 获取定位星（Dispositor）
-            dispositor = None
-            for p, signs in DOMICILE_SIGNS.items():
-                if sign in signs:
-                    dispositor = p
-                    break
-            
-            if dispositor and dispositor != planet:
-                # 1. 检查互容 (Mutual Reception)
-                mutual_rec = check_mutual_reception(planet, dispositor, chart_data)
-                
-                # 2. 检查接纳+相位 (Reception by Domicile + Aspect)
-                # 行星在定位星的星座中，即已被接纳。只要有相位即可。
-                has_aspect = detect_aspect_between(planet, dispositor, chart_data) is not None
-                
-                if mutual_rec or has_aspect:
-                    mitigated = True
-                    print(f"调试: {planet.value}游走但获得救赎 (互容或有相位接纳)")
-        
-        if mitigated:
-            score -= 2.0
-            print(f"调试: {planet.value}缓解的游走 -2.0分")
-        else:
-            score -= 5.0
-            print(f"调试: {planet.value}游走 -5.0分")
+        print(f"调试: {planet.value}游走（中性，0分）")
 
     return score
 
@@ -621,7 +590,8 @@ def compute_essential_dignity_for_planet(
 
 
 def compute_accidental_dignity_raw(
-    planet: Planet, planet_info: PlanetInfo, chart_info: Dict[str, Any]
+    planet: Planet, planet_info: PlanetInfo, chart_info: Dict[str, Any],
+    chart_data: Any = None,
 ) -> float:
     """
     计算意外尊贵原始分（角续果宫+状态等）
@@ -673,9 +643,7 @@ def compute_accidental_dignity_raw(
             if is_combust(planet, sun_long, planet_long):
                 score -= 3.0  # 燃烧 -3
                 print(f"调试: 行星被燃烧 -3.0分")
-            elif is_under_sun_beams(planet, sun_long, planet_long):
-                score -= 1.0  # 日光下 -1
-                print(f"调试: 行星在日光下 -1.0分")
+            # 日光下（Under Beams）不再单独扣分
 
     # 3. 逆行、速度等
     if planet_info.is_retrograde:
@@ -686,11 +654,8 @@ def compute_accidental_dignity_raw(
     speed = planet_info.speed
     if planet:
         avg_speed = get_average_speed(planet)
-
-        # 计算速度比例
         if avg_speed > 0:
             speed_ratio = speed / avg_speed
-
             if speed_ratio > 1.2:
                 score += 0.5  # 速度快 +0.5
                 print(f"调试: 行星速度快 +0.5分 (速度比: {speed_ratio:.2f})")
@@ -699,50 +664,101 @@ def compute_accidental_dignity_raw(
                 print(f"调试: 行星速度慢 -0.5分 (速度比: {speed_ratio:.2f})")
 
     # 4. 东方/西方（相对于太阳）
-    # 古典规则：
-    # 上位行星（火木土）东方更有力
-    # 下位行星（水金）西方更有力（作为长庚星）
-    # 但根据用户统一要求：东方 +0.5, 西方 -0.5
     if planet and planet != Planet.SUN:
-        # 使用 is_oriental 判断
         is_ori = is_oriental(planet, sun_long, planet_long)
-        
-        # 修正逻辑：
-        # 如果是上位行星(火木土)，东方为吉
-        # 如果是下位行星(水金)，西方为吉
-        # 但遵循用户指令 "东方 +0.5 西方 -0.5" 
-        # 我们这里先严格执行用户指令，但添加注释说明古典区别
-        
         if is_ori:
-            score += 0.5  # 东方 +0.5
+            score += 0.5
             print(f"调试: 行星为东方行星(Oriental) +0.5分")
         else:
-            score -= 0.5  # 西方 -0.5
+            score -= 0.5
             print(f"调试: 行星为西方行星(Occidental) -0.5分")
 
-    # 5. 纬度判断
-    latitude = getattr(planet_info, "latitude", 0.0)
-    if latitude > 0:
-        score += 0.5  # 北纬有利
-        print(f"调试: 行星在北纬 +0.5分")
-    elif latitude < 0:
-        score -= 0.5  # 南纬不利
-        print(f"调试: 行星在南纬 -0.5分")
+    # 5. 得时/失时 (Hayz)
+    # 昼星(日木土)在白天的上半球=得时; 夜星(月金火)在夜晚的上半球=得时
+    if planet and planet != Planet.SUN:
+        is_day = chart_info.get("is_day", True)
+        diurnal_planets = {Planet.SUN, Planet.JUPITER, Planet.SATURN}
+        nocturnal_planets = {Planet.MOON, Planet.VENUS, Planet.MARS}
+        above_horizon = house in {7, 8, 9, 10, 11, 12}
+        is_diurnal = planet in diurnal_planets
+        is_nocturnal = planet in nocturnal_planets
+        if (is_diurnal and is_day and above_horizon) or (is_nocturnal and not is_day and above_horizon):
+            score += 1.0
+            print(f"调试: 行星得时(Hayz) +1.0分")
+        elif (is_diurnal and not is_day and above_horizon) or (is_nocturnal and is_day and above_horizon):
+            score -= 1.0
+            print(f"调试: 行星失时(Contrary to Hayz) -1.0分")
 
-    # 6. 喜乐宫
+    # 6. 相位与接纳 (Sprint fix)
+    if chart_data and planet:
+        score += _compute_aspect_reception_bonus(planet, chart_data)
+
+    # 7. 喜乐宫
     if planet:
         joy_house = get_joy_house(planet)
         if joy_house is not None and house == joy_house:
-            score += 0.5  # 在喜乐宫 +0.5
+            score += 0.5
             print(f"调试: 行星在喜乐宫 +0.5分")
 
-    # 7. 限制总分范围（意外尊贵整体不允许超过 ±5）
+    # 8. 限制总分范围
     original_score = score
     score = clamp(score, -5.0, 5.0)
     if score != original_score:
         print(f"调试: 意外尊贵总分从 {original_score:.2f} 限制为 {score:.2f}")
 
     return score
+
+
+def _compute_aspect_reception_bonus(planet: Planet, chart_data) -> float:
+    """Sprint fix: 计算相位和接纳对后天尊贵的贡献。
+
+    - 与吉星(金/木)的和谐相位(合/拱/六合): +0.5/条
+    - 与凶星(火/土)的紧张相位(刑/冲): -0.5/条
+    - 互容(Mutual Reception): +1.0/组
+    - 接纳(Reception by Domicile + 相位): +0.5/条
+    """
+    bonus = 0.0
+    try:
+        from .aspects import compute_all_aspects
+        from .receptions import compute_all_receptions
+        from .constants import AspectType
+
+        BENEFICS = {Planet.JUPITER, Planet.VENUS}
+        MALEFICS = {Planet.MARS, Planet.SATURN}
+        HARMONIC = {AspectType.CONJUNCTION, AspectType.TRINE, AspectType.SEXTILE}
+        TENSE = {AspectType.OPPOSITION, AspectType.SQUARE}
+
+        aspects = compute_all_aspects(chart_data)
+        for a in aspects:
+            if not isinstance(a, dict):
+                continue
+            pair = a.get("pair", [])
+            if planet.value not in pair:
+                continue
+            other_val = pair[0] if pair[1] == planet.value else pair[1]
+            try:
+                other = Planet(other_val)
+            except (ValueError, TypeError):
+                continue
+            asp_type = a.get("aspect_type")
+            if other in BENEFICS and asp_type in HARMONIC:
+                bonus += 0.5
+                print(f"调试: {planet.value}与吉星{other.value}和谐相位 +0.5分")
+            elif other in MALEFICS and asp_type in TENSE:
+                bonus -= 0.5
+                print(f"调试: {planet.value}与凶星{other.value}紧张相位 -0.5分")
+
+        receptions = compute_all_receptions(chart_data)
+        if isinstance(receptions, dict):
+            mutuals = receptions.get("mutuals", [])
+            for m in mutuals:
+                line = m.get("line", "") if isinstance(m, dict) else str(m)
+                if planet.value in line:
+                    bonus += 1.0
+                    print(f"调试: {planet.value}参与互容 +1.0分")
+    except Exception:
+        pass
+    return bonus
 
 
 def compute_accidental_dignity_for_planet(
@@ -778,7 +794,7 @@ def compute_accidental_dignity_for_planet(
     }
 
     # 调用原始计算函数
-    return compute_accidental_dignity_raw(planet, planet_info, chart_info)
+    return compute_accidental_dignity_raw(planet, planet_info, chart_info, chart_data)
 
 
 # ============================================================================
@@ -837,7 +853,7 @@ def compute_all_dignities(chart_data: ChartData) -> Dict[Planet, float]:
             "sun_longitude": chart_data.sun_longitude,
             "is_day": chart_data.is_day_chart,
         }
-        accidental_raw = compute_accidental_dignity_raw(planet, planet_info, chart_info)
+        accidental_raw = compute_accidental_dignity_raw(planet, planet_info, chart_info, chart_data)
         print(f"意外尊贵原始分: {accidental_raw:.2f}")
 
         # 3. 合并原始分数
