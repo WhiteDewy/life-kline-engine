@@ -100,6 +100,21 @@ const router = createRouter({
       name: "profile",
       component: () => import("@/views/Profile/index.vue"),
     },
+    {
+      path: "/transits/yearly/:reportId?",
+      name: "transits-yearly",
+      component: () => import("@/views/Transits/YearlyPage.vue"),
+    },
+    {
+      path: "/transits/monthly/:reportId?",
+      name: "transits-monthly",
+      component: () => import("@/views/Transits/MonthlyPage.vue"),
+    },
+    {
+      path: "/transits/weekly/:reportId?",
+      name: "transits-weekly",
+      component: () => import("@/views/Transits/WeeklyPage.vue"),
+    },
     constellationRoute,
     ...devOnlyRoutes,
   ],

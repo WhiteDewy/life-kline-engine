@@ -849,22 +849,48 @@ def build_star_speaker_system_prompt_v2(
 
 {GUARDRAILS}"""
 
+    # 注入完整星盘数据
+    planet_chars = report_data.get("planet_characters", {}).get("planet_characters", {})
+    chart_snapshot = ""
+    if planet_chars:
+        lines = ["## 用户星盘"]
+        for pk in ("SUN", "MOON", "MERCURY", "VENUS", "MARS", "JUPITER", "SATURN", "URANUS", "NEPTUNE", "PLUTO"):
+            pp = planet_chars.get(pk, {})
+            if pp:
+                pn = pp.get("persona", {}).get("name_zh", pk)
+                lines.append(f"- {pn}: {pp.get('sign_label','?')} {pp.get('house','?')}宫「{pp.get('house_label','')}」 {pp.get('dignity_label','')}")
+        chart_snapshot = "\n".join(lines)
+    natal = report_data.get("natal_chart") or {}
+    aspects_list = natal.get("major_aspects") or []
+    aspect_text = ""
+    if aspects_list:
+        al = ["## 主要相位"]
+        for a in aspects_list[:8]:
+            if isinstance(a, dict):
+                al.append(f"- {a.get('title','')} ({a.get('nature','')})")
+        aspect_text = "\n".join(al)
+    adv = report_data.get("advanced_patterns", {}) if isinstance(report_data, dict) else {}
+    rec_text = ""
+    mutuals = adv.get("mutual_receptions", []) or []
+    if mutuals:
+        rl = ["## 互容关系"]
+        for m in mutuals[:5]:
+            rl.append(f"- {m.get('line', str(m))}")
+        rec_text = "\n".join(rl)
+
     rules = """## 规则
-- 用中文回复，专业但温暖
-- 回复控制在 300 字以内
-- 你的目标是帮助用户觉察，不是被认可为"准确的占星师"
-- 如果用户表达告别意图，回复末尾加：💫 今天的对话已保存"""
+- 用中文回复，专业但温暖，200字以内
+- 可切换视角(行星/宫位/古占/现占)，直接引用上方星盘数据
+- 把占星术语翻译成感受
+- 你的目标是帮助用户觉察"""
 
     return f"""星语者系统
 
-你是「星语者」——一位专业占星师，有15年的咨询经验。
-你不是来"算命"的，你是来帮助用户理解自己的。
+你是「星语者」——专业占星咨询师，能看到用户的完整星盘。
 
-你能看到用户的完整星盘，包括：
-- 上升{asc_sign}，命主星{chart_ruler_label}
-- 昼夜{sect}，主导力量{dom_text}
-- 签名：{sig}
-
+{chart_snapshot}
+{aspect_text}
+{rec_text}
 {memory_section}
 
 {consultation_principles}
@@ -1038,44 +1064,55 @@ def build_fallback_response(planet: str, persona: dict | None,
 # ═══════════════════════════════════════════════════════════════
 
 def build_star_speaker_system_prompt(report_data: dict) -> str:
-    """构建星语者（AI 占星师）的 System Prompt。
-
-    星语者不同于星灵——它不是单一星体人格，而是一位能看到全盘的占星师。
-    它融合古典占星（论事）和现代占星（心理），既给判断也给温度。
-    """
+    """构建星语者（AI 占星师）的 System Prompt。注入完整星盘数据。"""
     chart = report_data.get("natal_chart", {})
     asc = chart.get("ascendant", {})
     sig = chart.get("signature", "")
     chart_ruler_label = chart.get("chart_ruler_label", "")
-    dominant = chart.get("dominant_planets", [])
-    dom_labels = [d.get("label", "") for d in dominant[:3]]
-    dom_text = "、".join(dom_labels) if dom_labels else "综合"
-
     asc_sign = asc.get("sign_label", "未知")
-    sect = chart.get("sect_label", "")
 
-    return f"""你是「星语者」——一位融合古典占星与现代心理占星的 AI 占星师。
+    # 完整行星快照
+    planet_chars = report_data.get("planet_characters", {}).get("planet_characters", {})
+    planet_lines = []
+    if planet_chars:
+        for pk in ("SUN","MOON","MERCURY","VENUS","MARS","JUPITER","SATURN","URANUS","NEPTUNE","PLUTO"):
+            pp = planet_chars.get(pk, {})
+            if pp:
+                pn = pp.get("persona", {}).get("name_zh", pk)
+                planet_lines.append(f"- {pn}: {pp.get('sign_label','?')} {pp.get('house','?')}宫「{pp.get('house_label','')}」 {pp.get('dignity_label','')}")
+    planet_snapshot = "\n".join(planet_lines) if planet_lines else ""
 
-## 你的角色
-- 你不是单一星体的人格化角色（那是星灵的工作），你是能看到用户全盘的专业占星师
-- 你既做古典占星的客观判断（事能不能成、时机如何），也做现代占星的心理洞察（为什么这样感受、如何成长）
-- 你的语气是：专业但不冰冷，温和但不敷衍，像一位有经验的咨询师
+    # 相位
+    aspects_list = chart.get("major_aspects") or []
+    aspect_lines = []
+    for a in aspects_list[:8]:
+        if isinstance(a, dict):
+            aspect_lines.append(f"- {a.get('title','')} ({a.get('nature','')})")
+    aspect_text = "\n".join(aspect_lines) if aspect_lines else ""
 
-## 用户的星盘底色
-- 上升：{asc_sign}
-- 命主星：{chart_ruler_label}
-- 昼夜：{sect}
-- 主导力量：{dom_text}
-- 签名：{sig}
+    # 互容
+    adv = report_data.get("advanced_patterns", {}) if isinstance(report_data, dict) else {}
+    mutuals = adv.get("mutual_receptions", []) or []
+    rec_lines = []
+    for m in mutuals[:5]:
+        rec_lines.append(f"- {m.get('line', str(m))}")
+    rec_text = "\n".join(rec_lines) if rec_lines else ""
+
+    return f"""你是「星语者」——融合古典占星与现代心理占星的 AI 占星师。
+
+## 用户星盘
+上升{asc_sign} 命主{chart_ruler_label} 签名{sig}
+{planet_snapshot}
+{"## 主要相位" if aspect_text else ""}
+{aspect_text}
+{"## 互容关系" if rec_text else ""}
+{rec_text}
 
 ## 规则
-- 用中文回复，自然流畅，像在对话而不是写论文
-- 根据当前咨询步骤调整语气：
-  · Step 1（锚定）：先确认你听懂了用户的问题，把这问题放到星盘框架里
-  · Step 2（情境追问）：自然地问1-2个跟进问题，帮用户把模糊的感受说清楚
-  · Step 3（星盘验证）：这是核心——用全盘证据完整回答，结构清晰但不说教
-  · Step 4（边界守护）：给出安全提示，让用户知道星盘的限度
-- 保持 200-400 字的回复长度，让人能读完
+- 用中文回复，200字以内，像对话不是写论文
+- 直接引用上方星盘数据回答用户问题，不要回避
+- 古占+现占双轨：既判断吉凶也解读心理
+- 把术语翻译成感受
 
 {GUARDRAILS}"""
 

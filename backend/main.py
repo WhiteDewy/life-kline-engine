@@ -3233,6 +3233,90 @@ async def get_garden_report(report_id: str, request: Request) -> Dict[str, Any]:
     return {"status": "success", "data": report}
 
 
+
+# ── 行运报告 (Sprint接入) ─────────────────────────────────
+
+class TransitReportInput(BaseModel):
+    period: str = "monthly"  # yearly / monthly / weekly
+
+@app.post("/api/transits/{report_id}/report")
+async def get_transit_report(report_id: str, body: TransitReportInput, request: Request):
+    """生成行运报告——由星语者根据引擎行运数据解读。"""
+    token = request.headers.get("Authorization", "").replace("Bearer ", "")
+    user_id = _parse_token(token)
+    if not user_id: raise HTTPException(status_code=401, detail="请先登录")
+    if (_report_owner(report_id) or "") != user_id: raise HTTPException(status_code=403, detail="无权访问")
+    record = load_report_record(report_id)
+    report_data = record.get("data", {})
+    user_info = report_data.get("user_info", {})
+
+    from life_kline.llm_client import LLMClient, build_star_speaker_system_prompt
+    from life_kline.service import LifeKlineService
+    import anyio
+
+    # 重建星盘 + 计算行运
+    chart = None
+    transits = []
+    lunar_return = None
+    try:
+        from datetime import datetime
+        birth_dt = datetime.fromisoformat(user_info.get("birth_time_utc") or user_info.get("birth_time_local", "2000-01-01T00:00:00"))
+        srv = LifeKlineService()
+        chart = srv.engine.calculate_chart(birth_dt, float(user_info.get("lat",0)), float(user_info.get("lon",0)))
+        transits = srv.compute_transits(chart)
+        if body.period in ("monthly", "weekly"):
+            lunar_return = srv.generate_monthly_lunar_return(chart)
+    except Exception:
+        pass
+
+    # 行运摘要
+    transit_lines = []
+    for t in transits[:15]:
+        transit_lines.append(f"- {t.get('title','')} orb={t.get('orb',0):.1f}°")
+    transit_text = "\n".join(transit_lines) if transit_lines else "(暂无可报告的行运)"
+
+    lunar_text = ""
+    if lunar_return:
+        lr = lunar_return.get("lunar_return_chart", {}) if isinstance(lunar_return, dict) else {}
+        asc_info = lr.get("ascendant", {}) if isinstance(lr, dict) else {}
+        lunar_text = f"月返上升: {asc_info.get('sign_label','')} {asc_info.get('degree','')}"
+
+    period_labels = {"yearly": "未来一年", "monthly": "未来一个月", "weekly": "未来一周"}
+    period_label = period_labels.get(body.period, body.period)
+
+    # 星语者解读
+    client = LLMClient()
+    response_text = ""
+    if client.is_configured:
+        system_prompt = build_star_speaker_system_prompt(report_data)
+        user_prompt = f"""请基于以下行运数据，为用户做{period_label}的行运解读。
+
+## 当前行运
+{transit_text}
+{lunar_text}
+
+请给出：1) 这段时间最重要的2-3个行运主题 2) 每个主题对用户的具体影响 3) 建议。
+用中文，专业但温暖，500字以内。"""
+
+        try:
+            response_text = await client.chat_async(system_prompt=system_prompt, user_message=user_prompt)
+        except Exception:
+            response_text = ""
+
+    if not response_text:
+        response_text = f"## {period_label}行运\\n\\n{transit_text}\\n\\n(LLM未配置,显示引擎原始数据)"
+
+    return {
+        "status": "success",
+        "data": {
+            "period": body.period,
+            "period_label": period_label,
+            "report": response_text,
+            "transits": transits[:15],
+            "lunar_return": lunar_return,
+        }
+    }
+
 # ── 用户系统路由 ──────────────────────────────────────────
 
 @app.on_event("startup")
