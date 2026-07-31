@@ -319,18 +319,9 @@ class PlanetCharacterEngine:
     # ── 个性化开场白 ──────────────────────────────────────
 
     def _build_greeting(self, profile: PlanetCharacterProfile) -> str:
-        """简短开场白（1句），仅用行星身份 + 星座风格。"""
+        """简短开场白（1句），仅用行星身份。详细自述交给 LLM 动态生成。"""
         p = profile.persona
-        sign = self._planet_signs.get(profile.planet)
-
-        base = f"我是你的{p.name_zh}灵"
-        if sign and sign in SIGN_PERSONAS:
-            sp = SIGN_PERSONAS[sign]
-            element_word = {"火": "热烈", "土": "务实", "风": "灵动", "水": "细腻"}.get(sp.element, "")
-            archetype_short = p.archetype_zh.split("/")[0].strip() if p.archetype_zh else ""
-            base += f"——{element_word}的{sp.name}{archetype_short}"
-
-        return base + "。想聊什么都可以，我听着。"
+        return f"我是你的{p.name_zh}——{p.archetype_zh}。今天想从哪儿开始？"
 
     # ── 公共方法 ──────────────────────────────────────────
 

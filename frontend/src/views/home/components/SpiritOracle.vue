@@ -74,6 +74,13 @@
               <!-- Spirit greeting -->
               <p class="spirit-greeting">我是今天的引路星灵——{{ spiritName }}</p>
 
+              <!-- ═══ 引路星灵自述（宫性优先） ═══ -->
+              <div v-if="narrativeSegments" class="narrative-section">
+                <div class="narrative-segment" v-for="(seg, idx) in narrativeSegments" :key="idx">
+                  <p class="narrative-text">{{ seg }}</p>
+                </div>
+              </div>
+
               <!-- Daily question -->
               <div class="question-section">
                 <p class="question-text">"{{ question }}"</p>
@@ -85,7 +92,7 @@
               <!-- Action buttons -->
               <div class="card-actions">
                 <div class="action-btn-wrapper">
-                  <VoicePlayer :text="question" voice-style="whisper" showLabel />
+                  <VoicePlayer :text="narrativeVoiceText || question" voice-style="whisper" showLabel />
                 </div>
                 <button class="action-btn action-btn--chat" @click="$emit('chat')">
                   <span class="action-icon">💬</span>
@@ -123,6 +130,7 @@ const props = defineProps<{
   todayStarSpirit?: any;
   dailyQuestion?: any;
   spiritProfile?: any;
+  guideNarrative?: any;
   gender?: string;
 }>();
 
@@ -156,6 +164,20 @@ const contextNote = computed(() => props.dailyQuestion?.context_note || "");
 const ringStyle = computed(() => ({
   "--ring-color": spiritColor.value,
 }));
+
+// ── 引路星灵自述 ──
+const narrativeSegments = computed(() => {
+  const segs = props.guideNarrative?.segments;
+  if (!segs) return null;
+  // 按顺序返回非空段落
+  const ordered = [segs.who_am_i, segs.where_i_work, segs.flystar_chain, segs.why_me_today, segs.guidance];
+  return ordered.filter((s: string) => s && s.length > 0);
+});
+
+// VoicePlayer text for the narrative (used in VoicePlayer below)
+const narrativeVoiceText = computed(() => {
+  return props.guideNarrative?.full_introduction || "";
+});
 
 // ── Shake detection ──
 
@@ -646,6 +668,37 @@ function saveToHistory() {
   line-height: 1.5;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   font-weight: 500;
+}
+
+/* ── Narrative (引路星灵自述) ── */
+.narrative-section {
+  margin: 0 0 16px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 0 4px 0 0;
+  /* scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+.narrative-section::-webkit-scrollbar {
+  width: 3px;
+}
+.narrative-section::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+.narrative-segment {
+  margin-bottom: 10px;
+}
+.narrative-segment:last-child {
+  margin-bottom: 0;
+}
+.narrative-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.7;
+  margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* ── Question ── */

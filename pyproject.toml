@@ -42,6 +42,8 @@ dependencies = [
     "pyswisseph>=2.10.3",
     # --- Typing backports (Python < 3.12) ---
     "typing_extensions>=4.8.0",
+    # --- 星灵咨询短期状态外置（可选；未安装时降级为进程内存）---
+    "redis>=5.0.0",
 ]
 
 [project.optional-dependencies]

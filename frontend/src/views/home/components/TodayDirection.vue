@@ -32,6 +32,24 @@
             </div>
           </section>
 
+          <!-- 2b. 引路星灵自述（宫性优先） -->
+          <section
+            v-if="guideNarrative?.full_introduction"
+            class="section section--narrative"
+          >
+            <div
+              class="section-header section-header--clickable"
+              @click="toggleSection('narrative')"
+            >
+              <span class="section-header-icon">💫</span>
+              <span class="section-header-title">星灵自述</span>
+              <span class="section-header-toggle">{{ expandedSections.narrative ? '▾' : '▸' }}</span>
+            </div>
+            <div v-show="expandedSections.narrative" class="section-body">
+              <div class="narrative-full-text">{{ guideNarrative.full_introduction }}</div>
+            </div>
+          </section>
+
           <!-- ═══════ Section 1: 今日月晕 ═══════ -->
           <section v-if="transitReport" class="section section--moon">
             <div class="section-header">
@@ -194,6 +212,7 @@ const props = defineProps<{
   transitReport: any;
   todayStarSpirit: any;
   dateLabel: string;
+  guideNarrative?: any;
 }>();
 
 const emit = defineEmits<{
@@ -205,6 +224,7 @@ const emit = defineEmits<{
 const expandedSections = reactive<Record<string, boolean>>({
   fast: true,
   slow: false,
+  narrative: true,
 });
 
 function toggleSection(key: string) {
@@ -737,6 +757,18 @@ function aspectClass(label: string): string {
   color: rgba(255, 255, 255, 0.45);
   padding: 6px 0 2px;
   line-height: 1.4;
+}
+
+/* ═══════════════ Narrative Section ═══════════════ */
+.section--narrative {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.narrative-full-text {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.8;
+  white-space: pre-line;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* ═══════════════ Voice Section ═══════════════ */

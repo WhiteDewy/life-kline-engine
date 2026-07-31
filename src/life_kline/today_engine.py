@@ -52,6 +52,8 @@ class TodayStarSpirit:
     sign: str                 # Current sign of this planet
     sign_label: str           # Chinese sign name
     transit_aspect: Optional[dict] = None  # Triggering transit detail
+    trigger_type: str = "default"
+    trigger_evidence: list[dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         result: dict[str, Any] = {
@@ -62,6 +64,8 @@ class TodayStarSpirit:
             "confidence": self.confidence,
             "sign": self.sign,
             "sign_label": self.sign_label,
+            "trigger_type": self.trigger_type,
+            "trigger_evidence": self.trigger_evidence,
         }
         if self.transit_aspect:
             result["transit_aspect"] = self.transit_aspect
@@ -125,6 +129,7 @@ class TodayStarSpiritEngine:
             confidence=30.0,
             sign="UNKNOWN",
             sign_label="未知",
+            trigger_type="default",
         )
 
     def _try_priority_1(self, chart) -> Optional[TodayStarSpirit]:
@@ -174,6 +179,16 @@ class TodayStarSpiritEngine:
                 "orb": orb,
                 "strength": best.get("strength", 0),
             },
+            trigger_type="exact_transit",
+            trigger_evidence=[{
+                "source": "exact_transit",
+                "transiting_planet": t_planet.value,
+                "natal_planet": n_planet.value,
+                "aspect_type": aspect_type.value if hasattr(aspect_type, "value") else str(aspect_type),
+                "aspect_label": aspect_label,
+                "orb": orb,
+                "strength": best.get("strength", 0),
+            }],
         )
 
     def _try_priority_2(self, chart, moon_info) -> Optional[TodayStarSpirit]:
@@ -237,6 +252,14 @@ class TodayStarSpiritEngine:
                 "aspect_type": aspect_label,
                 "orb": round(best_orb, 2),
             },
+            trigger_type="moon_trigger",
+            trigger_evidence=[{
+                "source": "moon_trigger",
+                "transiting_planet": Planet.MOON.value,
+                "natal_planet": n_planet.value,
+                "aspect_type": aspect_label,
+                "orb": round(best_orb, 2),
+            }],
         )
 
     def _try_priority_3(self, moon_info) -> Optional[TodayStarSpirit]:
@@ -258,6 +281,12 @@ class TodayStarSpiritEngine:
             confidence=35.0,
             sign=moon_sign.value,
             sign_label=moon_sign_label,
+            trigger_type="moon_ruler",
+            trigger_evidence=[{
+                "source": "moon_sign_ruler",
+                "moon_sign": moon_sign.value,
+                "ruler": ruler.value,
+            }],
         )
 
     def _try_priority_4_firdaria(self, firdaria_period=None) -> Optional[TodayStarSpirit]:
@@ -285,4 +314,9 @@ class TodayStarSpiritEngine:
             confidence=40.0,
             sign="UNKNOWN",
             sign_label="",
+            trigger_type="firdaria",
+            trigger_evidence=[{
+                "source": "firdaria_major_lord",
+                "major_lord": major_lord.value,
+            }],
         )

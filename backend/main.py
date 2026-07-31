@@ -3,6 +3,7 @@ FastAPI entrypoint for the Life K-Line backend.
 """
 
 import json
+import logging
 import math
 import os
 import sys
@@ -49,9 +50,13 @@ from backend import dao as _dao
 from backend.routers import billing as _billing_router
 from backend.routers import account as _account_router
 from backend.routers import spirit_chat_stream as _spirit_chat_stream_router
+from backend.routers import spirit_consultation as _spirit_consultation_router
+from backend.routers import spirit_narrative as _spirit_narrative_router
 from fastapi import Depends
 from typing import Annotated
 
+
+logger = logging.getLogger(__name__)
 
 
 DATA_DIR = os.path.join(_BACKEND_DIR, 'data')
@@ -495,6 +500,8 @@ app.include_router(_billing_router.router)
 # 账号注销路由（P5 合规：被遗忘权）
 app.include_router(_account_router.router)
 app.include_router(_spirit_chat_stream_router.router)
+app.include_router(_spirit_narrative_router.router)
+app.include_router(_spirit_consultation_router.router)
 
 service: Optional[LifeKlineService] = None
 
@@ -1701,17 +1708,20 @@ def _reconstruct_chart_from_user_info(user_info: dict):
 async def get_today_star_spirit(report_id: str, authorization: str = Header(default="")) -> Dict[str, Any]:
     """获取用户今日引路星灵"""
     record = load_owned_report(report_id, authorization)
-    user_info = record.get("data", {}).get("user_info", {})
+    report_data = record.get("data", {})
+    user_info = report_data.get("user_info", {})
     if not user_info:
         raise HTTPException(status_code=400, detail="User info missing from report")
 
     try:
         from life_kline.today_engine import TodayStarSpiritEngine
+        from backend.services.spirit_narrative_service import extract_current_firdaria
 
         def _compute():
             chart = _reconstruct_chart_from_user_info(user_info)
+            firdaria_period = extract_current_firdaria(report_data, user_info)
             spirit_engine = TodayStarSpiritEngine(service)
-            return spirit_engine.compute_today_star_spirit(chart)
+            return spirit_engine.compute_today_star_spirit(chart, firdaria_period)
 
         result = await anyio.to_thread.run_sync(_compute)
 
@@ -1720,11 +1730,8 @@ async def get_today_star_spirit(report_id: str, authorization: str = Header(defa
             "report_id": report_id,
             "data": result.to_dict(),
         }
-    except Exception as exc:
-        import traceback
-
-        traceback.print_exc()
-        # 优雅回退：返回月亮
+    except Exception:
+        logger.exception("today guide-spirit computation failed")
         return {
             "status": "success",
             "report_id": report_id,
@@ -1732,10 +1739,13 @@ async def get_today_star_spirit(report_id: str, authorization: str = Header(defa
                 "planet": "MOON",
                 "planet_label": "月亮",
                 "symbol": "☽",
-                "reason": f"计算暂时不可用，月亮为你默默引路。（{exc}）",
+                "reason": "今天的星图暂时看不清，月亮先陪你照顾此刻的感受。",
                 "confidence": 20.0,
                 "sign": "UNKNOWN",
                 "sign_label": "未知",
+                "trigger_type": "default",
+                "trigger_evidence": [],
+                "degraded": True,
             },
         }
 
@@ -1744,7 +1754,8 @@ async def get_today_star_spirit(report_id: str, authorization: str = Header(defa
 async def get_daily_question(report_id: str, authorization: str = Header(default="")) -> Dict[str, Any]:
     """获取每日一问"""
     record = load_owned_report(report_id, authorization)
-    user_info = record.get("data", {}).get("user_info", {})
+    report_data = record.get("data", {})
+    user_info = report_data.get("user_info", {})
     if not user_info:
         raise HTTPException(status_code=400, detail="User info missing from report")
 
@@ -1752,11 +1763,16 @@ async def get_daily_question(report_id: str, authorization: str = Header(default
         from life_kline.today_engine import TodayStarSpiritEngine
         from life_kline.daily_question_engine import DailyQuestionEngine
         from life_kline.llm_client import LLMClient
+        from backend.services.spirit_narrative_service import extract_current_firdaria
 
         def _compute():
             chart = _reconstruct_chart_from_user_info(user_info)
+            firdaria_period = extract_current_firdaria(report_data, user_info)
             spirit_engine = TodayStarSpiritEngine(service)
-            today_spirit = spirit_engine.compute_today_star_spirit(chart)
+            today_spirit = spirit_engine.compute_today_star_spirit(
+                chart,
+                firdaria_period,
+            )
             question_engine = DailyQuestionEngine(llm_client=LLMClient())
             transits = service.compute_transits(chart)
             return question_engine.generate(
@@ -1772,10 +1788,8 @@ async def get_daily_question(report_id: str, authorization: str = Header(default
             "report_id": report_id,
             "data": question.to_dict(),
         }
-    except Exception as exc:
-        import traceback
-
-        traceback.print_exc()
+    except Exception:
+        logger.exception("daily question computation failed")
         return {
             "status": "success",
             "report_id": report_id,
@@ -3324,16 +3338,26 @@ async def startup_event() -> None:
     init_db()
     from backend.database import migrate_db
     migrate_db()
+    from backend.migrations import apply_migrations
+    apply_migrations()
     try:
         _admin.ensure_root_admin()
     except Exception as exc:
-        print(f"[admin] init failed: {exc}")
+        logger.exception("admin init failed")
     global service
     service = LifeKlineService()
     provider_names = ["nominatim_global", "nominatim_cn", "maps_co"]
     if AMAP_KEY:
         provider_names.insert(0, "amap")
     print(f"[life-kline] geocode providers: {', '.join(provider_names)}")
+    from backend.infrastructure.redis_store import get_redis_store
+    await get_redis_store().connect()
+
+
+@app.on_event("shutdown")
+async def shutdown_event() -> None:
+    from backend.infrastructure.redis_store import get_redis_store
+    await get_redis_store().close()
 
 
 @app.post("/api/auth/send-code")
@@ -3356,6 +3380,23 @@ async def send_code(body: SendCodeInput) -> Dict[str, Any]:
 @app.post("/api/auth/verify-code")
 async def verify_code(body: VerifyCodeInput) -> Dict[str, Any]:
     phone, code = body.phone.strip(), body.code.strip()
+
+    # ── 开发免验证码：任意手机号直接登录（仅 LIFE_KLINE_DEV_BYPASS=1 时生效）──
+    if os.getenv("LIFE_KLINE_DEV_BYPASS") == "1":
+        db = get_db()
+        user = db.execute("SELECT * FROM users WHERE phone=?", (phone,)).fetchone()
+        if not user:
+            user_id = _uid()
+            db.execute(
+                "INSERT INTO users (id, phone, nickname, created_at, last_login_at) VALUES (?, ?, ?, ?, ?)",
+                (user_id, phone, "", _now(), _now()),
+            )
+        else:
+            user_id = user["id"]
+            db.execute("UPDATE users SET last_login_at=? WHERE id=?", (_now(), user_id))
+        db.commit()
+        db.close()
+        return {"status": "success", "token": _make_token(user_id), "user_id": user_id}
 
     # Development bypass: if phone matches VITE_DEV_BYPASS_PHONE and code is "000000", skip SMS verification
     dev_bypass_phone = os.getenv("LIFE_KLINE_DEV_BYPASS_PHONE", "").strip()
@@ -4042,6 +4083,28 @@ async def admin_get_report(
         "status": "success",
         "data": {"meta": meta, "report": report_body},
     }
+
+
+@app.delete("/api/reports/{report_id}")
+async def delete_report(
+    report_id: str,
+    authorization: str = Header(default=""),
+) -> Dict[str, Any]:
+    """删除用户自己的报告（DB + JSON）。"""
+    require_report_owner(report_id, authorization)
+    db = get_db()
+    cur = db.execute("DELETE FROM reports WHERE id=?", (report_id,))
+    db.commit()
+    db.close()
+    if cur.rowcount == 0:
+        raise HTTPException(status_code=404, detail="报告不存在")
+    fp = os.path.join(DATA_DIR, f"{report_id}.json")
+    try:
+        if os.path.exists(fp):
+            os.remove(fp)
+    except Exception:
+        pass
+    return {"status": "success", "data": {"deleted": report_id}}
 
 
 @app.delete("/api/admin/reports/{report_id}")

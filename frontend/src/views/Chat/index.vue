@@ -18,7 +18,7 @@
         </div>
       </div>
 
-      <button v-if="chatGreeting" class="chat-header__voice" aria-label="播放问候">
+      <button v-if="chatName" class="chat-header__voice" aria-label="播放问候">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
           <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
@@ -28,22 +28,25 @@
 
     <!-- 聊天主体 -->
     <div ref="messagesEl" class="chat-messages">
-      <!-- 开场白 -->
-      <div class="chat-msg chat-msg--spirit">
+      <!-- ═══════ 结构地图 ═══════ -->
+      <div v-if="consultation.dossier.value" class="chat-msg chat-msg--spirit">
         <div class="msg-avatar">
           <SpiritAvatar :planet="chatPlanet" :symbol="chatSymbol" :name="chatName" size="sm" />
         </div>
-        <div class="msg-bubble spirit-bubble">
-          <p>{{ chatGreeting || defaultGreeting }}</p>
-          <p class="spirit-hint">{{ chatHint }}</p>
-          <div v-if="chatGreeting" class="msg-actions">
-            <VoicePlayer :text="chatGreeting" voice-style="whisper" :show-label="false" size="mini" />
+        <div class="msg-bubble spirit-bubble structure-map">
+          <p class="structure-title">{{ consultation.dossier.value.identity_statement }}</p>
+          <div class="structure-topics">
+            <span
+              v-for="key in consultation.dossier.value.topic_order"
+              :key="key"
+              class="topic-chip"
+            >{{ consultation.dossier.value.topics.find((t: any) => t.key === key)?.title || key }}</span>
           </div>
         </div>
       </div>
 
-      <!-- 用户消息和回复 -->
-      <template v-for="(msg, i) in messages" :key="i">
+      <!-- ═══════ 对话消息 ═══════ -->
+      <template v-for="(msg, i) in (consultation.messages.value ?? [])" :key="i">
         <div v-if="msg.role === 'user'" class="chat-msg chat-msg--user">
           <div class="msg-bubble user-bubble">{{ msg.text }}</div>
         </div>
@@ -53,31 +56,34 @@
           </div>
           <div class="msg-bubble spirit-bubble">
             <p>{{ msg.text }}</p>
-            <div v-if="msg.text" class="msg-actions">
-              <VoicePlayer :text="msg.text" voice-style="whisper" :show-label="false" size="mini" />
-            </div>
-            <!-- 星盘依据 -->
-            <div v-if="msg.engine_reading?.evidence?.length" class="evidence-area">
-              <div class="evidence-toggle" @click.stop="toggleEvidence(i)">
-                <span class="evidence-toggle-line">─</span>
-                <span class="evidence-toggle-label">查看星盘依据</span>
-                <span class="evidence-toggle-arrow">{{ expandedEvidence === i ? '▴' : '▾' }}</span>
-              </div>
-              <div class="evidence-collapse" :class="{ 'is-open': expandedEvidence === i }">
-                <div class="evidence-inner">
-                  <div v-for="(line, li) in msg.engine_reading.evidence" :key="li" class="evidence-line">
-                    <span class="evidence-bullet">•</span>
-                    <span>{{ line }}</span>
-                  </div>
-                </div>
+            <div v-if="msg.evidence?.length" class="evidence-area">
+              <div class="evidence-line" v-for="(e, ei) in msg.evidence" :key="ei">
+                <span class="evidence-bullet">•</span>
+                <span>{{ e.fact }}</span>
               </div>
             </div>
           </div>
         </div>
       </template>
 
+      <!-- ═══════ 洞察草稿卡 ═══════ -->
+      <div v-if="consultation.currentInsight.value" class="chat-msg chat-msg--spirit">
+        <InsightDraftCard
+          :insight="consultation.currentInsight.value!"
+          @decide="({ decision, editedQuote }) => consultation.decideInsight(consultation.currentInsight.value!.insight_id, decision, editedQuote)"
+        />
+      </div>
+
+      <!-- ═══════ 操作按钮 ═══════ -->
+      <div v-if="consultation.currentActions.value.length && !consultation.isThinking.value" class="chat-msg chat-msg--spirit">
+        <ConsultationActions
+          :actions="consultation.currentActions.value"
+          @action="(a: string) => consultation.sendTurn('', a)"
+        />
+      </div>
+
       <!-- 思考中 -->
-      <div v-if="isThinking" class="chat-msg chat-msg--spirit">
+      <div v-if="consultation.isThinking.value" class="chat-msg chat-msg--spirit">
         <div class="msg-avatar">
           <SpiritAvatar :planet="chatPlanet" :symbol="chatSymbol" :name="chatName" size="sm" />
         </div>
@@ -98,16 +104,16 @@
       <input
         v-model="inputText"
         class="chat-input"
-        :disabled="isThinking"
-        :placeholder="isThinking ? `${chatName}正在回应你的问题……` : `和${chatName}说点什么...`"
+        :disabled="consultation.isThinking.value"
+        :placeholder="consultation.isThinking.value ? `${chatName}正在回应你的问题……` : `和${chatName}说点什么...`"
         @keyup.enter="sendMessage"
       />
       <button
         class="chat-send-btn"
-        :disabled="!inputText.trim() || isThinking"
+        :disabled="!inputText.trim() || consultation.isThinking.value"
         :style="{ background: inputText.trim() ? chatColor : 'var(--border-light)' }"
         @click="sendMessage">
-        <svg v-if="!isThinking" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg v-if="!consultation.isThinking.value" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="22" y1="2" x2="11" y2="13" />
           <polygon points="22 2 15 22 11 13 2 9 22 2" />
         </svg>
@@ -139,25 +145,12 @@
 <script setup lang="ts">
 import { ref, nextTick, watch, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { apiClient, QuotaError } from "@/config/api";
 import { useHomeData } from "@/composables/useHomeData";
-import { useAccess } from "@/utils/payment";
 import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
-import VoicePlayer from "@/views/home/components/VoicePlayer.vue";
 import PaymentModal from "@/components/PaymentModal.vue";
-
-interface EngineReading {
-  evidence: string[];
-  acknowledgment?: string;
-  mirroring?: string;
-  guidance?: string;
-}
-
-interface ChatMessage {
-  role: "user" | "spirit";
-  text: string;
-  engine_reading?: EngineReading;
-}
+import { useSpiritConsultation } from "@/composables/useSpiritConsultation";
+import InsightDraftCard from "./components/InsightDraftCard.vue";
+import ConsultationActions from "./components/ConsultationActions.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -166,240 +159,27 @@ const homeData = useHomeData();
 const chatPlanet = computed(() => String(route.params.planet || "SUN"));
 const reportId = computed(() => homeData.reportId.value);
 
+const consultation = useSpiritConsultation(reportId);
+
 const spiritProfile = computed(() => homeData.planetProfiles.value?.planet_characters?.[chatPlanet.value]);
 const chatSymbol = computed(() => spiritProfile.value?.persona?.symbol || "★");
 const chatName = computed(() => spiritProfile.value?.persona?.name_zh || chatPlanet.value);
 const chatArchetype = computed(() => spiritProfile.value?.persona?.archetype_zh || "");
 const chatColor = computed(() => spiritProfile.value?.persona?.visual_color || "#B87D5A");
-const chatGreeting = computed(() => spiritProfile.value?.personalized_greeting || "");
-
-const defaultGreeting = "你好，我在这里陪着你。";
-const chatHint = "想聊什么都可以，我听着。";
 
 const inputText = ref("");
-const isThinking = ref(false);
 const isLoaded = ref(false);
-const messages = ref<ChatMessage[]>([]);
 const messagesEl = ref<HTMLElement | null>(null);
-
-// ── 额度与升级 ──
-const { refresh: refreshAccess } = useAccess();
 const needUpgrade = ref(false);
 const quotaReason = ref("");
 const showPayment = ref(false);
 const upgradeProduct = ref("monthly_auto");
 
-// ── V2 咨询式对话：跨轮状态 token（按 reportId+planet 持久化）──
-const TOKEN_KEY_PREFIX = "lk_dialogue_token";
-function tokenKey() {
-  return `${TOKEN_KEY_PREFIX}_${reportId.value}_${chatPlanet.value}`;
-}
-const dialogueToken = ref<string | null>(
-  sessionStorage.getItem(tokenKey()) || null,
-);
-function persistToken(token: string | null) {
-  dialogueToken.value = token;
-  if (token) sessionStorage.setItem(tokenKey(), token);
-  else sessionStorage.removeItem(tokenKey());
-}
-
-interface V2Result {
-  response: string;
-  stage?: string;
-  dialogue_token?: string | null;
-  ai_access?: { allowed?: boolean; reason?: string };
-  memory_context?: { recent_topics?: string[]; recent_milestones?: string[] };
-}
-
-/** 调用 V2 咨询式对话。返回结果或抛 QuotaError。 */
-async function callV2(message: string, history: { role: string; text: string }[]): Promise<V2Result> {
-  const res = await apiClient.post(`/spirit-chat-v2/${reportId.value}`, {
-    planet: chatPlanet.value,
-    message,
-    history,
-    entry_context: entryContext.value,
-    dialogue_token: dialogueToken.value || undefined,
-  });
-  if (res.data?.status !== "success") throw new Error(res.data?.message || "对话失败");
-  const data = res.data.data || {};
-  if (data.dialogue_token) persistToken(data.dialogue_token);
-  // AI 层静默降级：引擎回复仍展示，但提示可升级
-  if (data.ai_access?.allowed === false) {
-    needUpgrade.value = true;
-    quotaReason.value = data.ai_access.reason || "AI 对话额度已用完";
-  }
-  return data as V2Result;
-}
-const expandedEvidence = ref<number | null>(null);
-
-const entryContext = computed(() => {
-  const source = String(route.query.source || "direct");
-  const dailyQuestion = String(route.query.question || "");
-  const transitDetail = String(route.query.detail || "");
-  return {
-    source,
-    daily_question: dailyQuestion,
-    from_daily_question: (source === "today" || source === "today_star_spirit") && !!dailyQuestion,
-    transit_event: transitDetail || undefined,
-  };
-});
-
-// Sprint 6: SSE 流式默认开启；设 VITE_DISABLE_LLM_STREAM=1 可关闭
-const ENABLE_STREAM = import.meta.env.VITE_DISABLE_LLM_STREAM !== "1";
-
-async function sendMessage() {
-  const text = inputText.value.trim();
-  if (!text || isThinking.value) return;
-
-  messages.value.push({ role: "user", text });
-  inputText.value = "";
-  isThinking.value = true;
-
-  await nextTick();
-  scrollToBottom();
-
-  // 插入占位消息
-  const placeholderIdx = messages.value.length;
-  messages.value.push({ role: "spirit", text: "" });
-
-  let apiResponse = "";
-
-  if (reportId.value && chatPlanet.value) {
-    if (ENABLE_STREAM) {
-      apiResponse = await streamChat(text);
-    } else {
-      try {
-        const chatHistory = messages.value.map((m) => ({
-          role: m.role === "spirit" ? "assistant" : "user",
-          text: m.text,
-        }));
-        const result = await callV2(text, chatHistory);
-        apiResponse = result.response || "";
-      } catch (e: any) {
-        if (e instanceof QuotaError) {
-          needUpgrade.value = true;
-          quotaReason.value = e.message || "今日免费对话次数已用完";
-        }
-      }
-    }
-  }
-
-  if (!apiResponse) {
-    if (needUpgrade.value) {
-      apiResponse = `${quotaReason.value}。升级后可继续与 ${chatName.value} 深度对话。`;
-    } else {
-      apiResponse = `抱歉，我现在暂时无法连接。请稍后再试——${chatName.value} 一直都在。`;
-    }
-  }
-
-  messages.value[placeholderIdx] = { role: "spirit", text: apiResponse };
-  isThinking.value = false;
-
-  saveDiaryEntry(text, apiResponse);
-
-  await nextTick();
-  scrollToBottom();
-}
-
-async function streamChat(userMessage: string): Promise<string> {
-  const token = localStorage.getItem("lk_token");
-  if (!token || !reportId.value) return "";
-
-  let fullText = "";
-  try {
-    const resp = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL || "/api"}/spirit-chat-stream/${reportId.value}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          message: userMessage,
-          planet: chatPlanet.value,
-          topic: "personal",
-          entry_context: entryContext.value,
-        }),
-      },
-    );
-
-    if (!resp.ok) {
-      if (resp.status === 429) {
-        needUpgrade.value = true;
-        quotaReason.value = "已达今日聊天上限";
-      }
-      return "";
-    }
-
-    const reader = resp.body?.getReader();
-    if (!reader) return "";
-    const decoder = new TextDecoder();
-    let buffer = "";
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split("\n");
-      buffer = lines.pop() || "";
-
-      for (const line of lines) {
-        if (!line.startsWith("data: ")) continue;
-        try {
-          const data = JSON.parse(line.slice(6));
-          if (data.type === "opening") {
-            fullText = data.text || "";
-            updateLastMessage(fullText);
-          } else if (data.type === "token") {
-            fullText += data.text || "";
-            updateLastMessage(fullText);
-          } else if (data.type === "fallback") {
-            if (!fullText) fullText = data.text || "";
-            updateLastMessage(fullText);
-          } else if (data.type === "limit") {
-            fullText += data.text || "";
-            updateLastMessage(fullText);
-          }
-        } catch { /* skip malformed SSE */ }
-      }
-    }
-  } catch {
-    // 流式失败 → 回退空白，由外层降级处理
-  }
-  return fullText;
-}
-
-function updateLastMessage(text: string) {
-  const arr = messages.value;
-  if (arr.length === 0) return;
-  const last = arr[arr.length - 1];
-  if (last && last.role === "spirit") {
-    last.text = text;
-  }
-}
-
-async function saveDiaryEntry(userText: string, spiritReply: string) {
-  if (!reportId.value || !chatPlanet.value) return;
-  try {
-    const chatContext = `用户：${userText.slice(0, 300)}\n${chatName.value}：${spiritReply.slice(0, 300)}`;
-    await apiClient.post(`/spirit-diary/${reportId.value}/entry`, {
-      chat_context: chatContext,
-      spirit_planet: chatPlanet.value,
-      mood_emoji: "",
-    });
-  } catch (e) {
-    console.error("[Diary] 保存日记失败:", e);
-  }
-}
-
-async function onPaymentSuccess() {
-  showPayment.value = false;
-  needUpgrade.value = false;
-  quotaReason.value = "";
-  await refreshAccess();
-}
+const entryContext = computed(() => ({
+  source: String(route.query.source || "direct"),
+  daily_question: String(route.query.question || ""),
+  transit_detail: String(route.query.detail || ""),
+}));
 
 function scrollToBottom() {
   if (messagesEl.value) {
@@ -407,38 +187,34 @@ function scrollToBottom() {
   }
 }
 
-function toggleEvidence(index: number) {
-  expandedEvidence.value = expandedEvidence.value === index ? null : index;
+function onPaymentSuccess() {
+  showPayment.value = false;
+  needUpgrade.value = false;
 }
 
-function goBack() {
-  router.back();
+async function sendMessage() {
+  const t = inputText.value.trim();
+  if (!t || consultation.isThinking.value) return;
+  inputText.value = "";
+  await consultation.sendTurn(t);
+  await nextTick();
+  scrollToBottom();
 }
+
+function goBack() { router.back(); }
 
 onMounted(async () => {
   await homeData.refreshData();
   isLoaded.value = true;
-  if (entryContext.value.from_daily_question && entryContext.value.daily_question) {
-    isThinking.value = true;
-    try {
-      const result = await callV2(entryContext.value.daily_question, []);
-      const reply = result.response || "";
-      if (reply) {
-        messages.value.push({ role: "spirit", text: reply });
-        saveDiaryEntry(entryContext.value.daily_question, reply);
-      }
-    } catch (e) {
-      console.error("[AutoInit] 失败:", e);
-    }
-    isThinking.value = false;
-    await nextTick();
-    scrollToBottom();
+  if (reportId.value) {
+    const planet = String(route.params.planet || "SUN");
+    await consultation.start(planet, entryContext.value);
   }
 });
 
-watch(messages, () => {
+watch(() => consultation.messages.value.length, () => {
   nextTick(scrollToBottom);
-}, { deep: true });
+});
 </script>
 
 <style scoped lang="less">
@@ -840,4 +616,88 @@ watch(messages, () => {
   font-weight: 600;
   cursor: pointer;
 }
+
+/* ── v2 深度咨询── */
+.structure-map {
+  padding: var(--space-2) var(--space-3);
+}
+.structure-title {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0 0 10px;
+}
+.structure-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.topic-chip {
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: rgba(184, 125, 90, 0.08);
+  border: 1px solid rgba(184, 125, 90, 0.18);
+  font-size: 12px;
+  color: var(--chat-color, #B87D5A);
+  transition: all 0.15s;
+}
+.topic-chip.active {
+  background: var(--chat-color, #B87D5A);
+  color: #fff;
+}
+
+/* v2 操作按钮 */
+.consult-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.consult-action {
+  padding: 5px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(184, 125, 90, 0.3);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--chat-color, #B87D5A);
+  font-size: 12px;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.15s;
+}
+.consult-action:hover, .consult-action:active {
+  background: var(--chat-color, #B87D5A);
+  color: #fff;
+}
+
+/* v2 洞察草稿卡 */
+.insight-draft {
+  margin: 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(184, 125, 90, 0.06);
+  border: 1px solid rgba(184, 125, 90, 0.2);
+}
+.insight-draft__head {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
+}
+.insight-draft__badge {
+  font-size: 11px; color: var(--chat-color, #B87D5A); font-weight: 600;
+}
+.insight-draft__planet { font-size: 10px; color: var(--text-tertiary); }
+.insight-draft__summary { margin: 0 0 8px; font-size: 13px; line-height: 1.6; color: var(--text-primary); }
+.insight-draft__label { display: block; font-size: 11px; color: var(--text-tertiary); margin-bottom: 3px; }
+.insight-draft__textarea {
+  width: 100%; border: 1px solid var(--border-light); border-radius: 8px;
+  padding: 6px 8px; font-size: 13px; line-height: 1.5; resize: vertical; box-sizing: border-box;
+}
+.insight-draft__action { margin-top: 8px; padding: 6px 8px; background: rgba(255,255,255,0.5); border-radius: 6px; }
+.insight-draft__action-label { font-size: 10px; color: var(--text-tertiary); }
+.insight-draft__buttons { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.insight-btn {
+  flex: 1 1 calc(50% - 6px); padding: 6px 4px; border-radius: 8px;
+  border: 1px solid var(--border-light); background: #fff; font-size: 12px; cursor: pointer;
+}
+.insight-btn--confirm { background: var(--chat-color, #B87D5A); color: #fff; border-color: transparent; }
+.insight-btn--partial, .insight-btn--reject, .insight-btn--uncertain { background: rgba(0,0,0,0.03); }
 </style>
+

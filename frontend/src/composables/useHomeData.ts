@@ -106,6 +106,7 @@ export function useHomeData() {
 
   // ── 今日星灵 ──
   const todayStarSpirit = ref<any>(null);
+  const guideSpiritNarrative = ref<any>(null);
   const dailyQuestion = ref<any>(null);
   const diaryEntries = ref<any[]>([]);
 
@@ -240,11 +241,22 @@ export function useHomeData() {
               const dRes = await apiClient.get(`/characters/${lastId}/daily`);
               if (dRes.data?.status === "success") dailyData.value = dRes.data.data;
             } catch { /* optional */ }
-            // 非阻塞加载今日星灵、每日一问、日记、每日星象
+            // 非阻塞加载今日星灵、每日一问、日记、每日星象、引路星灵自述
             try {
               const ssRes = await apiClient.get(`/today-star-spirit/${lastId}`);
               if (ssRes.data?.status === "success") todayStarSpirit.value = ssRes.data.data;
             } catch { /* optional */ }
+            try {
+              const gnRes = await apiClient.get(`/today-star-spirit/${lastId}/narrative`);
+              if (gnRes.data?.status === "success") {
+                guideSpiritNarrative.value = gnRes.data.data;
+                console.log("[narrative] loaded, segments:", Object.keys(gnRes.data.data?.segments || {}));
+              } else {
+                console.warn("[narrative] unexpected status:", gnRes.data?.status);
+              }
+            } catch (e: any) {
+              console.warn("[narrative] fetch failed:", e?.message || e);
+            }
             try {
               const dqRes = await apiClient.get(`/daily-question/${lastId}`);
               if (dqRes.data?.status === "success") dailyQuestion.value = dqRes.data.data;
@@ -274,11 +286,22 @@ export function useHomeData() {
             const dRes = await apiClient.get(`/characters/${reportId.value}/daily`);
             if (dRes.data?.status === "success") dailyData.value = dRes.data.data;
           } catch { /* optional */ }
-          // 非阻塞加载今日星灵、每日一问、日记、每日星象
+          // 非阻塞加载今日星灵、每日一问、日记、每日星象、引路星灵自述
           try {
             const ssRes = await apiClient.get(`/today-star-spirit/${reportId.value}`);
             if (ssRes.data?.status === "success") todayStarSpirit.value = ssRes.data.data;
           } catch { /* optional */ }
+          try {
+            const gnRes = await apiClient.get(`/today-star-spirit/${reportId.value}/narrative`);
+            if (gnRes.data?.status === "success") {
+              guideSpiritNarrative.value = gnRes.data.data;
+              console.log("[narrative] demo loaded, segments:", Object.keys(gnRes.data.data?.segments || {}));
+            } else {
+              console.warn("[narrative] demo unexpected status:", gnRes.data?.status);
+            }
+          } catch (e: any) {
+            console.warn("[narrative] demo fetch failed:", e?.message || e);
+          }
           try {
             const dqRes = await apiClient.get(`/daily-question/${reportId.value}`);
             if (dqRes.data?.status === "success") dailyQuestion.value = dqRes.data.data;
@@ -320,6 +343,7 @@ export function useHomeData() {
     reportData.value = null;
     dailyData.value = null;
     dailyTransitReport.value = null;
+    guideSpiritNarrative.value = null;
     reportId.value = "";
     activePlanet.value = "SUN";
     activeSign.value = "";
@@ -363,6 +387,7 @@ export function useHomeData() {
     chatCtaText,
     // 今日星灵
     todayStarSpirit,
+    guideSpiritNarrative,
     dailyQuestion,
     diaryEntries,
     todaysPlanetProfile,

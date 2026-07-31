@@ -11,3 +11,5 @@ pydantic>=2.5.0
 numpy>=1.24
 pyswisseph>=2.10.3
 typing_extensions>=4.8.0
+# 星灵咨询短期状态外置（可选；未安装时降级为进程内存，仅开发可用）
+redis>=5.0.0

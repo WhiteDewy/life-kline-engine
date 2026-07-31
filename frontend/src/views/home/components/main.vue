@@ -87,7 +87,7 @@
       </div>
 
       <!-- 主体内容区 -->
-      <div class="home-content" v-if="homeData.hasProfile.value">
+      <!-- <div class="home-content" v-if="homeData.hasProfile.value">
         <div class="hero-card">
           <p class="hero-greeting">{{ greetingText }}</p>
           <h1 class="hero-title">今天，你的心境如何？</h1>
@@ -117,7 +117,7 @@
             <p class="quick-card__desc">拜访 22 位星灵，听听它们想对你说什么。</p>
           </AppCard>
         </div>
-      </div>
+      </div> -->
 
       <!-- 底部导航 -->
       <HomeTabBar @garden="goGarden" @daily-question="openDailyQuestionPanel" @council="openCouncil" />
@@ -163,6 +163,7 @@
         :today-star-spirit="homeData.todayStarSpirit.value"
         :daily-question="homeData.dailyQuestion.value"
         :spirit-profile="homeData.todaysPlanetProfile?.value"
+        :guide-narrative="homeData.guideSpiritNarrative.value"
         :gender="homeData.userGender.value"
         @chat="openStarSpiritChat"
         @close="showDailyQuestion = false"
@@ -174,6 +175,7 @@
         :transit-report="homeData.dailyTransitReport.value"
         :today-star-spirit="homeData.todayStarSpirit.value"
         :date-label="homeData.dateLabel.value"
+        :guide-narrative="homeData.guideSpiritNarrative.value"
         @close="showDirection = false"
         @chat-with-spirit="onTransitChat($event)"
       />
@@ -197,13 +199,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, nextTick, computed } from "vue";
+import { ref, onMounted, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useHomeData } from "@/composables/useHomeData";
 import { useAuth } from "@/utils/auth";
 import { PLANET_COLORS } from "@/config/zodiac";
 import AppButton from "@/components/AppButton.vue";
-import AppCard from "@/components/AppCard.vue";
+// AppCard unused while home-content is commented out
+// import AppCard from "@/components/AppCard.vue";
 import GardenScene from "@/components/garden/GardenScene.vue";
 import SpiritAvatar from "@/components/garden/SpiritAvatar.vue";
 import HomeTabBar from "./HomeTabBar.vue";
@@ -262,14 +265,7 @@ watch(() => homeData.loading.value, (loading) => {
 
 const planetColors = PLANET_COLORS;
 
-const greetingText = computed(() => {
-  const hour = new Date().getHours();
-  if (hour < 6) return "夜深了，星灵还在陪着你。";
-  if (hour < 11) return "早安，今天想从哪里开始？";
-  if (hour < 14) return "午安，停下来和自己说句话吧。";
-  if (hour < 19) return "下午好，今天有什么想被听见的？";
-  return "晚上好，把今天交给星灵吧。";
-});
+// greetingText computed removed — its template usage is commented out
 
 // ── 兼容保留的浮层状态（星灵议会 / 灵犀一问 / 今日走向 仍由浮层承载） ──
 const showProfile = ref(false);

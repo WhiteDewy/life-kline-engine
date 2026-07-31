@@ -35,14 +35,17 @@
           <input v-model="phone" class="phone-inp" type="tel" maxlength="11" placeholder="请输入手机号" @input="onPhoneInput" />
         </div>
 
-        <div class="code-row">
+        <div class="code-row" v-if="!isDevBypassAll">
           <input v-model="code" class="code-inp" type="text" maxlength="6" placeholder="验证码" :disabled="isDevBypass" @keyup.enter="doSmsLogin" />
           <button class="send-btn" :disabled="!canSend || countdown > 0 || isDevBypass" @click="doSendCode">
             {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
           </button>
         </div>
 
-        <button v-if="isDevBypass" class="main-btn main-btn--dev" :disabled="!agreed || verifying" @click="devDirectLogin">
+        <button v-if="isDevBypassAll" class="main-btn main-btn--dev" :disabled="!canSend || verifying" @click="devDirectLogin">
+          <span v-if="verifying" class="loader"></span><span v-else>直接登录</span>
+        </button>
+        <button v-else-if="isDevBypass" class="main-btn main-btn--dev" :disabled="!agreed || verifying" @click="devDirectLogin">
           <span v-if="verifying" class="loader"></span><span v-else>直接进入花园</span>
         </button>
         <button v-else class="main-btn" :disabled="!canLogin || verifying" @click="doSmsLogin">
@@ -129,10 +132,11 @@ const canLogin = computed(() => phone.value.length === 11 && code.value.length >
  *  生产构建（import.meta.env.PROD）下本 computed 永远返回 false，对应按钮也不会渲染。 */
 const isDevBypass = computed(() => !import.meta.env.PROD && isDevBypassPhone(phone.value));
 
+const isDevBypassAll = computed(() => !import.meta.env.PROD && import.meta.env.VITE_DEV_BYPASS_ALL === "1");
 function onPhoneInput() { phone.value = phone.value.replace(/\D/g, "").slice(0, 11); }
 
 async function devDirectLogin() {
-  if (!isDevBypass.value) return;
+  if (!isDevBypass.value && !isDevBypassAll.value) return;
   verifying.value = true;
   try { await verifyCode(phone.value, getDevBypassCode()); router.replace(redirectPath.value); } catch {}
   verifying.value = false;

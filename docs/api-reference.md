@@ -294,6 +294,39 @@ FastAPI 自带 `/docs`（Swagger）、`/redoc`、`/openapi.json` 默认开启，
 
 ---
 
+## 8b. 星灵深度咨询（v2 · 引擎编排 + LLM 表达）
+
+> 与 §8 的 V1/V2 对话并行存在（迁移期保留）。统一编排层：引擎决定事实、证据、话题顺序与状态机；LLM 只做星灵口吻表达。短期会话状态外置 Redis，确认洞察持久化到 `consultation_insights`，并投影到报告「共同验证」层。
+
+### `POST /api/v2/spirit-consultations/{report_id}`  ·  `routers/spirit_consultation.py`  · 需登录  · 报告所有者
+- **请求**：path `report_id`；body `{ planet?, entry_context? }`；header `Authorization`。
+- **响应**：`{ status, report_id, data: { session_id, dossier{ planet, spirit_name, evidence[], topics[], topic_order[] }, state{ stage, topic_queue, ... }, opening_plan, opening_text, degraded } }`。
+- **功能**：创建/恢复一次星灵深度咨询会话，返回该星灵的完整结构地图与开场。
+- **引擎层**：`build_spirit_dossier`（复用 `ChartReader`）→ `initial_state` → `resolve_turn("")` → `RedisStore.set_json`。
+- **用户效果**：用户进入聊天页即看到星灵身份与结构地图，自动讲第一段并停下。
+
+### `POST /api/v2/spirit-consultations/{report_id}/{session_id}/turn`  · SSE
+- **请求**：path `report_id`/`session_id`；body `{ message?, intent_hint?, history[] }`；header `Authorization`。
+- **响应**：SSE 事件流 `opening / text_delta / evidence / state / insight_draft / prompt / crisis / done`；15s 心跳；断连取消；危机短路。
+- **功能**：推进一个咨询微循环（结构定位 → 多义展开 → 现实取证 → 假设验证 → 洞察草稿 → 行动实验）。
+- **业务**：免费用户可完整走完第一个话题闭环；第二话题/跨结构整合为付费边界（`free_cycle_complete`）。
+- **引擎层**：`detect_crisis`（前置）→ token 预算校验 → `RedisStore.get_json` → `resolve_turn` → `LLMClient.chat_stream`（失败降级 `fallback_renderer.render`）→ `RedisStore.set_json`。
+
+### `POST /api/v2/spirit-consultations/{report_id}/{session_id}/insights/{insight_id}/decision`
+- **请求**：body `{ decision, edited_user_quote?, request_id? }`；`decision ∈ confirmed|partial|rejected|uncertain`。
+- **响应**：`{ status, data: { insight_id, decision, persisted } }`。
+- **功能**：对洞察草稿做确认/部分/否定/不确定；`request_id` 幂等。仅 `confirmed`/`partial` 投影到报告与日记。
+- **引擎层**：`apply_decision` → `consultation_repository.upsert_insight`（`request_id` 唯一索引防重）。
+
+### `GET /api/v2/spirit-consultations/{report_id}/{session_id}`  · 需登录  · 报告所有者
+- **响应**：`{ status, data: { session_id, state } }`。恢复未完成咨询进度。
+
+### `GET /api/v2/reports/{report_id}/consultation-overlay`  · 需登录  · 报告所有者
+- **响应**：`{ status, data: { planet: [insight...] } }`。按行星聚合的已确认洞察，供报告「共同验证」层渲染。
+
+---
+
+
 ## 10. 花园（Garden · 分析工具集 / 咨询）
 
 ### `GET /api/garden/categories`  ·  `main.py:2763`

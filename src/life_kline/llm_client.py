@@ -319,6 +319,132 @@ _PLANET_NAMES: dict[str, str] = {
 }
 
 
+def _build_planet_house_context(report_data: dict, planet: str) -> str:
+    """构建行星的宫性上下文（掌宫 + 接纳互溶 + 关键相位 + 宫性链）。
+
+    从 report_data 中提取该行星的完整宫位格局，供 LLM 在对话中引用。
+    所有数据从引擎模块提取，不在此处硬编码占星规则。
+    """
+    from .domains.helpers import SIGN_RULER_MAP, PLANET_LABEL_CN, SIGN_LABEL_CN
+    from .interpretation.house_rules import HOUSE_DATA
+
+    planet_chars = report_data.get("planet_characters", {}).get("planet_characters", {})
+    profile = planet_chars.get(planet, {})
+    persona = profile.get("persona", {})
+
+    if not persona:
+        return ""
+
+    planet_name = persona.get("name_zh", planet)
+    located_house = profile.get("house", 0)
+    located_house_label = profile.get("house_label", "")
+    located_sign_label = profile.get("sign_label", "")
+    dignity_label = profile.get("dignity_label", "")
+
+    # ── 1. 宫内星（过程） ──
+    lines = [
+        f"## {planet_name}的宫位格局",
+        "",
+        "### 宫内星 — 你在哪里干活（过程）",
+        f"- 你落在{located_sign_label}，第{located_house}宫「{located_house_label}」",
+        f"- 尊贵状态：{dignity_label}",
+        f"- 命主星：{'是（整张盘的基调由你定）' if profile.get('is_chart_ruler') else '否'}",
+    ]
+
+    # ── 2. 宫主星（结果）：从 house_rulers 中提取 ──
+    advanced = report_data.get("advanced_patterns", {})
+    house_rulers = advanced.get("house_rulers", [])
+    # 提取该行星掌管的宫位
+    ruled_entries = [
+        hr for hr in house_rulers
+        if isinstance(hr, dict) and hr.get("ruler") == planet
+    ]
+
+    if ruled_entries:
+        lines.append("")
+        lines.append("### 宫主星 — 你掌管哪些领域（结果）")
+        for hr in ruled_entries:
+            h = hr.get("house", 0)
+            title = hr.get("title", "") or HOUSE_DATA.get(h, {}).get("title", f"第{h}宫")
+            notation = hr.get("notation", "")
+            flight_line = hr.get("line", "")
+            flight_summary = hr.get("flight_summary", "")
+            lines.append(f"- 第{h}宫「{title}」的宫主星（{notation}）")
+            if flight_line:
+                lines.append(f"  飞星：{flight_line} — {flight_summary}")
+
+        # ── 3. 宫性链（过程 → 结果） ──
+        ruled_houses = [hr.get("house", 0) for hr in ruled_entries if isinstance(hr, dict)]
+        ruled_houses = [h for h in ruled_houses if h > 0]
+        other_houses = [h for h in ruled_houses if h != located_house]
+
+        lines.append("")
+        lines.append("### 宫性链 — 过程如何连接到结果")
+        if other_houses:
+            other_titles = "、".join(
+                f"第{h}宫「{HOUSE_DATA.get(h, {}).get('title', '')}」"
+                for h in other_houses
+            )
+            lines.append(
+                f"你在第{located_house}宫「{located_house_label}」经历的事（过程），"
+                f"不是在{located_house_label}结束的——它们最终会落到{other_titles}的收成上（结果）。"
+                f"用户问{located_house_label}相关问题时，你要帮ta看见这跟{other_titles}的长期关联。"
+            )
+        elif located_house in ruled_houses:
+            lines.append(
+                f"你既是第{located_house}宫「{located_house_label}」的主人，也住在这里——"
+                f"意味着你在{located_house_label}上的成长，每一步都直接算数。"
+            )
+    else:
+        # 外行星无传统掌宫
+        lines.append("")
+        lines.append("### 宫主星")
+        lines.append("- 在传统守护体系中你不掌管具体宫位（三王星无传统守护星座）")
+
+    # ── 4. 与你有关的关键相位 ──
+    natal = report_data.get("natal_chart", {}) or {}
+    major_aspects = natal.get("major_aspects", []) or []
+    planet_aspects = []
+    for a in major_aspects:
+        if not isinstance(a, dict):
+            continue
+        title = a.get("title", "") or a.get("line", "")
+        # 相位标题通常包含行星中文名，匹配当前行星
+        if planet_name in title:
+            planet_aspects.append(a)
+
+    if planet_aspects:
+        lines.append("")
+        lines.append("### 你的重要相位")
+        for a in planet_aspects[:6]:
+            lines.append(
+                f"- {a.get('title', a.get('line', ''))}"
+                f" | 强度={a.get('strength', '?')} | 性质={a.get('nature', '?')}"
+            )
+
+    # ── 5. 接纳与互溶 ──
+    mutuals = advanced.get("mutual_receptions", []) or []
+    groups = advanced.get("reception_groups", []) or []
+    reception_lines = []
+    for m in mutuals:
+        if isinstance(m, dict):
+            line = m.get("line", str(m))
+            if planet in line:
+                reception_lines.append(f"- 互溶：{line}")
+    for g in groups:
+        if isinstance(g, dict):
+            line = g.get("line", str(g))
+            if planet in line:
+                reception_lines.append(f"- 接纳：{line}")
+
+    if reception_lines:
+        lines.append("")
+        lines.append("### 接纳与互溶")
+        lines.extend(reception_lines)
+
+    return "\n".join(lines)
+
+
 def build_spirit_system_prompt(report_data: dict, planet: str, topic: str = "personal",
                                 entry_context: dict | None = None) -> str:
     """为指定行星构建 System Prompt。
@@ -366,11 +492,7 @@ def build_spirit_system_prompt(report_data: dict, planet: str, topic: str = "per
 ## 你的盲点
 {persona.get('challenge_to_user', '')}
 
-## 你在这个用户星盘中的位置
-- 落在{profile.get('sign_label', '未知')}，第{profile.get('house', 1)}宫「{profile.get('house_label', '')}」
-- 尊贵状态：{profile.get('dignity_label', '未知')}
-- 角色标签：{profile.get('role_tag', '未知')}
-- 强度：{profile.get('core_strength', 0):.0f}/100
+{_build_planet_house_context(report_data, planet)}
 
 ## 用户星盘中关于「{topic_label}」的线索
 {core_theme}
@@ -608,17 +730,56 @@ def _build_planet_dossier(
             marker = " ← 你" if p_key == planet else ""
             lines.append(f"- {pp.get('persona', {}).get('name_zh', p_key)}: {pp.get('sign_label', '?')} 第{pp.get('house', '?')}宫「{pp.get('house_label', '')}」 {pp.get('dignity_label', '')}{marker}")
 
-    # ── 4. 掌宫 + 飞星 ──
+    # ── 4. 掌宫 + 飞星（从 house_rulers 提取，正确反映宫头星座的守护关系）──
     try:
-        planet_signs = DOMICILE_SIGNS.get(P(planet), [])
-        lines.append("")
-        lines.append(f"## 掌宫（{planet}守护{'/'.join(s.value for s in planet_signs)}）")
-        for p_key, pp in planet_chars.items():
-            if not isinstance(pp, dict):
-                continue
-            ps = pp.get("sign", "")
-            if ps in [s.value for s in planet_signs]:
-                lines.append(f"- 第{pp.get('house', '?')}宫「{pp.get('house_label', '')}」由你掌管 → {pp.get('persona', {}).get('name_zh', p_key)}落此宫")
+        advanced = report_data.get("advanced_patterns", {})
+        house_rulers_list = advanced.get("house_rulers", []) or []
+        planet_ruled = [
+            hr for hr in house_rulers_list
+            if isinstance(hr, dict) and hr.get("ruler") == planet
+        ]
+        if planet_ruled:
+            lines.append("")
+            lines.append(f"## 掌宫 — 你掌管的人生领域（宫主星）")
+            for hr in planet_ruled:
+                h = hr.get("house", 0)
+                title = hr.get("title", "")
+                flight_line = hr.get("line", "")
+                flight_summary = hr.get("flight_summary", "")
+                lines.append(f"- 第{h}宫「{title}」的宫主星")
+                if flight_line and flight_summary:
+                    lines.append(f"  {flight_line}：{flight_summary}")
+        else:
+            lines.append("")
+            lines.append("## 掌宫")
+            lines.append("- 在传统守护体系中不掌管具体宫位（三王星）")
+
+        # ── 4b. 宫性链：过程 → 结果 ──
+        located_h = profile.get("house", 0)
+        located_label = profile.get("house_label", "")
+        ruled_houses = [hr.get("house", 0) for hr in planet_ruled if isinstance(hr, dict) and hr.get("house", 0) > 0]
+        other_houses = [h for h in ruled_houses if h != located_h]
+        if other_houses and located_h > 0:
+            from .interpretation.house_rules import HOUSE_DATA as _HD
+            other_titles = "、".join(
+                f"第{h}宫「{_HD.get(h, {}).get('title', '')}」"
+                for h in other_houses
+            )
+            lines.append("")
+            lines.append("## 宫性链 — 过程 → 结果")
+            lines.append(
+                f"你落在第{located_h}宫「{located_label}」（过程）。"
+                f"但这个领域经历的事，不是在{located_label}结束的——"
+                f"它们最终会落到{other_titles}的收成上（结果）。"
+                f"当用户谈到{located_label}时，你要帮ta看见这跟{other_titles}的关联。"
+            )
+        elif located_h in ruled_houses:
+            lines.append("")
+            lines.append("## 宫性链")
+            lines.append(
+                f"你既是第{located_h}宫「{located_label}」的主人，也住在这里——"
+                f"这是最直接的配置：你在{located_label}上的每一步都直接算数。"
+            )
     except Exception:
         pass
 
