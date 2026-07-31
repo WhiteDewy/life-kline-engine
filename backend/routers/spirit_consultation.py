@@ -30,8 +30,8 @@ class StartConsultationInput(BaseModel):
 
 
 class TurnInput(BaseModel):
-    message: str = ""
-    intent_hint: str = ""
+    message: str = Field(default="", max_length=4000)
+    intent_hint: str = Field(default="", max_length=40)
     history: list[dict[str, str]] = Field(default_factory=list)
 
 
@@ -97,8 +97,13 @@ async def resume_consultation(
     session_id: str,
     authorization: str = Header(default=""),
 ) -> dict[str, Any]:
-    _auth_and_report(report_id, authorization)
-    result = await _service().resume_session(report_id=report_id, session_id=session_id)
+    user_id, report_data = _auth_and_report(report_id, authorization)
+    result = await _service().resume_session(
+        report_data=report_data,
+        report_id=report_id,
+        user_id=user_id,
+        session_id=session_id,
+    )
     if result is None:
         raise HTTPException(status_code=404, detail="咨询会话不存在或已过期")
     return {"status": "success", "report_id": report_id, "data": result}
@@ -139,6 +144,9 @@ async def consultation_turn(
             plan=plan,
             state=state,
             history=body.history,
+            report_id=report_id,
+            user_id=user_id,
+            user_message=body.message,
         ):
             yield _sse(event.get("type", "event"), event)
         yield _sse("done", "")

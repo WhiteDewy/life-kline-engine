@@ -53,6 +53,24 @@ MIGRATIONS: list[tuple[str, str]] = [
             ON star_diary(request_id) WHERE request_id <> '';
         """,
     ),
+    (
+        "20260731_spirit_consultation_messages",
+        """
+        CREATE TABLE IF NOT EXISTS spirit_consultation_messages (
+            id TEXT PRIMARY KEY,
+            session_id TEXT NOT NULL,
+            report_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            planet TEXT NOT NULL,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_spirit_consultation_messages_session
+            ON spirit_consultation_messages(session_id, user_id, created_at ASC);
+        """,
+    ),
 ]
 
 

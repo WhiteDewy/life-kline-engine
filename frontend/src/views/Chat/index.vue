@@ -82,6 +82,10 @@
         />
       </div>
 
+      <div v-if="consultation.error.value" class="chat-status chat-status--error">
+        {{ consultation.error.value }}
+      </div>
+
       <!-- 思考中 -->
       <div v-if="consultation.isThinking.value" class="chat-msg chat-msg--spirit">
         <div class="msg-avatar">
@@ -123,7 +127,7 @@
 
     <!-- 保存提示 -->
     <p class="chat-disclaimer">
-      {{ chatName }}的回应来自你的星盘分析，不是 AI 随机生成 ✦
+      回应以你的星盘结构为依据，由 AI 组织表达，仅用于自我探索参考。
     </p>
 
     <!-- 加载态 -->
@@ -190,6 +194,7 @@ function scrollToBottom() {
 function onPaymentSuccess() {
   showPayment.value = false;
   needUpgrade.value = false;
+  consultation.quotaExceeded.value = false;
 }
 
 async function sendMessage() {
@@ -214,6 +219,11 @@ onMounted(async () => {
 
 watch(() => consultation.messages.value.length, () => {
   nextTick(scrollToBottom);
+});
+
+watch(() => consultation.quotaExceeded.value, (exceeded) => {
+  needUpgrade.value = exceeded;
+  quotaReason.value = exceeded ? "今日深度咨询额度已用完" : "";
 });
 </script>
 
@@ -370,6 +380,21 @@ watch(() => consultation.messages.value.length, () => {
 
 .spirit-bubble p {
   margin: 0;
+  white-space: pre-wrap;
+}
+
+.chat-status {
+  align-self: center;
+  max-width: 90%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: var(--text-sm);
+}
+
+.chat-status--error {
+  color: #9f2d2d;
+  background: #fff1f0;
+  border: 1px solid #ffc9c5;
 }
 
 .spirit-hint {

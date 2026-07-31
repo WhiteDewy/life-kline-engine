@@ -1,7 +1,6 @@
 """Pure event-driven consultation state machine."""
 from __future__ import annotations
 
-import json
 import re
 import uuid
 from datetime import datetime, timezone
@@ -76,9 +75,19 @@ def _detect_question_intent(text: str, has_command: bool) -> TurnIntent:
     if has_command:
         return TurnIntent.QUESTION
     return TurnIntent.QUESTION if re.search(
-        r"(吗|什么|怎么|哪[个种里些]|是|谁|为什么|是不是|可不可以|聊聊|聊一聊|想聊|问问|想知道)",
+        r"([?？]|吗(?:[，。！？\s]|$)|什么|怎么|哪[个种里些]|谁|为什么|是否|"
+        r"是不是|能不能|会不会|有没有|可不可以|何时|什么时候|多少|"
+        r"聊聊|聊一聊|想聊|问问|想知道)",
         text,
     ) else TurnIntent.CONTINUE
+
+
+def _coerce_intent(value: str) -> TurnIntent | None:
+    """Parse the wire value (``confirm``), not the enum member name."""
+    try:
+        return TurnIntent(value.strip().lower())
+    except (AttributeError, ValueError):
+        return None
 
 
 def _detect_command_intent(text: str) -> TurnIntent | None:
@@ -412,67 +421,12 @@ def state_topic_evidence_map(
     return {item.evidence_id: item for item in []}  # populated by caller via dossier
 
 
-def _classify_with_llm(
-    text: str,
-    stage: str,
-    topics: list[str],
-    client: Any,
-) -> dict[str, Any] | None:
-    """Use a lightweight LLM call to classify the user message.
-
-    Returns a dict with ``intent`` and optional ``suggested_topic``, or
-    ``None`` when the LLM is unavailable or returns unparseable output.
-    The result is ALWAYS validated by the caller — the LLM cannot directly
-    change state.
-    """
-    if client is None or not getattr(client, "is_configured", False):
-        return None
-    topic_names = ", ".join(topics)
-    prompt = (
-        "你是一个消息分类器。根据用户消息和当前咨询阶段，输出一个 JSON 对象。\n\n"
-        f"当前阶段: {stage}\n"
-        f"可用话题: {topic_names}\n"
-        "可能的 intent 值: no_experience, question, continue, switch_topic, "
-        "confirm, reject, partial, uncertain, deepen, next_topic, pause, close\n\n"
-        "规则:\n"
-        "- question: 用户问了具体问题\n"
-        "- no_experience: 用户表示想不出/不知道/没有具体经历\n"
-        "- switch_topic: 用户想聊另一个话题，suggested_topic 从可用话题里选\n"
-        "- confirm/reject/partial/uncertain: 用户对上一轮假设的确认/否定态度\n"
-        "- deepen: 用户想继续深入当前话题\n"
-        "- continue: 默认，用户继续说当前话题\n"
-        "- next_topic/pause/close: 用户明确指令\n\n"
-        f"用户消息: {text}\n\n"
-        "只输出 JSON，不要任何其他文字。格式: "
-        '{"intent": "...", "suggested_topic": "..."}'
-    )
-    try:
-        from life_kline.llm_client import LLMClient
-
-        llm = client if isinstance(client, LLMClient) else client
-        raw = getattr(llm, "chat", None)
-        if raw is None:
-            return None
-        result = raw("", prompt, history=[])
-        if not result:
-            return None
-        # Extract JSON from possible markdown wrapper
-        result = result.strip()
-        if result.startswith("```"):
-            result = result.split("\n", 1)[-1].rsplit("\n```", 1)[0]
-        parsed = json.loads(result)
-        if not isinstance(parsed, dict) or "intent" not in parsed:
-            return None
-        return parsed
-    except Exception:
-        return None
-
-
 def resolve_turn(
     state: ConsultationState,
     dossier: SpiritDossier,
     user_message: str,
     intent_hint: str = "",
+    topic_hint: str = "",
     *,
     llm_client: Any = None,
 ) -> TurnPlan:
@@ -482,34 +436,18 @@ def resolve_turn(
     state.updated_at = _now()
     text = (user_message or "").strip()
 
-    # ── 1. LLM 分类（优先级最高），失败回退关键词 ──
-    classified = _classify_with_llm(
-        text,
-        stage=state.stage.value,
-        topics=dossier.topic_order,
-        client=llm_client,
-    )
-    if classified and "intent" in classified:
-        llm_intent = classified["intent"]
-        llm_topic = classified.get("suggested_topic", "")
-        if llm_intent in TurnIntent.__members__:
-            intent = TurnIntent(llm_intent)
-        else:
-            intent = _detect_question_intent(text, has_command=False)
-        # 验证 LLM 建议的话题必须在可用列表里
-        routed_topic_from_llm = ""
-        if llm_topic and llm_topic in dossier.topic_order:
-            routed_topic_from_llm = llm_topic
+    # UI commands and the async semantic classifier both use enum wire values.
+    # Explicit UI actions win; natural-language commands are the deterministic
+    # fallback when the classifier is unavailable.
+    hinted_intent = _coerce_intent(intent_hint)
+    command = _detect_command_intent(text) if text else None
+    if hinted_intent is not None:
+        intent = hinted_intent
+    elif command is not None:
+        intent = command
     else:
-        # 回退关键词
-        command = _detect_command_intent(text) if text else None
-        if command is not None:
-            intent = command
-        elif intent_hint in TurnIntent.__members__:
-            intent = TurnIntent(intent_hint)
-        else:
-            intent = _detect_question_intent(text, has_command=False)
-        routed_topic_from_llm = ""
+        intent = _detect_question_intent(text, has_command=False)
+    routed_topic_from_llm = topic_hint if topic_hint in dossier.topic_order else ""
 
     if intent is TurnIntent.CLOSE:
         state.stage = ConsultationStage.CLOSED
@@ -520,6 +458,16 @@ def resolve_turn(
     if intent is TurnIntent.RESUME and state.stage is ConsultationStage.PAUSED:
         state.stage = ConsultationStage.TOPIC_READY
         return plan_introduction(state, dossier)
+    if (
+        intent is TurnIntent.SWITCH_TOPIC
+        and routed_topic_from_llm
+        and routed_topic_from_llm != state.current_topic
+    ):
+        if state.current_topic:
+            state.topic_stack.append(state.current_topic)
+        state.current_topic = routed_topic_from_llm
+        state.stage = ConsultationStage.STRUCTURE_EXPLAINING
+        return plan_explaining(state, dossier)
     if intent is TurnIntent.SWITCH_TOPIC:
         intent = TurnIntent.NEXT_TOPIC
 
@@ -538,9 +486,14 @@ def resolve_turn(
 
     # ── 话题路由：LLM 分类 + 关键词双层匹配 ──
     routed_topic = routed_topic_from_llm
-    if not routed_topic and intent is TurnIntent.QUESTION and text:
-        routed_topic = _route_topic(dossier, text)
-    if not routed_topic and intent is TurnIntent.SWITCH_TOPIC and text:
+    if (
+        not routed_topic
+        and text
+        and (
+            intent is TurnIntent.QUESTION
+            or state.stage in {ConsultationStage.INTRODUCTION, ConsultationStage.TOPIC_READY}
+        )
+    ):
         routed_topic = _route_topic(dossier, text)
     if routed_topic and routed_topic != state.current_topic and routed_topic in state.topic_queue:
         state.topic_stack.append(state.current_topic)

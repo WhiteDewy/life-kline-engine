@@ -86,6 +86,30 @@ export function useSpiritConsultation(reportId: Ref<string>) {
 
   async function start(planet: string, entryContext?: Record<string, any>) {
     error.value = "";
+    const storageKey = `spirit_consultation:${reportId.value}:${planet.toUpperCase()}`;
+    const savedSessionId = localStorage.getItem(storageKey) ?? "";
+    if (savedSessionId) {
+      try {
+        const resumed = await apiClient.get(
+          `/v2/spirit-consultations/${reportId.value}/${savedSessionId}`,
+        );
+        const saved = resumed.data?.data ?? {};
+        if (saved.state?.stage !== "closed") {
+          sessionId.value = saved.session_id;
+          dossier.value = saved.dossier ?? null;
+          stage.value = saved.state?.stage ?? "introduction";
+          messages.value = (saved.messages ?? []).map((item: any) => ({
+            role: item.role === "assistant" ? "spirit" : "user",
+            text: item.content ?? "",
+          }));
+          currentActions.value = [];
+          return;
+        }
+      } catch {
+        // The Redis session expired; create a fresh consultation below.
+      }
+      localStorage.removeItem(storageKey);
+    }
     const res = await apiClient.post(
       `/v2/spirit-consultations/${reportId.value}`,
       { planet, entry_context: entryContext ?? null },
@@ -95,6 +119,7 @@ export function useSpiritConsultation(reportId: Ref<string>) {
     dossier.value = data.dossier;
     stage.value = data.state?.stage ?? "introduction";
     degraded.value = !!data.degraded;
+    localStorage.setItem(storageKey, sessionId.value);
     if (data.opening_text) {
       messages.value = [
         {
@@ -112,8 +137,11 @@ export function useSpiritConsultation(reportId: Ref<string>) {
     if (!sessionId.value) return;
     isThinking.value = true;
     error.value = "";
-    const userMsg: ConsultationMessage = { role: "user", text: message };
-    messages.value.push(userMsg);
+    currentActions.value = [];
+    if (message.trim()) {
+      const userMsg: ConsultationMessage = { role: "user", text: message };
+      messages.value.push(userMsg);
+    }
     const spiritMsg: ConsultationMessage = { role: "spirit", text: "" };
     messages.value.push(spiritMsg);
     const idx = messages.value.length - 1;
@@ -133,19 +161,22 @@ export function useSpiritConsultation(reportId: Ref<string>) {
             intent_hint: intentHint,
             history: messages.value
               .filter((m) => m.text)
-              .slice(-6)
-              .map((m) => ({ role: m.role, content: m.text })),
+              .slice(-8)
+              .map((m) => ({
+                role: m.role === "spirit" ? "assistant" : "user",
+                content: m.text,
+              })),
           }),
         },
       );
       if (resp.status === 429) {
         quotaExceeded.value = true;
-        isThinking.value = false;
+        messages.value.splice(idx, 1);
         return;
       }
       if (!resp.ok || !resp.body) {
         error.value = "咨询暂时无法连接";
-        isThinking.value = false;
+        messages.value.splice(idx, 1);
         return;
       }
       const reader = resp.body.getReader();
@@ -168,6 +199,7 @@ export function useSpiritConsultation(reportId: Ref<string>) {
       }
     } catch (e: any) {
       error.value = e?.message ?? "咨询连接中断";
+      if (!messages.value[idx]?.text) messages.value.splice(idx, 1);
     } finally {
       isThinking.value = false;
     }
@@ -193,7 +225,9 @@ export function useSpiritConsultation(reportId: Ref<string>) {
       currentActions.value = payload.actions ?? [];
     } else if (kind === "crisis") {
       msg.crisis = true;
-      msg.text = "我在这里陪着你。如果你正在经历难以承受的时刻，请记得你不是一个人，也可以拨打心理援助热线。";
+      msg.text = payload.crisis?.message
+        ?? payload.message
+        ?? "请立即联系身边可信任的人，或拨打 120、110 获取紧急帮助。";
     } else if (kind === "done") {
       msg.stage = payload.stage;
     }

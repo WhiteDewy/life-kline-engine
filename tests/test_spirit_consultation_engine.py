@@ -171,6 +171,35 @@ def test_intent_recognition_advances_state(dossier: SpiritDossier) -> None:
     }
 
 
+def test_wire_value_intent_hint_is_honored(dossier: SpiritDossier) -> None:
+    state = initial_state("rep_test", "VENUS", dossier)
+    state.stage = ConsultationStage.HYPOTHESIS_VALIDATION
+    _open_hypothesis(
+        state,
+        dossier,
+        dossier.topic_by_key()[state.current_topic],
+        "我在关系里常常先忍住",
+    )
+
+    plan = resolve_turn(state, dossier, "", intent_hint="confirm")
+
+    assert plan.stage is ConsultationStage.INSIGHT_DRAFT
+    assert plan.insight_draft is not None
+
+
+def test_experience_answer_does_not_switch_topic_on_incidental_keyword(
+    dossier: SpiritDossier,
+) -> None:
+    state = initial_state("rep_test", "VENUS", dossier)
+    state.stage = ConsultationStage.STRUCTURE_EXPLAINING
+    state.current_topic = "placement"
+
+    plan = resolve_turn(state, dossier, "上周和伴侣在餐厅起冲突")
+
+    assert plan.stage is ConsultationStage.HYPOTHESIS_VALIDATION
+    assert state.current_topic == "placement"
+
+
 def test_reject_blocks_evidence_and_does_not_repeat(dossier: SpiritDossier) -> None:
     state = initial_state("rep_test", "VENUS", dossier)
     state.stage = ConsultationStage.HYPOTHESIS_VALIDATION

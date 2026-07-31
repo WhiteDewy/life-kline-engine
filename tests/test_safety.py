@@ -67,6 +67,7 @@ def test_mixed_benign_and_real_risk():
 
 def test_resources_present():
     assert len(SUPPORT_RESOURCES) >= 1
+    assert any(res.get("contact") == "12356" for res in SUPPORT_RESOURCES)
     for res in SUPPORT_RESOURCES:
         assert res.get("name") and res.get("contact")
 

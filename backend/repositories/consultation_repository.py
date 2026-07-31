@@ -1,4 +1,4 @@
-"""Repository for confirmed consultation insights (persistent layer).
+"""Persistence for star-spirit consultation messages and confirmed insights.
 
 Confirmed/partial insights are durable business data and live in SQLite (the
 DAO layer), while short-term session state lives in Redis. This repository is
@@ -72,6 +72,20 @@ def ensure_schema(db: sqlite3.Connection) -> None:
         """
     )
     db.execute(
+        """
+        CREATE TABLE IF NOT EXISTS spirit_consultation_messages (
+            id TEXT PRIMARY KEY,
+            session_id TEXT NOT NULL,
+            report_id TEXT NOT NULL,
+            user_id TEXT NOT NULL,
+            planet TEXT NOT NULL,
+            role TEXT NOT NULL,
+            content TEXT NOT NULL,
+            created_at TEXT NOT NULL
+        )
+        """
+    )
+    db.execute(
         "CREATE UNIQUE INDEX IF NOT EXISTS idx_consultation_insight_request "
         "ON consultation_insights(id)"
     )
@@ -80,9 +94,84 @@ def ensure_schema(db: sqlite3.Connection) -> None:
         "ON consultation_insights(report_id, user_id, updated_at DESC)"
     )
     db.execute(
+        "CREATE INDEX IF NOT EXISTS idx_spirit_consultation_messages_session "
+        "ON spirit_consultation_messages(session_id, user_id, created_at ASC)"
+    )
+    db.execute(
         "CREATE UNIQUE INDEX IF NOT EXISTS idx_star_diary_request "
         "ON star_diary(request_id) WHERE request_id <> ''"
     )
+
+
+def insert_message(
+    *,
+    session_id: str,
+    report_id: str,
+    user_id: str,
+    planet: str,
+    role: str,
+    content: str,
+) -> dict[str, Any]:
+    """Persist one normalized user/assistant message."""
+    normalized_role = "assistant" if role in {"assistant", "spirit"} else "user"
+    text = str(content or "").strip()
+    if not text:
+        return {}
+    db = get_db()
+    ensure_schema(db)
+    message_id = _uid()
+    now = _now()
+    db.execute(
+        """
+        INSERT INTO spirit_consultation_messages
+        (id, session_id, report_id, user_id, planet, role, content, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            message_id,
+            session_id,
+            report_id,
+            user_id,
+            planet,
+            normalized_role,
+            text,
+            now,
+        ),
+    )
+    db.commit()
+    db.close()
+    return {
+        "id": message_id,
+        "session_id": session_id,
+        "role": normalized_role,
+        "content": text,
+        "created_at": now,
+    }
+
+
+def list_messages(
+    *, session_id: str, report_id: str, user_id: str, limit: int = 50
+) -> list[dict[str, Any]]:
+    """Return the most recent messages in chronological order."""
+    bounded_limit = max(1, min(int(limit), 200))
+    db = get_db()
+    ensure_schema(db)
+    rows = db.execute(
+        """
+        SELECT id, session_id, role, content, created_at
+        FROM (
+            SELECT id, session_id, role, content, created_at
+            FROM spirit_consultation_messages
+            WHERE session_id=? AND report_id=? AND user_id=?
+            ORDER BY created_at DESC
+            LIMIT ?
+        ) recent
+        ORDER BY created_at ASC
+        """,
+        (session_id, report_id, user_id, bounded_limit),
+    ).fetchall()
+    db.close()
+    return [dict(row) for row in rows]
 
 
 def upsert_insight(insight: dict[str, Any], *, report_id: str, user_id: str) -> dict[str, Any]:
@@ -183,6 +272,7 @@ def delete_for_user(user_id: str) -> None:
     db = get_db()
     ensure_schema(db)
     db.execute("DELETE FROM consultation_insights WHERE user_id=?", (user_id,))
+    db.execute("DELETE FROM spirit_consultation_messages WHERE user_id=?", (user_id,))
     db.commit()
     db.close()
 

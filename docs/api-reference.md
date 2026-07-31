@@ -296,21 +296,21 @@ FastAPI 自带 `/docs`（Swagger）、`/redoc`、`/openapi.json` 默认开启，
 
 ## 8b. 星灵深度咨询（v2 · 引擎编排 + LLM 表达）
 
-> 与 §8 的 V1/V2 对话并行存在（迁移期保留）。统一编排层：引擎决定事实、证据、话题顺序与状态机；LLM 只做星灵口吻表达。短期会话状态外置 Redis，确认洞察持久化到 `consultation_insights`，并投影到报告「共同验证」层。
+> 当前前台聊天主链。§8 的 V1/V2 对话仅在迁移期兼容。引擎决定事实、证据、话题顺序与状态机；LLM 负责语义分类与星灵口吻表达。短期会话状态外置 Redis，消息写入 `spirit_consultation_messages`，确认洞察写入 `consultation_insights`。
 
 ### `POST /api/v2/spirit-consultations/{report_id}`  ·  `routers/spirit_consultation.py`  · 需登录  · 报告所有者
 - **请求**：path `report_id`；body `{ planet?, entry_context? }`；header `Authorization`。
 - **响应**：`{ status, report_id, data: { session_id, dossier{ planet, spirit_name, evidence[], topics[], topic_order[] }, state{ stage, topic_queue, ... }, opening_plan, opening_text, degraded } }`。
-- **功能**：创建/恢复一次星灵深度咨询会话，返回该星灵的完整结构地图与开场。
+- **功能**：创建一次星灵深度咨询会话，返回该星灵的完整结构地图与开场。
 - **引擎层**：`build_spirit_dossier`（复用 `ChartReader`）→ `initial_state` → `resolve_turn("")` → `RedisStore.set_json`。
 - **用户效果**：用户进入聊天页即看到星灵身份与结构地图，自动讲第一段并停下。
 
 ### `POST /api/v2/spirit-consultations/{report_id}/{session_id}/turn`  · SSE
-- **请求**：path `report_id`/`session_id`；body `{ message?, intent_hint?, history[] }`；header `Authorization`。
-- **响应**：SSE 事件流 `opening / text_delta / evidence / state / insight_draft / prompt / crisis / done`；15s 心跳；断连取消；危机短路。
+- **请求**：path `report_id`/`session_id`；body `{ message<=4000, intent_hint?, history[] }`；header `Authorization`。`history` 仅作兼容回退，服务端持久化消息是主上下文。
+- **响应**：SSE 事件流 `text_delta / evidence / state / insight_draft / prompt / crisis / done`。危机前置短路；应用层心跳与断连取消尚未完成。
 - **功能**：推进一个咨询微循环（结构定位 → 多义展开 → 现实取证 → 假设验证 → 洞察草稿 → 行动实验）。
 - **业务**：免费用户可完整走完第一个话题闭环；第二话题/跨结构整合为付费边界（`free_cycle_complete`）。
-- **引擎层**：`detect_crisis`（前置）→ token 预算校验 → `RedisStore.get_json` → `resolve_turn` → `LLMClient.chat_stream`（失败降级 `fallback_renderer.render`）→ `RedisStore.set_json`。
+- **引擎层**：`detect_crisis`（前置）→ token 预算校验 → `RedisStore.get_json` → 异步语义分类（失败走规则）→ `resolve_turn` → 服务端历史上下文 → `LLMClient.chat_stream`（失败降级 `fallback_renderer.render`）→ Redis 状态与 SQLite 消息落库。
 
 ### `POST /api/v2/spirit-consultations/{report_id}/{session_id}/insights/{insight_id}/decision`
 - **请求**：body `{ decision, edited_user_quote?, request_id? }`；`decision ∈ confirmed|partial|rejected|uncertain`。
@@ -319,7 +319,7 @@ FastAPI 自带 `/docs`（Swagger）、`/redoc`、`/openapi.json` 默认开启，
 - **引擎层**：`apply_decision` → `consultation_repository.upsert_insight`（`request_id` 唯一索引防重）。
 
 ### `GET /api/v2/spirit-consultations/{report_id}/{session_id}`  · 需登录  · 报告所有者
-- **响应**：`{ status, data: { session_id, state } }`。恢复未完成咨询进度。
+- **响应**：`{ status, data: { session_id, state, dossier, messages[] } }`。恢复未完成咨询的状态、星灵档案和标准 `user/assistant` 消息。
 
 ### `GET /api/v2/reports/{report_id}/consultation-overlay`  · 需登录  · 报告所有者
 - **响应**：`{ status, data: { planet: [insight...] } }`。按行星聚合的已确认洞察，供报告「共同验证」层渲染。

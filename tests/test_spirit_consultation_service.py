@@ -30,6 +30,11 @@ class _FakeLLM:
             yield token
 
 
+class _ClassifyingLLM(_FakeLLM):
+    async def chat_async(self, system_prompt, user_message, history=None):
+        return '{"intent":"switch_topic","suggested_topic":"domains"}'
+
+
 def _store() -> RedisStore:
     store = RedisStore()
     asyncio.run(store.connect())
@@ -88,6 +93,114 @@ def test_turn_streams_text_and_evidence(service: SpiritConsultationService) -> N
     assert "evidence" in types
     assert "text_delta" in types
     assert "done" in types
+
+
+def test_semantic_classifier_can_route_a_natural_request() -> None:
+    service = SpiritConsultationService(_store(), llm_client=_ClassifyingLLM())
+    data = _report_data()
+    start = asyncio.run(
+        service.start_session(
+            report_data=data,
+            report_id="rep_semantic",
+            user_id="user_semantic",
+            planet="VENUS",
+        )
+    )
+
+    state, _, plan, _ = asyncio.run(
+        service.plan_turn(
+            report_data=data,
+            report_id="rep_semantic",
+            session_id=start["session_id"],
+            user_id="user_semantic",
+            message="最近工作里的合作关系让我很消耗",
+        )
+    )
+
+    assert state.current_topic == "domains"
+    assert plan.topic_key == "domains"
+
+
+def test_stream_normalizes_spirit_history_role() -> None:
+    fake = _FakeLLM()
+    service = SpiritConsultationService(_store(), llm_client=fake)
+    data = _report_data()
+    start = asyncio.run(
+        service.start_session(
+            report_data=data,
+            report_id="rep_roles",
+            user_id="user_roles",
+            planet="VENUS",
+        )
+    )
+    state, dossier, plan, _ = asyncio.run(
+        service.plan_turn(
+            report_data=data,
+            report_id="rep_roles",
+            session_id=start["session_id"],
+            user_id="user_roles",
+            message="继续",
+        )
+    )
+    events: list[dict[str, Any]] = []
+    asyncio.run(
+        _collect(
+            service.stream_turn(
+                dossier=dossier,
+                plan=plan,
+                state=state,
+                history=[{"role": "spirit", "content": "我记得你刚才说的。"}],
+            ),
+            events,
+        )
+    )
+
+    assert fake.calls
+    assert all(
+        item["role"] in {"system", "user", "assistant"}
+        for item in fake.calls[0]
+    )
+
+
+def test_resume_returns_persisted_messages(tmp_path, monkeypatch) -> None:
+    from backend import database as db_module
+    from backend.migrations import apply_migrations
+
+    monkeypatch.setattr(db_module, "DB_PATH", str(tmp_path / "resume.db"))
+    db_module.init_db()
+    apply_migrations()
+    service = SpiritConsultationService(_store(), llm_client=_FakeLLM(configured=False))
+    data = _report_data()
+    start = asyncio.run(
+        service.start_session(
+            report_data=data,
+            report_id="rep_resume",
+            user_id="user_resume",
+            planet="VENUS",
+        )
+    )
+    asyncio.run(
+        service.plan_turn(
+            report_data=data,
+            report_id="rep_resume",
+            session_id=start["session_id"],
+            user_id="user_resume",
+            message="我最近总在关系里忍住不说",
+        )
+    )
+
+    resumed = asyncio.run(
+        service.resume_session(
+            report_data=data,
+            report_id="rep_resume",
+            user_id="user_resume",
+            session_id=start["session_id"],
+        )
+    )
+
+    assert resumed is not None
+    assert resumed["dossier"]["planet"] == "VENUS"
+    assert [item["role"] for item in resumed["messages"]] == ["assistant", "user"]
 
 
 def test_crisis_short_circuits(service: SpiritConsultationService) -> None:
